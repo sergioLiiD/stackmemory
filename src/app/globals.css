@@ -1,26 +1,164 @@
 @import "tailwindcss";
+@plugin "tailwindcss-animate";
+
+@custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* =========================
+     LIGHT MODE (Professional)
+     ========================= */
+  --background: #f8fafc;
+  /* Slate 50 */
+  --foreground: #0f172a;
+  /* Slate 900 */
+
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+
+  --popover: #ffffff;
+  --popover-foreground: #0f172a;
+
+  --primary: #180260;
+  /* Deep Indigo Brand */
+  --primary-foreground: #ffffff;
+
+  --secondary: #f1f5f9;
+  /* Slate 100 */
+  --secondary-foreground: #0f172a;
+
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+  /* Slate 500 */
+
+  --accent: #f1f5f9;
+  --accent-foreground: #0f172a;
+
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+
+  --border: #e2e8f0;
+  /* Slate 200 */
+  --input: #e2e8f0;
+  --ring: #180260;
+}
+
+.dark {
+  /* =========================
+     DARK MODE (Deep Indigo)
+     =========================  /* Refined "Cosmic Night" Theme */
+  --background: #0B0A1F;
+  /* Deep, desaturated indigo-black base */
+  --foreground: #EEF2FF;
+  /* Cool white text for better readability on blue-black */
+
+  /* Glassy Card Surface */
+  --card: #151432;
+  --card-foreground: #EEF2FF;
+
+  --popover: #151432;
+  --popover-foreground: #EEF2FF;
+
+  --primary: #A78BFA;
+  /* Soft Violet accent that glows against dark */
+  --primary-foreground: #110E2D;
+
+  --secondary: #1E1C42;
+  /* Slightly lighter than card */
+  --secondary-foreground: #EEF2FF;
+
+  --muted: #1E1C42;
+  --muted-foreground: #94A3B8;
+  /* Slate 400 */
+
+  --accent: #2D2B52;
+  --accent-foreground: #EEF2FF;
+
+  --destructive: #7f1d1d;
+  --destructive-foreground: #EEF2FF;
+
+  --border: #2D2B52;
+  /* Subtle indigo-gray border */
+  --input: #1E1C42;
+  --ring: #8B5CF6;
+
+  --radius: 1.5rem;
+  /* 24px - Very round "Soft UI" look */
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
 }
 
 body {
-  background: var(--background);
+  background-color: var(--background);
+  background-image: none;
+  /* Explicitly ensure no gradient in light mode */
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  min-height: 100vh;
+}
+
+/* Specific Dark Mode Gradient Adjustment */
+.dark body {
+  /* High-quality smooth radiant gradient */
+  /* Top center glow (Indigo/Violet) fading into the Deep Cosmic base */
+  background-image: radial-gradient(circle at 50% 0%, #2e1065 0%, #0B0A1F 50%, #020205 100%);
+  background-attachment: fixed;
+}
+
+@layer utilities {
+  .shadow-soft {
+    box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.05);
+  }
+
+  .dark .shadow-soft {
+    box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.3);
+    /* Stronger shadow in dark mode */
+  }
+
+  .shadow-glow {
+    box-shadow: 0 0 20px -5px var(--primary);
+  }
+
+  /* Custom Scrollbar for Modal content */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
 }
