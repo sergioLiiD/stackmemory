@@ -2,13 +2,14 @@
 
 import { useState } from "react";
 import { Project, Snippet } from "@/data/mock";
-import { Terminal, Copy, Plus, X, Wand2, Trash2 } from "lucide-react";
+import { Terminal, Copy, Plus, X, Wand2, Trash2, HelpCircle } from "lucide-react";
 import { useDashboard } from "../../dashboard-context";
 import { supabase } from "@/lib/supabase";
 
 export function ProjectCommandsCard({ project }: { project: Project }) {
     const { updateProject } = useDashboard();
     const [isAdding, setIsAdding] = useState(false);
+    const [showHelp, setShowHelp] = useState(false);
     const [newCmd, setNewCmd] = useState({ title: "", code: "", description: "" });
 
     // Persistent storage helper
@@ -78,13 +79,40 @@ export function ProjectCommandsCard({ project }: { project: Project }) {
                 <h3 className="text-lg font-bold text-neutral-900 dark:text-white flex items-center gap-2">
                     <Terminal className="w-5 h-5 text-green-500" /> Command Zone
                 </h3>
-                <button
-                    onClick={() => setIsAdding(!isAdding)}
-                    className="p-2 rounded-full hover:bg-neutral-100 dark:hover:bg-white/5 transition-colors"
-                >
-                    {isAdding ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
-                </button>
+                <div className="flex gap-2">
+                    <button
+                        onClick={() => setShowHelp(!showHelp)}
+                        className="p-2 rounded-full hover:bg-neutral-100 dark:hover:bg-white/5 transition-colors text-neutral-500 hover:text-white"
+                        title="How to automate this?"
+                    >
+                        <HelpCircle className="w-4 h-4" />
+                    </button>
+                    <button
+                        onClick={() => setIsAdding(!isAdding)}
+                        className="p-2 rounded-full hover:bg-neutral-100 dark:hover:bg-white/5 transition-colors"
+                    >
+                        {isAdding ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+                    </button>
+                </div>
             </div>
+
+            {/* CLI Help Box */}
+            {showHelp && (
+                <div className="mb-6 p-4 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-200 text-xs">
+                    <div className="flex items-start gap-3">
+                        <Terminal className="w-4 h-4 mt-0.5 shrink-0 text-blue-400" />
+                        <div>
+                            <p className="font-bold mb-1 text-blue-400">Automate this with CLI</p>
+                            <p className="opacity-80 mb-2">
+                                Run the watcher to automatically sync your <code>package.json</code> scripts to this dashboard.
+                            </p>
+                            <div className="bg-black/30 rounded px-2 py-1.5 font-mono text-white inline-block border border-white/5">
+                                npm run cli:watch
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Suggestions */}
             {suggestions.length > 0 && (

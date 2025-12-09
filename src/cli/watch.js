@@ -38,28 +38,47 @@ fs.watch(targetFile, (event, filename) => {
     }
 });
 
-function analyzeAndSync() {
+async function analyzeAndSync() {
     console.log(`${LOG_PREFIX} Reading package.json...`);
 
     try {
         const fileContent = fs.readFileSync(targetFile, 'utf8');
         const pkg = JSON.parse(fileContent);
 
+        // 1. Extract Stack
         const dependencies = { ...pkg.dependencies, ...pkg.devDependencies };
         const stack = Object.keys(dependencies).map(key => ({
             name: key,
             version: dependencies[key].replace('^', '').replace('~', '')
         }));
 
-        console.log(`${LOG_PREFIX} ${colors.green}Extracted ${stack.length} dependencies.${colors.reset}`);
-        console.log(`${LOG_PREFIX} Syncing to Vault... (Simulation)`);
+        // 2. Extract Scripts
+        const scripts = pkg.scripts || {};
 
-        // Simulation of API delay
-        setTimeout(() => {
-            const timestamp = new Date().toLocaleTimeString();
-            console.log(`${LOG_PREFIX} ${colors.green}✔ Sync successful at ${timestamp}!${colors.reset}`);
-            console.log(`${LOG_PREFIX} Dashboard updated with: ${stack.slice(0, 3).map(s => s.name).join(', ')}...`);
-        }, 1000);
+        console.log(`${LOG_PREFIX} ${colors.green}Found ${stack.length} deps & ${Object.keys(scripts).length} scripts.${colors.reset}`);
+        console.log(`${LOG_PREFIX} Syncing to Dashboard API...`);
+
+        // 3. Send to API
+        try {
+            const response = await fetch('http://localhost:3000/api/project/sync', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    projectId: '1', // Default ID for demo
+                    stack,
+                    scripts
+                })
+            });
+            const data = await response.json();
+
+            if (data.success) {
+                console.log(`${LOG_PREFIX} ${colors.green}✔ Sync Success! Updated Command Zone.${colors.reset}`);
+            } else {
+                console.log(`${LOG_PREFIX} ${colors.red}Sync Failed: ${data.error}${colors.reset}`);
+            }
+        } catch (netError) {
+            console.log(`${LOG_PREFIX} ${colors.yellow}Warning: API not reachable (Is dev server running?)${colors.reset}`);
+        }
 
     } catch (error) {
         console.error(`${LOG_PREFIX} ${colors.red}Failed to parse package.json: ${error.message}${colors.reset}`);
