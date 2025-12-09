@@ -57,7 +57,7 @@ export function AssistantTab({ project }: AssistantTabProps) {
             if (!res.body) throw new Error("No body");
 
             const reader = res.body.getReader();
-            constdecoder = new TextDecoder();
+            const decoder = new TextDecoder();
             let done = false;
             let fullText = "";
             let sources: any[] = [];

@@ -123,6 +123,19 @@ export async function processRepository(repoUrl: string, token: string, maxFiles
 
     // 3. Filter
     const eligibleFiles = filterFiles(tree);
+
+    // Sort to prioritize documentation and context files
+    eligibleFiles.sort((a, b) => {
+        const score = (node: FileNode) => {
+            const lower = node.path.toLowerCase();
+            if (lower.endsWith('readme.md')) return 3;
+            if (lower.endsWith('package.json')) return 2;
+            if (lower.endsWith('.md')) return 1;
+            return 0;
+        };
+        return score(b) - score(a); // Descending score
+    });
+
     console.log(`Filtered down to ${eligibleFiles.length} eligible source files.`);
 
     // 4. Chunk/Select (Limit to avoiding hitting rate limits or timeouts blindly)

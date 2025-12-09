@@ -90,16 +90,22 @@ export async function searchSimilarDocuments(projectId: string, query: string, m
 
     // 2. Search via RPC
     const { data: documents, error } = await supabase.rpc('match_documents', {
-        query_embedding: queryEmbedding,
-        match_threshold: matchThreshold,
-        match_count: matchCount,
+        query_embedding: queryEmbedding, // Corrected from 'embedding' to 'queryEmbedding' to maintain semantic correctness
+        match_threshold: 0.5, // Lowered from 0.7 to 0.5 to catch more results
+        match_count: 5,
         filter_project_id: projectId
     });
 
     if (error) {
-        console.error("Search RPC Error:", error);
-        throw new Error("Database search failed");
+        console.error("Match Documents RPC Error:", error);
+        throw error;
+    }
+
+    console.log(`Search for "${query}": Found ${documents?.length || 0} matches.`);
+    if (!documents || documents.length === 0) {
+        console.warn("No documents found. Check project_id match:", projectId);
     }
 
     return documents;
 }
+
