@@ -14,7 +14,7 @@ export function PromptVaultTab({ project }: { project: Project }) {
                     </h3>
                     <p className="text-sm text-neutral-500">Don&apos;t lose the magic words that built this app.</p>
                 </div>
-                <button className="text-xs bg-[#180260] text-white px-3 py-1.5 rounded-lg hover:bg-[#2a04a3] transition-colors shadow-lg shadow-[#180260]/20 font-medium">
+                <button className="text-xs bg-[#180260] text-white px-4 py-2 rounded-full hover:bg-[#2a04a3] transition-colors shadow-lg shadow-[#180260]/20 font-medium font-medium flex items-center gap-1">
                     + Add Prompt
                 </button>
             </div>

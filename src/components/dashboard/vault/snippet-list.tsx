@@ -11,7 +11,7 @@ export function SnippetList({ snippets }: SnippetListProps) {
     return (
         <div className="grid gap-6">
             {snippets?.map((snippet) => (
-                <div key={snippet.id} className="rounded-xl border border-border bg-card overflow-hidden hover:border-primary/50 transition-colors">
+                <div key={snippet.id} className="rounded-3xl border border-border bg-card overflow-hidden hover:border-primary/50 transition-colors">
                     <div className="p-3 bg-muted/30 border-b border-border flex items-center justify-between">
                         <div className="flex items-center gap-3">
                             <FileCode className="w-4 h-4 text-blue-400" />
@@ -33,7 +33,7 @@ export function SnippetList({ snippets }: SnippetListProps) {
             ))}
 
             {!snippets?.length && (
-                <div className="p-12 text-center border border-dashed border-border rounded-xl bg-card/50">
+                <div className="p-12 text-center border border-dashed border-border rounded-3xl bg-card/50">
                     <Code2 className="w-8 h-8 text-muted-foreground mx-auto mb-3" />
                     <p className="text-muted-foreground">No code snippets saved.</p>
                 </div>

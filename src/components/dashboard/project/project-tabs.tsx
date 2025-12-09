@@ -2,6 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import { Layout, Box, Terminal, Book, Code2 } from "lucide-react";
+import { motion } from "framer-motion";
 
 export type TabId = 'overview' | 'stack' | 'prompts' | 'journal' | 'snippets';
 
@@ -20,26 +21,30 @@ export function ProjectTabs({ activeTab, onTabChange }: ProjectTabsProps) {
     ];
 
     return (
-        <div className="flex items-center gap-1 bg-[#121212] border border-white/5 rounded-xl p-1 mb-8 w-fit">
-            {tabs.map((tab) => {
-                const Icon = tab.icon;
-                const isActive = activeTab === tab.id;
-                return (
-                    <button
-                        key={tab.id}
-                        onClick={() => onTabChange(tab.id)}
-                        className={cn(
-                            "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all",
-                            isActive
-                                ? "bg-[#180260] text-white shadow-lg shadow-[#180260]/20"
-                                : "text-neutral-400 hover:text-white hover:bg-white/5"
-                        )}
-                    >
-                        <Icon className="w-4 h-4" />
-                        {tab.label}
-                    </button>
-                );
-            })}
+        <div className="flex items-center gap-1 p-1 rounded-full bg-neutral-100 dark:bg-white/5 border border-neutral-200 dark:border-white/5 mb-8 w-fit">
+            {tabs.map((tab) => (
+                <button
+                    key={tab.id}
+                    onClick={() => onTabChange(tab.id as TabId)}
+                    className={cn(
+                        "flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium transition-all relative",
+                        activeTab === tab.id
+                            ? "text-neutral-900 dark:text-white bg-white dark:bg-white/10 shadow-sm dark:shadow-none"
+                            : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-white/5"
+                    )}
+                >
+                    <tab.icon className={cn("w-4 h-4", activeTab === tab.id ? "text-indigo-600 dark:text-[#a78bfa]" : "opacity-70")} />
+                    {tab.label}
+                    {activeTab === tab.id && (
+                        <motion.div
+                            layoutId="active-tab"
+                            className="absolute inset-0 rounded-full bg-transparent border border-neutral-200 dark:border-white/10"
+                            initial={false}
+                            transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                        />
+                    )}
+                </button>
+            ))}
         </div>
     );
 }

@@ -69,13 +69,13 @@ export function StackTab({ project }: { project: Project }) {
     return (
         <div>
             <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                <h3 className="text-lg font-bold text-neutral-900 dark:text-white flex items-center gap-2">
                     <Layers className="w-5 h-5 text-[#a78bfa]" /> Technology Stack
                 </h3>
                 <div className="flex gap-2">
                     <button
                         onClick={handleAdd}
-                        className="text-xs bg-[#180260] text-white px-3 py-1.5 rounded-lg hover:bg-[#2a04a3] transition-colors shadow-lg shadow-[#180260]/20 font-medium flex items-center gap-1"
+                        className="text-xs bg-[#180260] text-white px-4 py-2 rounded-full hover:bg-[#2a04a3] transition-colors shadow-lg shadow-[#180260]/20 font-medium flex items-center gap-1"
                     >
                         <Plus className="w-3 h-3" /> Add Tech
                     </button>
@@ -84,19 +84,19 @@ export function StackTab({ project }: { project: Project }) {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {project.stack.map((item, i) => (
-                    <div key={i} className="relative p-4 rounded-xl bg-[#121212] border border-white/10 hover:border-white/20 transition-all group">
+                    <div key={i} className="relative p-5 rounded-3xl bg-white dark:bg-[#121212] border border-neutral-200 dark:border-white/10 hover:border-neutral-300 dark:hover:border-white/20 transition-all group shadow-sm dark:shadow-none">
 
                         <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                             <button
                                 onClick={() => handleEditItem(item, i)}
-                                className="p-1.5 rounded-md bg-white/5 text-neutral-400 hover:text-white hover:bg-white/10 transition-colors"
+                                className="p-1.5 rounded-full bg-neutral-100 dark:bg-white/5 text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-200 dark:hover:bg-white/10 transition-colors"
                                 title="Edit"
                             >
                                 <Pencil className="w-3 h-3" />
                             </button>
                             <button
                                 onClick={() => handleDelete(i)}
-                                className="p-1.5 rounded-md bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-colors"
+                                className="p-1.5 rounded-full bg-red-50 dark:bg-red-500/10 text-red-500 hover:bg-red-100 dark:hover:bg-red-500/20 transition-colors"
                                 title="Delete"
                             >
                                 <Trash2 className="w-3 h-3" />
@@ -104,22 +104,22 @@ export function StackTab({ project }: { project: Project }) {
                         </div>
 
                         <div className="flex items-start justify-between mb-3 pr-12">
-                            <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center text-white">
+                            <div className="w-10 h-10 rounded-2xl bg-neutral-100 dark:bg-white/5 flex items-center justify-center text-neutral-700 dark:text-white">
                                 <Box className="w-5 h-5" />
                             </div>
                             {item.version && (
-                                <span className="px-2 py-1 rounded bg-white/5 text-[10px] text-neutral-400 font-mono">
+                                <span className="px-2 py-1 rounded-full bg-neutral-100 dark:bg-white/5 text-[10px] text-neutral-500 dark:text-neutral-400 font-mono border border-neutral-200 dark:border-transparent">
                                     v{item.version}
                                 </span>
                             )}
                         </div>
-                        <h4 className="text-base font-bold text-white mb-1 group-hover:text-[#a78bfa] transition-colors">{item.name}</h4>
+                        <h4 className="text-base font-bold text-neutral-900 dark:text-white mb-1 group-hover:text-indigo-600 dark:group-hover:text-[#a78bfa] transition-colors">{item.name}</h4>
                         <div className="flex items-center justify-between">
                             <span className="text-[10px] font-bold tracking-wider text-neutral-500 uppercase">{item.type}</span>
                         </div>
                         {item.notes && (
-                            <div className="mt-3 pt-3 border-t border-white/5">
-                                <p className="text-xs text-neutral-500 leading-relaxed line-clamp-2">
+                            <div className="mt-3 pt-3 border-t border-neutral-100 dark:border-white/5">
+                                <p className="text-xs text-neutral-600 dark:text-neutral-500 leading-relaxed line-clamp-2">
                                     {item.notes}
                                 </p>
                             </div>
@@ -143,8 +143,8 @@ export function StackTab({ project }: { project: Project }) {
             />
 
             {/* Integrations & Configurations */}
-            <div className="mt-8 border-t border-white/5 pt-8">
-                <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+            <div className="mt-8 border-t border-neutral-200 dark:border-white/5 pt-8">
+                <h3 className="text-lg font-bold text-neutral-900 dark:text-white mb-4 flex items-center gap-2">
                     <Layers className="w-5 h-5 text-[#a78bfa]" /> Integrations
                 </h3>
 
@@ -153,9 +153,10 @@ export function StackTab({ project }: { project: Project }) {
                     {(project.firebaseConfig || project.stack.some(s => s.name.toLowerCase().includes('firebase'))) ? (
                         <FirebaseConfigCard project={project} />
                     ) : (
-                        <div className="p-6 rounded-2xl bg-[#121212] border border-dashed border-white/10 flex items-center justify-between">
+
+                        <div className="p-6 rounded-3xl bg-[#121212] border border-dashed border-white/10 flex items-center justify-between">
                             <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-lg bg-orange-500/10 flex items-center justify-center text-orange-500">
+                                <div className="w-10 h-10 rounded-2xl bg-orange-500/10 flex items-center justify-center text-orange-500">
                                     <Layers className="w-5 h-5" />
                                 </div>
                                 <div>
@@ -174,7 +175,7 @@ export function StackTab({ project }: { project: Project }) {
                                         await supabase.from('projects').update({ firebase_config: emptyConfig }).eq('id', project.id);
                                     }
                                 }}
-                                className="px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-xs text-white hover:bg-white/10 transition-colors font-medium"
+                                className="px-4 py-2 rounded-full bg-white/5 border border-white/10 text-xs text-white hover:bg-white/10 transition-colors font-medium"
                             >
                                 + Enable
                             </button>

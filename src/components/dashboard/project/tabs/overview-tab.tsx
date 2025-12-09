@@ -90,13 +90,13 @@ export function OverviewTab({ project }: { project: Project }) {
             {/* Column 1: Metadata & Secrets */}
             <div className="space-y-6">
                 {/* Metadata Card */}
-                <div className="p-6 rounded-2xl bg-[#121212] border border-white/10">
+                <div className="p-6 rounded-2xl bg-white dark:bg-[#121212] border border-neutral-200 dark:border-white/10 shadow-sm dark:shadow-none">
                     <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                        <h3 className="text-lg font-bold text-neutral-900 dark:text-white flex items-center gap-2">
                             <Globe className="w-5 h-5 text-[#a78bfa]" /> Metadata
                         </h3>
                         {!isEditing ? (
-                            <button onClick={() => setIsEditing(true)} className="text-neutral-500 hover:text-white transition-colors">
+                            <button onClick={() => setIsEditing(true)} className="text-neutral-400 hover:text-neutral-900 dark:text-neutral-500 dark:hover:text-white transition-colors">
                                 <Pencil className="w-4 h-4" />
                             </button>
                         ) : (
@@ -114,7 +114,7 @@ export function OverviewTab({ project }: { project: Project }) {
                     <div className="space-y-4">
                         <div>
                             <label className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-1 block">Status</label>
-                            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/5 border border-white/5 text-white capitalize text-sm">
+                            <div className="flex items-center gap-2 px-3 py-2 rounded-full bg-neutral-100 dark:bg-white/5 border border-neutral-200 dark:border-white/5 text-neutral-900 dark:text-white capitalize text-sm">
                                 <span className={cn("w-2 h-2 rounded-full",
                                     project.status === 'active' ? 'bg-green-500' :
                                         project.status === 'legacy' ? 'bg-orange-500' :
@@ -135,7 +135,7 @@ export function OverviewTab({ project }: { project: Project }) {
                                 />
                             ) : (
                                 project.repoUrl ? (
-                                    <a href={project.repoUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/5 border border-white/5 text-blue-400 hover:text-blue-300 hover:border-blue-500/30 transition-colors text-sm truncate">
+                                    <a href={project.repoUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-3 py-2 rounded-full bg-white/5 border border-white/5 text-blue-400 hover:text-blue-300 hover:border-blue-500/30 transition-colors text-sm truncate">
                                         <Github className="w-4 h-4 text-white" />
                                         <span className="truncate">{project.repoUrl.replace('https://github.com/', '')}</span>
                                         <ExternalLink className="w-3 h-3 ml-auto opacity-50" />
@@ -155,7 +155,7 @@ export function OverviewTab({ project }: { project: Project }) {
                                 />
                             ) : (
                                 project.liveUrl ? (
-                                    <a href={project.liveUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/5 border border-white/5 text-green-400 hover:text-green-300 hover:border-green-500/30 transition-colors text-sm truncate">
+                                    <a href={project.liveUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-3 py-2 rounded-full bg-white/5 border border-white/5 text-green-400 hover:text-green-300 hover:border-green-500/30 transition-colors text-sm truncate">
                                         <Globe className="w-4 h-4 text-white" />
                                         <span className="truncate">{project.liveUrl.replace('https://', '')}</span>
                                         <ExternalLink className="w-3 h-3 ml-auto opacity-50" />
@@ -169,7 +169,7 @@ export function OverviewTab({ project }: { project: Project }) {
 
                             <div className="grid grid-cols-2 gap-2">
                                 <div>
-                                    <label className="text-[10px] text-neutral-600 mb-1 block">Provider</label>
+                                    <label className="text-[10px] uppercase font-bold text-neutral-500 tracking-wider mb-1 block">Provider</label>
                                     {isEditing ? (
                                         <input
                                             value={editForm.deployProvider}
@@ -178,13 +178,13 @@ export function OverviewTab({ project }: { project: Project }) {
                                             placeholder="Vercel, AWS..."
                                         />
                                     ) : (
-                                        <div className="text-sm text-white font-medium">
-                                            {project.deployProvider || <span className="text-neutral-600 italic">--</span>}
+                                        <div className="text-sm text-neutral-900 dark:text-white font-medium">
+                                            {project.deployProvider || <span className="text-neutral-400 dark:text-neutral-600 italic">--</span>}
                                         </div>
                                     )}
                                 </div>
                                 <div>
-                                    <label className="text-[10px] text-neutral-600 mb-1 block">Account</label>
+                                    <label className="text-[10px] uppercase font-bold text-neutral-500 tracking-wider mb-1 block">Account</label>
                                     {isEditing ? (
                                         <input
                                             value={editForm.deployAccount}
@@ -193,8 +193,8 @@ export function OverviewTab({ project }: { project: Project }) {
                                             placeholder="user@example.com"
                                         />
                                     ) : (
-                                        <div className="text-sm text-neutral-400">
-                                            {project.deployAccount || <span className="text-neutral-600 italic">--</span>}
+                                        <div className="text-sm text-neutral-900 dark:text-neutral-400">
+                                            {project.deployAccount || <span className="text-neutral-400 dark:text-neutral-600 italic">--</span>}
                                         </div>
                                     )}
                                 </div>
@@ -205,11 +205,38 @@ export function OverviewTab({ project }: { project: Project }) {
                     </div>
                 </div>
 
+                {/* Project Metadata */}
+                <div className="p-6 rounded-3xl bg-white dark:bg-[#121212] border border-neutral-200 dark:border-white/10 shadow-sm dark:shadow-none h-full">
+                    <h3 className="text-lg font-bold text-neutral-900 dark:text-white flex items-center gap-2 mb-4">
+                        <Globe className="w-5 h-5 text-[#a78bfa]" /> Metadata
+                    </h3>
+                    <div className="space-y-4">
+                        <div className="p-3 rounded-2xl bg-neutral-50 dark:bg-white/5 border border-neutral-200 dark:border-white/5">
+                            <label className="text-[10px] uppercase font-bold text-neutral-500 tracking-wider mb-1 block">Project ID</label>
+                            <code className="text-xs text-neutral-700 dark:text-neutral-300 font-mono block break-all">{project.id}</code>
+                        </div>
+                        <div className="p-3 rounded-2xl bg-neutral-50 dark:bg-white/5 border border-neutral-200 dark:border-white/5">
+                            <label className="text-[10px] uppercase font-bold text-neutral-500 tracking-wider mb-1 block">Created At</label>
+                            <code className="text-xs text-neutral-700 dark:text-neutral-300 font-mono block">
+                                {new Date(project.createdAt).toLocaleDateString(undefined, { dateStyle: 'long' })}
+                            </code>
+                        </div>
+                        <div className="flex gap-2">
+                            <button className="flex-1 py-2 rounded-full bg-neutral-100 dark:bg-white/5 hover:bg-neutral-200 dark:hover:bg-white/10 text-xs font-medium text-neutral-700 dark:text-white transition-colors">
+                                Edit Metadata
+                            </button>
+                            <button className="flex-1 py-2 rounded-full bg-red-50 dark:bg-red-500/10 hover:bg-red-100 dark:hover:bg-red-500/20 text-xs font-medium text-red-600 dark:text-red-400 transition-colors">
+                                Archive
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
                 {/* Secrets Metadata */}
-                <div className="p-6 rounded-2xl bg-[#121212] border border-white/10">
-                    <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                <div className="p-6 rounded-3xl bg-white dark:bg-[#121212] border border-neutral-200 dark:border-white/10 shadow-sm dark:shadow-none">
+                    <h3 className="text-lg font-bold text-neutral-900 dark:text-white mb-4 flex items-center gap-2">
                         <Shield className="w-5 h-5 text-orange-400" /> Secrets Metadata
-                        <span className="text-[10px] bg-red-500/10 text-red-400 border border-red-500/20 px-2 py-0.5 rounded-full ml-auto">KEYS ONLY</span>
+                        <span className="text-[10px] bg-red-500/10 text-red-500 border border-red-500/20 px-2 py-0.5 rounded-full ml-auto">KEYS ONLY</span>
                     </h3>
                     <p className="text-xs text-neutral-500 mb-4">Store keys names only, never values.</p>
 
@@ -220,7 +247,7 @@ export function OverviewTab({ project }: { project: Project }) {
                                     <Key className="w-3 h-3 text-neutral-500" />
                                     <code className="text-xs text-neutral-300 truncate">{secret.key}</code>
                                 </div>
-                                <span className="text-[10px] text-neutral-500 px-1.5 py-0.5 rounded bg-black/30 border border-white/5">{secret.environment}</span>
+                                <span className="text-[10px] text-neutral-500 px-2 py-0.5 rounded-full bg-black/30 border border-white/5">{secret.environment}</span>
                             </div>
                         ))}
                         {!project.secrets?.length && (
@@ -231,7 +258,7 @@ export function OverviewTab({ project }: { project: Project }) {
                 </div>
 
                 {/* Danger Zone */}
-                <div className="p-6 rounded-2xl bg-[#121212] border border-red-500/20">
+                <div className="p-6 rounded-2xl bg-white dark:bg-[#121212] border border-red-500/20 shadow-sm dark:shadow-none">
                     <h3 className="text-lg font-bold text-red-500 mb-4 flex items-center gap-2">
                         <Shield className="w-5 h-5" /> Danger Zone
                     </h3>
@@ -248,111 +275,98 @@ export function OverviewTab({ project }: { project: Project }) {
             </div>
 
             {/* Delete Confirmation Modal */}
-            {isDeleteModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-                    <div className="w-full max-w-md bg-[#0a0a0a] border border-white/10 rounded-2xl p-6 shadow-2xl">
-                        <h3 className="text-xl font-bold text-white mb-2">Delete Project?</h3>
-                        <p className="text-neutral-400 text-sm mb-6">
-                            This action cannot be undone. This will permanently delete the
-                            project <span className="text-white font-mono">{project.name}</span> and remove all associated data.
-                        </p>
+            {
+                isDeleteModalOpen && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+                        <div className="w-full max-w-md bg-[#0a0a0a] border border-white/10 rounded-2xl p-6 shadow-2xl">
+                            <h3 className="text-xl font-bold text-white mb-2">Delete Project?</h3>
+                            <p className="text-neutral-400 text-sm mb-6">
+                                This action cannot be undone. This will permanently delete the
+                                project <span className="text-white font-mono">{project.name}</span> and remove all associated data.
+                            </p>
 
-                        <div className="mb-6">
-                            <label className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-2 block">
-                                Type <span className="text-white normal-case">"{project.name}"</span> to confirm
-                            </label>
-                            <input
-                                type="text"
-                                value={deleteConfirmation}
-                                onChange={(e) => setDeleteConfirmation(e.target.value)}
-                                className="w-full bg-black/50 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-red-500 transition-colors font-mono text-sm"
-                                placeholder={project.name}
-                                autoFocus
-                            />
-                        </div>
+                            <div className="mb-6">
+                                <label className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-2 block">
+                                    Type <span className="text-white normal-case">"{project.name}"</span> to confirm
+                                </label>
+                                <input
+                                    type="text"
+                                    value={deleteConfirmation}
+                                    onChange={(e) => setDeleteConfirmation(e.target.value)}
+                                    className="w-full bg-black/50 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-red-500 transition-colors font-mono text-sm"
+                                    placeholder={project.name}
+                                    autoFocus
+                                />
+                            </div>
 
-                        <div className="flex gap-3">
-                            <button
-                                onClick={() => { setIsDeleteModalOpen(false); setDeleteConfirmation(""); }}
-                                className="flex-1 py-3 rounded-lg bg-white/5 border border-white/5 text-white hover:bg-white/10 transition-colors font-medium"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={handleDelete}
-                                disabled={deleteConfirmation !== project.name}
-                                className={cn("flex-1 py-3 rounded-lg border transition-colors font-medium",
-                                    deleteConfirmation === project.name
-                                        ? "bg-red-500 border-red-500 text-white hover:bg-red-600"
-                                        : "bg-white/5 border-white/5 text-neutral-500 cursor-not-allowed"
-                                )}
-                            >
-                                Delete
-                            </button>
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={() => { setIsDeleteModalOpen(false); setDeleteConfirmation(""); }}
+                                    className="flex-1 py-3 rounded-lg bg-white/5 border border-white/5 text-white hover:bg-white/10 transition-colors font-medium"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleDelete}
+                                    disabled={deleteConfirmation !== project.name}
+                                    className={cn("flex-1 py-3 rounded-lg border transition-colors font-medium",
+                                        deleteConfirmation === project.name
+                                            ? "bg-red-500 border-red-500 text-white hover:bg-red-600"
+                                            : "bg-white/5 border-white/5 text-neutral-500 cursor-not-allowed"
+                                    )}
+                                >
+                                    Delete
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
+                )
+            }
 
             {/* Column 2 & 3: Service Locker */}
             <div className="md:col-span-2 space-y-6">
                 {/* To-Do List */}
                 <TodoListCard project={project} />
 
-                <div className="p-6 rounded-2xl bg-[#121212] border border-white/10">
+                <div className="p-6 rounded-3xl bg-white dark:bg-[#121212] border border-neutral-200 dark:border-white/10 shadow-sm dark:shadow-none">
                     <div className="flex items-center justify-between mb-6">
-                        <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                        <h3 className="text-lg font-bold text-neutral-900 dark:text-white flex items-center gap-2">
                             <Server className="w-5 h-5 text-blue-400" /> Service Locker
                         </h3>
-                        <button onClick={() => setIsServiceModalOpen(true)} className="text-xs bg-[#180260] text-white px-3 py-1.5 rounded-lg hover:bg-[#2a04a3] transition-colors shadow-lg shadow-[#180260]/20 font-medium">
+                        <button onClick={() => setIsServiceModalOpen(true)} className="text-xs bg-[#180260] text-white px-4 py-2 rounded-full hover:bg-[#2a04a3] transition-colors shadow-lg shadow-[#180260]/20 font-medium">
                             + Add Service
                         </button>
                     </div>
 
                     <p className="text-sm text-neutral-400 mb-6">Track accounts and emails. Avoid the "which account did I use?" panic.</p>
 
-                    <ServiceModal
-                        isOpen={isServiceModalOpen}
-                        onClose={() => setIsServiceModalOpen(false)}
-                        onSave={handleAddService}
-                    />
-
-                    <div className="grid gap-4 max-h-[300px] overflow-y-auto custom-scrollbar pr-2">
+                    <div className="grid grid-cols-1 gap-3">
                         {project.services?.map((service, i) => (
-                            <div key={i} className="flex items-center gap-4 p-4 rounded-xl bg-white/5 border border-white/5 hover:border-white/10 transition-colors group">
-                                <div className="w-10 h-10 rounded-lg bg-[#180260]/10 flex items-center justify-center text-[#a78bfa]">
-                                    <Server className="w-5 h-5" />
-                                </div>
-                                <div className="flex-1">
-                                    <div className="flex items-center gap-2 mb-1">
-                                        <h4 className="font-bold text-white text-sm">{service.provider}</h4>
-                                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-white/10 text-neutral-400">{service.status}</span>
+                            <div key={i} className="flex items-center justify-between p-4 rounded-2xl bg-neutral-50 dark:bg-white/5 border border-neutral-200 dark:border-white/5 group hover:border-blue-500/30 transition-colors">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-500">
+                                        <Globe className="w-5 h-5" />
                                     </div>
-                                    <p className="text-xs text-neutral-400">{service.name}</p>
+                                    <div>
+                                        <h4 className="text-sm font-bold text-neutral-900 dark:text-white">{service.name}</h4>
+                                        <a href={service.url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-400 hover:underline">{service.url}</a>
+                                    </div>
                                 </div>
-
-                                <div className="hidden md:block py-1 px-3 rounded-lg bg-black/20 text-neutral-300 text-xs border border-white/5">
-                                    <span className="text-neutral-500 text-[10px] uppercase font-bold mr-2">Identity Used</span>
-                                    {service.account}
-                                </div>
-
-                                <div className="text-sm font-mono text-neutral-500">
-                                    {service.cost}
+                                <div className="text-right">
+                                    <div className="text-xs text-neutral-500 mb-1">{service.username}</div>
+                                    <div className="flex gap-2 justify-end opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <button className="p-1.5 hover:bg-white/10 rounded-full text-neutral-400 hover:text-white transition-colors">
+                                            <Copy className="w-3 h-3" />
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         ))}
-                        {!project.services?.length && (
-                            <div className="p-12 text-center border border-dashed border-white/10 rounded-xl">
-                                <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-3">
-                                    <Server className="w-6 h-6 text-neutral-600" />
-                                </div>
-                                <h4 className="text-white font-medium mb-1">No Services Linked</h4>
-                                <p className="text-sm text-neutral-500">Start tracking your infrastructure accounts.</p>
-                            </div>
-                        )}
                     </div>
                 </div>
+
             </div>
-        </div>
+        </div >
     );
 }
+

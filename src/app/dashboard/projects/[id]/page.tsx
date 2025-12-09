@@ -42,15 +42,15 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
 
     return (
         <div className="max-w-5xl mx-auto pb-20">
-            <Link href="/dashboard" className="inline-flex items-center gap-2 text-neutral-400 hover:text-white mb-8 transition-colors">
+            <Link href="/dashboard" className="inline-flex items-center gap-2 text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white mb-8 transition-colors">
                 <ArrowLeft className="w-4 h-4" /> Back to Dashboard
             </Link>
 
             {/* Header */}
             <div className="flex items-start justify-between mb-8">
                 <div>
-                    <h1 className="text-4xl font-bold text-white mb-2">{project.name}</h1>
-                    <p className="text-xl text-neutral-400">{project.description}</p>
+                    <h1 className="text-4xl font-bold text-neutral-900 dark:text-white mb-2">{project.name}</h1>
+                    <p className="text-xl text-neutral-600 dark:text-neutral-400">{project.description}</p>
                 </div>
                 <div className="flex items-center gap-3">
                     <button

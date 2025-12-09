@@ -16,8 +16,15 @@ export function FirebaseConfigCard({ project }: { project: Project }) {
         appId: project.firebaseConfig?.appId || ""
     });
 
+    const [visibleKeys, setVisibleKeys] = useState<Record<string, boolean>>({});
+
     const handleChange = (key: keyof FirebaseConfig, value: string) => {
         setConfig(prev => ({ ...prev, [key]: value }));
+        setIsEditing(true);
+    };
+
+    const toggleVisibility = (key: string) => {
+        setVisibleKeys(prev => ({ ...prev, [key]: !prev[key] }));
     };
 
     const handleSave = async () => {
@@ -41,57 +48,51 @@ export function FirebaseConfigCard({ project }: { project: Project }) {
     };
 
     return (
-        <div className="p-6 rounded-2xl bg-[#121212] border border-orange-500/20 shadow-lg shadow-orange-900/10">
+        <div className="p-6 rounded-2xl bg-white dark:bg-[#121212] border border-neutral-200 dark:border-white/10 shadow-sm dark:shadow-none">
             <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                    <Flame className="w-5 h-5 text-orange-500" /> Firebase Configuration
-                </h3>
-                {!isEditing ? (
-                    <button onClick={() => setIsEditing(true)} className="text-neutral-500 hover:text-white transition-colors">
-                        <Pencil className="w-4 h-4" />
-                    </button>
-                ) : (
-                    <div className="flex gap-2">
-                        <button onClick={() => setIsEditing(false)} className="text-red-400 hover:text-red-300">
-                            <X className="w-4 h-4" />
-                        </button>
-                        <button onClick={handleSave} className="text-green-400 hover:text-green-300">
-                            <Save className="w-4 h-4" />
-                        </button>
+                <h3 className="text-lg font-bold text-neutral-900 dark:text-white flex items-center gap-2">
+                    <div className="w-8 h-8 rounded bg-orange-500/10 flex items-center justify-center">
+                        <Flame className="w-5 h-5 text-orange-500" />
                     </div>
+                    Firebase Configuration
+                </h3>
+                {isEditing && (
+                    <button
+                        onClick={handleSave}
+                        className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 text-xs font-medium transition-colors"
+                    >
+                        <Save className="w-3 h-3" />
+                        Save Changes
+                    </button>
                 )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* API Key */}
-                <div className="col-span-1 md:col-span-2 space-y-1">
-                    <label className="text-[10px] uppercase font-bold text-neutral-500 tracking-wider">apiKey</label>
-                    {isEditing ? (
-                        <input
-                            value={config.apiKey}
-                            onChange={(e) => handleChange('apiKey', e.target.value)}
-                            className="w-full bg-black/30 border border-white/10 rounded-lg px-3 py-2 text-xs text-mono text-white focus:outline-none focus:border-orange-500"
-                        />
-                    ) : (
-                        <div className="flex items-center justify-between bg-white/5 border border-white/5 rounded-lg px-3 py-2">
-                            <code className="text-xs text-neutral-300 font-mono truncate">{config.apiKey || "Not set"}</code>
-                            {config.apiKey && (
-                                <button onClick={() => copyToClipboard(config.apiKey)} className="text-neutral-600 hover:text-white ml-2">
-                                    <Copy className="w-3 h-3" />
-                                </button>
-                            )}
+                {Object.entries(config).map(([key, value]) => (
+                    <div key={key}>
+                        <label className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-1 block">
+                            {key.replace(/([A-Z])/g, ' $1').trim()}
+                        </label>
+                        <div className="relative group">
+                            <input
+                                type={visibleKeys[key] ? "text" : "password"}
+                                value={value}
+                                onChange={(e) => handleChange(key as keyof FirebaseConfig, e.target.value)}
+                                className="w-full bg-neutral-100 dark:bg-black/20 border border-neutral-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-neutral-900 dark:text-white focus:outline-none focus:border-orange-500 transition-colors font-mono"
+                                placeholder={`Enter ${key}...`}
+                            />
+                            <button
+                                onClick={() => toggleVisibility(key)}
+                                className="absolute right-2 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-neutral-700 dark:hover:text-white transition-colors opacity-0 group-hover:opacity-100"
+                            >
+                                {visibleKeys[key] ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+                            </button>
                         </div>
-                    )}
-                </div>
-
-                <ConfigField label="authDomain" field="authDomain" value={config.authDomain} isEditing={isEditing} onChange={handleChange} onCopy={copyToClipboard} />
-                <ConfigField label="projectId" field="projectId" value={config.projectId} isEditing={isEditing} onChange={handleChange} onCopy={copyToClipboard} />
-                <ConfigField label="storageBucket" field="storageBucket" value={config.storageBucket} isEditing={isEditing} onChange={handleChange} onCopy={copyToClipboard} />
-                <ConfigField label="messagingSenderId" field="messagingSenderId" value={config.messagingSenderId} isEditing={isEditing} onChange={handleChange} onCopy={copyToClipboard} />
-                <ConfigField label="appId" field="appId" value={config.appId} isEditing={isEditing} onChange={handleChange} onCopy={copyToClipboard} />
+                    </div>
+                ))}
             </div>
 
-            <div className="mt-4 pt-4 border-t border-white/5 text-center">
+            <div className="mt-4 pt-4 border-t border-neutral-200 dark:border-white/5 text-center">
                 <p className="text-[10px] text-neutral-600">
                     This configuration is stored in your project database. Ensure appropriate RLS policies are active in production.
                 </p>

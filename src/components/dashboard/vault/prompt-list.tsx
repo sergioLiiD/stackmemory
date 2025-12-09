@@ -16,7 +16,7 @@ export function PromptList({ prompts }: PromptListProps) {
     return (
         <div className="space-y-6">
             {prompts?.map((prompt) => (
-                <div key={prompt.id} className="group rounded-2xl bg-card border border-border overflow-hidden hover:border-primary/50 transition-colors">
+                <div key={prompt.id} className="group rounded-3xl bg-card border border-border overflow-hidden hover:border-primary/50 transition-colors">
                     <div className="p-4 border-b border-border flex items-center justify-between bg-muted/30">
                         <div>
                             <h4 className="font-bold text-foreground text-sm mb-1">{prompt.title}</h4>
@@ -27,7 +27,7 @@ export function PromptList({ prompts }: PromptListProps) {
                         <div className="flex items-center gap-2">
                             <button
                                 onClick={() => copyToClipboard(prompt.prompt)}
-                                className="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+                                className="p-2 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
                                 title="Copy Prompt"
                             >
                                 <Copy className="w-4 h-4" />
@@ -43,7 +43,7 @@ export function PromptList({ prompts }: PromptListProps) {
             ))}
 
             {!prompts?.length && (
-                <div className="p-12 text-center border border-dashed border-border rounded-xl bg-card/50">
+                <div className="p-12 text-center border border-dashed border-border rounded-3xl bg-card/50">
                     <Wand2 className="w-8 h-8 text-muted-foreground mx-auto mb-3" />
                     <h4 className="text-foreground font-medium mb-1">Vault Empty</h4>
                     <p className="text-sm text-muted-foreground">Save your best prompts here to reuse them later.</p>

@@ -55,9 +55,9 @@ export function TodoListCard({ project }: { project: Project }) {
     const completedCount = tasks.filter(t => t.completed).length;
 
     return (
-        <div className="p-5 rounded-2xl bg-[#121212] border border-white/10 flex flex-col">
+        <div className="p-5 rounded-2xl bg-white dark:bg-[#121212] border border-neutral-200 dark:border-white/10 flex flex-col shadow-sm dark:shadow-none">
             <div className="flex items-center justify-between mb-3">
-                <h3 className="text-base font-bold text-white flex items-center gap-2">
+                <h3 className="text-base font-bold text-neutral-900 dark:text-white flex items-center gap-2">
                     <ListTodo className="w-4 h-4 text-emerald-400" />
                     Pending Tasks
                 </h3>
@@ -73,12 +73,12 @@ export function TodoListCard({ project }: { project: Project }) {
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
                     placeholder="Add a new task..."
-                    className="flex-1 bg-black/30 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-emerald-500 placeholder:text-neutral-600"
+                    className="flex-1 bg-neutral-100 dark:bg-black/30 border border-neutral-200 dark:border-white/10 rounded-full px-4 py-2 text-xs text-neutral-900 dark:text-white focus:outline-none focus:border-emerald-500 placeholder:text-neutral-500 dark:placeholder:text-neutral-600 transition-all"
                 />
                 <button
                     type="submit"
                     disabled={!inputValue.trim()}
-                    className="p-1.5 bg-emerald-500/10 text-emerald-500 rounded-lg hover:bg-emerald-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="p-2 bg-emerald-500/10 text-emerald-500 rounded-full hover:bg-emerald-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-colors aspect-square flex items-center justify-center border border-transparent hover:border-emerald-500/20"
                 >
                     <Plus className="w-4 h-4" />
                 </button>
@@ -89,29 +89,29 @@ export function TodoListCard({ project }: { project: Project }) {
                     <div
                         key={task.id}
                         className={cn(
-                            "group flex items-center gap-3 p-3 rounded-xl border transition-all",
+                            "group flex items-center gap-3 p-3 rounded-2xl border transition-all",
                             task.completed
-                                ? "bg-white/5 border-transparent opacity-60"
-                                : "bg-[#181818] border-white/5 hover:border-white/10"
+                                ? "bg-neutral-100 dark:bg-white/5 border-transparent opacity-60"
+                                : "bg-white dark:bg-[#181818] border-neutral-200 dark:border-white/5 hover:border-neutral-300 dark:hover:border-white/10 shadow-sm dark:shadow-none"
                         )}
                     >
                         <button
                             onClick={() => toggleTask(task.id)}
-                            className={cn("shrink-0 transition-colors", task.completed ? "text-emerald-500" : "text-neutral-500 hover:text-white")}
+                            className={cn("shrink-0 transition-colors rounded-full p-0.5", task.completed ? "text-emerald-500" : "text-neutral-400 hover:text-neutral-600 dark:text-neutral-500 dark:hover:text-white")}
                         >
                             {task.completed ? <CheckSquare className="w-5 h-5" /> : <Square className="w-5 h-5" />}
                         </button>
 
                         <span className={cn(
                             "flex-1 text-sm transition-all break-all",
-                            task.completed ? "text-neutral-500 line-through" : "text-neutral-300"
+                            task.completed ? "text-neutral-400 dark:text-neutral-500 line-through" : "text-neutral-700 dark:text-neutral-300"
                         )}>
                             {task.text}
                         </span>
 
                         <button
                             onClick={() => deleteTask(task.id)}
-                            className="opacity-0 group-hover:opacity-100 text-neutral-600 hover:text-red-400 transition-all p-1"
+                            className="opacity-0 group-hover:opacity-100 text-neutral-600 hover:text-red-400 transition-all p-2 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-full"
                         >
                             <Trash2 className="w-4 h-4" />
                         </button>
