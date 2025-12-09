@@ -71,6 +71,11 @@ export interface Task {
     completed: boolean;
 }
 
+export interface DesignSystem {
+    colors: { name: string; value: string }[];
+    fonts: { name: string; type: 'sans' | 'serif' | 'mono' | 'display' }[];
+}
+
 export interface Project {
     id: string;
     name: string;

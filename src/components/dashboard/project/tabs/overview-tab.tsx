@@ -8,6 +8,8 @@ import { supabase } from "@/lib/supabase";
 import { ServiceModal } from "./service-modal";
 import { TodoListCard } from "./todo-list-card";
 import { HealthBar } from "../health-bar";
+import { ProjectCommandsCard } from "./project-commands-card";
+import { DesignSystemCard } from "./design-system-card";
 
 
 import { useRouter } from "next/navigation";
@@ -224,6 +226,14 @@ export function OverviewTab({ project }: { project: Project }) {
                     </div>
                 </div>
 
+
+
+                {/* Design System Assets */}
+                <DesignSystemCard project={project} />
+
+                {/* Command Zone (Cheatsheet) */}
+                <ProjectCommandsCard project={project} />
+
                 {/* Danger Zone */}
                 <div className="p-6 rounded-2xl bg-white dark:bg-[#121212] border border-red-500/20 shadow-sm dark:shadow-none">
                     <h3 className="text-lg font-bold text-red-500 mb-4 flex items-center gap-2">
@@ -239,7 +249,7 @@ export function OverviewTab({ project }: { project: Project }) {
                         Delete Project
                     </button>
                 </div>
-            </div>
+            </div >
 
             {/* Delete Confirmation Modal */}
             {
@@ -470,6 +480,12 @@ export function OverviewTab({ project }: { project: Project }) {
                 </div>
 
             </div>
+
+            <ServiceModal
+                isOpen={isServiceModalOpen}
+                onClose={() => setIsServiceModalOpen(false)}
+                onSave={handleAddService}
+            />
         </div >
     );
 }
