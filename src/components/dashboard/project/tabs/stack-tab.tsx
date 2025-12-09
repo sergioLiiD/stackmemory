@@ -7,6 +7,7 @@ import { useDashboard } from "../../dashboard-context";
 import { supabase } from "@/lib/supabase";
 import { StackModal } from "./stack-modal";
 import { FirebaseConfigCard } from "./firebase-card";
+import { useEffect } from "react";
 
 export function StackTab({ project }: { project: Project }) {
     const { updateProject } = useDashboard();
@@ -15,6 +16,39 @@ export function StackTab({ project }: { project: Project }) {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingItem, setEditingItem] = useState<StackItem | null>(null);
     const [editingIndex, setEditingIndex] = useState<number | null>(null);
+    const [updates, setUpdates] = useState<{ [key: string]: string }>({});
+
+    // Check for updates
+    useEffect(() => {
+        const checkUpdates = async () => {
+            if (!project.stack.length) return;
+            const packages = project.stack
+                .filter(item => item.version)
+                .map(item => ({ name: item.name, version: item.version }));
+
+            if (packages.length === 0) return;
+
+            try {
+                const res = await fetch('/api/stack/check-updates', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ packages })
+                });
+                const data = await res.json();
+                if (data.updates) {
+                    const updateMap: { [key: string]: string } = {};
+                    data.updates.forEach((u: any) => {
+                        updateMap[u.name.toLowerCase()] = u.latest;
+                    });
+                    setUpdates(updateMap);
+                }
+            } catch (error) {
+                console.error("Failed to check updates", error);
+            }
+        };
+
+        checkUpdates();
+    }, [project.stack]);
 
     // Helper to persist changes
     const saveStack = async (newStack: StackItem[]) => {
@@ -104,11 +138,17 @@ export function StackTab({ project }: { project: Project }) {
                         </div>
 
                         <div className="flex items-start justify-between mb-3 pr-12">
-                            <div className="w-10 h-10 rounded-2xl bg-neutral-100 dark:bg-white/5 flex items-center justify-center text-neutral-700 dark:text-white">
+                            <div className="w-10 h-10 rounded-2xl bg-neutral-100 dark:bg-white/5 flex items-center justify-center text-neutral-700 dark:text-white relative">
                                 <Box className="w-5 h-5" />
+                                {updates[item.name.toLowerCase()] && (
+                                    <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white dark:border-[#121212]" title={`Update available: v${updates[item.name.toLowerCase()]}`} />
+                                )}
                             </div>
                             {item.version && (
-                                <span className="px-2 py-1 rounded-full bg-neutral-100 dark:bg-white/5 text-[10px] text-neutral-500 dark:text-neutral-400 font-mono border border-neutral-200 dark:border-transparent">
+                                <span className={`px-2 py-1 rounded-full text-[10px] font-mono border ${updates[item.name.toLowerCase()]
+                                    ? 'bg-red-500/10 text-red-500 border-red-500/20'
+                                    : 'bg-neutral-100 dark:bg-white/5 text-neutral-500 dark:text-neutral-400 border-neutral-200 dark:border-transparent'
+                                    }`}>
                                     v{item.version}
                                 </span>
                             )}
@@ -116,6 +156,11 @@ export function StackTab({ project }: { project: Project }) {
                         <h4 className="text-base font-bold text-neutral-900 dark:text-white mb-1 group-hover:text-indigo-600 dark:group-hover:text-[#a78bfa] transition-colors">{item.name}</h4>
                         <div className="flex items-center justify-between">
                             <span className="text-[10px] font-bold tracking-wider text-neutral-500 uppercase">{item.type}</span>
+                            {updates[item.name.toLowerCase()] && (
+                                <span className="text-[10px] font-bold text-red-400 animate-pulse">
+                                    Latest: v{updates[item.name.toLowerCase()]}
+                                </span>
+                            )}
                         </div>
                         {item.notes && (
                             <div className="mt-3 pt-3 border-t border-neutral-100 dark:border-white/5">
