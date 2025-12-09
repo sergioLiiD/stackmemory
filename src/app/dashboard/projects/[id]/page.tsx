@@ -14,7 +14,6 @@ import { PromptVaultTab } from "@/components/dashboard/project/tabs/prompt-vault
 import { JournalTab, SnippetsTab } from "@/components/dashboard/project/tabs/journal-tab";
 import { AssistantTab } from "@/components/dashboard/project/tabs/assistant-tab";
 
-import { ContextWeaverModal } from "@/components/dashboard/context-weaver/context-weaver-modal";
 import { BrainCircuit } from "lucide-react";
 
 export default function ProjectDetailsPage({ params }: { params: Promise<{ id: string }> }) {
@@ -23,7 +22,6 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
     const router = useRouter();
     const [project, setProject] = useState<Project | null>(null);
     const [activeTab, setActiveTab] = useState<TabId>('overview');
-    const [isWeaverOpen, setIsWeaverOpen] = useState(false);
 
     useEffect(() => {
         const found = projects.find(p => p.id === unwrappedParams.id);
@@ -55,7 +53,7 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
                 </div>
                 <div className="flex items-center gap-3">
                     <button
-                        onClick={() => setIsWeaverOpen(true)}
+                        onClick={() => setActiveTab('prompts')}
                         className="flex items-center gap-2 px-4 py-2 rounded-full bg-[#180260] border border-[#a78bfa]/30 text-[#a78bfa] font-medium hover:bg-[#a78bfa] hover:text-[#180260] transition-all shadow-lg shadow-[#180260]/20"
                     >
                         <BrainCircuit className="w-4 h-4" />
@@ -80,13 +78,6 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
                 {activeTab === 'snippets' && <SnippetsTab project={project} />}
                 {activeTab === 'assistant' && <AssistantTab project={project} />}
             </div>
-
-            {/* Context Weaver Modal */}
-            <ContextWeaverModal
-                isOpen={isWeaverOpen}
-                onClose={() => setIsWeaverOpen(false)}
-                project={project}
-            />
 
         </div>
     );

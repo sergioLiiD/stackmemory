@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { Layout, Box, Terminal, Book, Code2, Sparkles } from "lucide-react";
+import { Layout, Box, Terminal, Book, Code2, Sparkles, Waves } from "lucide-react";
 import { motion } from "framer-motion";
 
 export type TabId = 'overview' | 'stack' | 'prompts' | 'journal' | 'snippets' | 'assistant';
@@ -15,7 +15,7 @@ export function ProjectTabs({ activeTab, onTabChange }: ProjectTabsProps) {
     const tabs: { id: TabId; label: string; icon: any }[] = [
         { id: 'overview', label: 'Overview', icon: Layout },
         { id: 'stack', label: 'Stack', icon: Box },
-        { id: 'prompts', label: 'Prompt Vault', icon: Terminal },
+        { id: 'prompts', label: 'Context Weaver', icon: Waves }, // Renamed from Prompt Vault
         { id: 'journal', label: 'Journal', icon: Book },
         { id: 'snippets', label: 'Snippets', icon: Code2 },
         { id: 'assistant', label: 'Vibe Coder', icon: Sparkles },

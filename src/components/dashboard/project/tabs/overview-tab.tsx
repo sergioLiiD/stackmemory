@@ -112,121 +112,7 @@ export function OverviewTab({ project }: { project: Project }) {
 
             {/* Column 1: Metadata & Secrets */}
             <div className="space-y-6">
-                {/* Metadata Card */}
-                <div className="p-6 rounded-2xl bg-white dark:bg-[#121212] border border-neutral-200 dark:border-white/10 shadow-sm dark:shadow-none">
-                    <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-lg font-bold text-neutral-900 dark:text-white flex items-center gap-2">
-                            <Globe className="w-5 h-5 text-[#a78bfa]" /> Metadata
-                        </h3>
-                        {!isEditing ? (
-                            <button onClick={() => setIsEditing(true)} className="text-neutral-400 hover:text-neutral-900 dark:text-neutral-500 dark:hover:text-white transition-colors">
-                                <Pencil className="w-4 h-4" />
-                            </button>
-                        ) : (
-                            <div className="flex gap-2">
-                                <button onClick={() => setIsEditing(false)} className="text-red-400 hover:text-red-300">
-                                    <X className="w-4 h-4" />
-                                </button>
-                                <button onClick={handleSave} className="text-green-400 hover:text-green-300">
-                                    <Check className="w-4 h-4" />
-                                </button>
-                            </div>
-                        )}
-                    </div>
 
-                    <div className="space-y-4">
-                        <div>
-                            <label className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-1 block">Status</label>
-                            <div className="flex items-center gap-2 px-3 py-2 rounded-full bg-neutral-100 dark:bg-white/5 border border-neutral-200 dark:border-white/5 text-neutral-900 dark:text-white capitalize text-sm">
-                                <span className={cn("w-2 h-2 rounded-full",
-                                    project.status === 'active' ? 'bg-green-500' :
-                                        project.status === 'legacy' ? 'bg-orange-500' :
-                                            'bg-neutral-500'
-                                )} />
-                                {project.status}
-                            </div>
-                        </div>
-
-                        <div>
-                            <label className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-1 block">Repository</label>
-                            {isEditing ? (
-                                <input
-                                    value={editForm.repoUrl}
-                                    onChange={(e) => setEditForm(prev => ({ ...prev, repoUrl: e.target.value }))}
-                                    className="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500"
-                                    placeholder="https://github.com/..."
-                                />
-                            ) : (
-                                project.repoUrl ? (
-                                    <a href={project.repoUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-3 py-2 rounded-full bg-white/5 border border-white/5 text-blue-400 hover:text-blue-300 hover:border-blue-500/30 transition-colors text-sm truncate">
-                                        <Github className="w-4 h-4 text-white" />
-                                        <span className="truncate">{project.repoUrl.replace('https://github.com/', '')}</span>
-                                        <ExternalLink className="w-3 h-3 ml-auto opacity-50" />
-                                    </a>
-                                ) : <div className="text-neutral-600 text-sm px-3 py-2">Not connected</div>
-                            )}
-                        </div>
-
-                        <div>
-                            <label className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-1 block">Live URL</label>
-                            {isEditing ? (
-                                <input
-                                    value={editForm.liveUrl}
-                                    onChange={(e) => setEditForm(prev => ({ ...prev, liveUrl: e.target.value }))}
-                                    className="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-green-500"
-                                    placeholder="https://..."
-                                />
-                            ) : (
-                                project.liveUrl ? (
-                                    <a href={project.liveUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-3 py-2 rounded-full bg-white/5 border border-white/5 text-green-400 hover:text-green-300 hover:border-green-500/30 transition-colors text-sm truncate">
-                                        <Globe className="w-4 h-4 text-white" />
-                                        <span className="truncate">{project.liveUrl.replace('https://', '')}</span>
-                                        <ExternalLink className="w-3 h-3 ml-auto opacity-50" />
-                                    </a>
-                                ) : <div className="text-neutral-600 text-sm px-3 py-2">Not deployed</div>
-                            )}
-                        </div>
-
-                        <div className="pt-2 border-t border-white/5">
-                            <label className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-2 block">Deployment</label>
-
-                            <div className="grid grid-cols-2 gap-2">
-                                <div>
-                                    <label className="text-[10px] uppercase font-bold text-neutral-500 tracking-wider mb-1 block">Provider</label>
-                                    {isEditing ? (
-                                        <input
-                                            value={editForm.deployProvider}
-                                            onChange={(e) => setEditForm(prev => ({ ...prev, deployProvider: e.target.value }))}
-                                            className="w-full bg-black/20 border border-white/10 rounded-lg px-2 py-1.5 text-xs text-white focus:outline-none focus:border-[#a78bfa]"
-                                            placeholder="Vercel, AWS..."
-                                        />
-                                    ) : (
-                                        <div className="text-sm text-neutral-900 dark:text-white font-medium">
-                                            {project.deployProvider || <span className="text-neutral-400 dark:text-neutral-600 italic">--</span>}
-                                        </div>
-                                    )}
-                                </div>
-                                <div>
-                                    <label className="text-[10px] uppercase font-bold text-neutral-500 tracking-wider mb-1 block">Account</label>
-                                    {isEditing ? (
-                                        <input
-                                            value={editForm.deployAccount}
-                                            onChange={(e) => setEditForm(prev => ({ ...prev, deployAccount: e.target.value }))}
-                                            className="w-full bg-black/20 border border-white/10 rounded-lg px-2 py-1.5 text-xs text-white focus:outline-none focus:border-[#a78bfa]"
-                                            placeholder="user@example.com"
-                                        />
-                                    ) : (
-                                        <div className="text-sm text-neutral-900 dark:text-neutral-400">
-                                            {project.deployAccount || <span className="text-neutral-400 dark:text-neutral-600 italic">--</span>}
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-
-
-                    </div>
-                </div>
 
 
 
@@ -405,6 +291,122 @@ export function OverviewTab({ project }: { project: Project }) {
 
             {/* Column 2 & 3: Service Locker */}
             <div className="md:col-span-2 space-y-6">
+                {/* Metadata Card (Moved) */}
+                <div className="p-6 rounded-2xl bg-white dark:bg-[#121212] border border-neutral-200 dark:border-white/10 shadow-sm dark:shadow-none">
+                    <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-lg font-bold text-neutral-900 dark:text-white flex items-center gap-2">
+                            <Globe className="w-5 h-5 text-[#a78bfa]" /> Metadata
+                        </h3>
+                        {!isEditing ? (
+                            <button onClick={() => setIsEditing(true)} className="text-neutral-400 hover:text-neutral-900 dark:text-neutral-500 dark:hover:text-white transition-colors">
+                                <Pencil className="w-4 h-4" />
+                            </button>
+                        ) : (
+                            <div className="flex gap-2">
+                                <button onClick={() => setIsEditing(false)} className="text-red-400 hover:text-red-300">
+                                    <X className="w-4 h-4" />
+                                </button>
+                                <button onClick={handleSave} className="text-green-400 hover:text-green-300">
+                                    <Check className="w-4 h-4" />
+                                </button>
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="space-y-4">
+                        <div>
+                            <label className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-1 block">Status</label>
+                            <div className="flex items-center gap-2 px-3 py-2 rounded-full bg-neutral-100 dark:bg-white/5 border border-neutral-200 dark:border-white/5 text-neutral-900 dark:text-white capitalize text-sm">
+                                <span className={cn("w-2 h-2 rounded-full",
+                                    project.status === 'active' ? 'bg-green-500' :
+                                        project.status === 'legacy' ? 'bg-orange-500' :
+                                            'bg-neutral-500'
+                                )} />
+                                {project.status}
+                            </div>
+                        </div>
+
+                        <div>
+                            <label className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-1 block">Repository</label>
+                            {isEditing ? (
+                                <input
+                                    value={editForm.repoUrl}
+                                    onChange={(e) => setEditForm(prev => ({ ...prev, repoUrl: e.target.value }))}
+                                    className="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500"
+                                    placeholder="https://github.com/..."
+                                />
+                            ) : (
+                                project.repoUrl ? (
+                                    <a href={project.repoUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-3 py-2 rounded-full bg-white/5 border border-white/5 text-blue-400 hover:text-blue-300 hover:border-blue-500/30 transition-colors text-sm truncate">
+                                        <Github className="w-4 h-4 text-white" />
+                                        <span className="truncate">{project.repoUrl.replace('https://github.com/', '')}</span>
+                                        <ExternalLink className="w-3 h-3 ml-auto opacity-50" />
+                                    </a>
+                                ) : <div className="text-neutral-600 text-sm px-3 py-2">Not connected</div>
+                            )}
+                        </div>
+
+                        <div>
+                            <label className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-1 block">Live URL</label>
+                            {isEditing ? (
+                                <input
+                                    value={editForm.liveUrl}
+                                    onChange={(e) => setEditForm(prev => ({ ...prev, liveUrl: e.target.value }))}
+                                    className="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-green-500"
+                                    placeholder="https://..."
+                                />
+                            ) : (
+                                project.liveUrl ? (
+                                    <a href={project.liveUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-3 py-2 rounded-full bg-white/5 border border-white/5 text-green-400 hover:text-green-300 hover:border-green-500/30 transition-colors text-sm truncate">
+                                        <Globe className="w-4 h-4 text-white" />
+                                        <span className="truncate">{project.liveUrl.replace('https://', '')}</span>
+                                        <ExternalLink className="w-3 h-3 ml-auto opacity-50" />
+                                    </a>
+                                ) : <div className="text-neutral-600 text-sm px-3 py-2">Not deployed</div>
+                            )}
+                        </div>
+
+                        <div className="pt-2 border-t border-white/5">
+                            <label className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-2 block">Deployment</label>
+
+                            <div className="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label className="text-[10px] uppercase font-bold text-neutral-500 tracking-wider mb-1 block">Provider</label>
+                                    {isEditing ? (
+                                        <input
+                                            value={editForm.deployProvider}
+                                            onChange={(e) => setEditForm(prev => ({ ...prev, deployProvider: e.target.value }))}
+                                            className="w-full bg-black/20 border border-white/10 rounded-lg px-2 py-1.5 text-xs text-white focus:outline-none focus:border-[#a78bfa]"
+                                            placeholder="Vercel, AWS..."
+                                        />
+                                    ) : (
+                                        <div className="text-sm text-neutral-900 dark:text-white font-medium">
+                                            {project.deployProvider || <span className="text-neutral-400 dark:text-neutral-600 italic">--</span>}
+                                        </div>
+                                    )}
+                                </div>
+                                <div>
+                                    <label className="text-[10px] uppercase font-bold text-neutral-500 tracking-wider mb-1 block">Account</label>
+                                    {isEditing ? (
+                                        <input
+                                            value={editForm.deployAccount}
+                                            onChange={(e) => setEditForm(prev => ({ ...prev, deployAccount: e.target.value }))}
+                                            className="w-full bg-black/20 border border-white/10 rounded-lg px-2 py-1.5 text-xs text-white focus:outline-none focus:border-[#a78bfa]"
+                                            placeholder="user@example.com"
+                                        />
+                                    ) : (
+                                        <div className="text-sm text-neutral-900 dark:text-neutral-400">
+                                            {project.deployAccount || <span className="text-neutral-400 dark:text-neutral-600 italic">--</span>}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
+
+                    </div>
+                </div>
+
                 {/* To-Do List */}
                 <TodoListCard project={project} />
 

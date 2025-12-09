@@ -6,7 +6,6 @@ import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { ThemeToggle } from "../theme-toggle";
 import { useDashboard } from "./dashboard-context";
-import { ContextWeaverModal } from "./context-weaver/context-weaver-modal";
 import { Project } from "@/data/mock";
 
 const navItems = [
@@ -20,7 +19,6 @@ export function FloatingDock() {
 
     // Logic to detect active project
     const [activeProject, setActiveProject] = useState<Project | null>(null);
-    const [isWeaverOpen, setIsWeaverOpen] = useState(false);
 
     useEffect(() => {
         // Simple regex to check if we are in a project route: /dashboard/projects/[id]
@@ -82,10 +80,10 @@ export function FloatingDock() {
 
                 <div className="w-px h-8 bg-white/10 mx-1" />
 
-                {/* Context Weaver Button - Only visible if active project */}
+                {/* Context Weaver Action - Only visible if active project */}
                 {activeProject && (
-                    <button
-                        onClick={() => setIsWeaverOpen(true)}
+                    <Link
+                        href={`/dashboard/projects/${activeProject.id}?tab=prompts`}
                         className="flex items-center justify-center w-12 h-12 rounded-full bg-[#180260]/80 text-[#A78BFA] border border-[#A78BFA]/30 hover:bg-[#A78BFA] hover:text-[#180260] transition-all group relative"
                         title={`Weave Context: ${activeProject.name}`}
                     >
@@ -93,7 +91,7 @@ export function FloatingDock() {
                         <span className="absolute -top-10 scale-0 group-hover:scale-100 transition-transform bg-[#A78BFA] text-[#180260] font-bold text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap">
                             Weave Context
                         </span>
-                    </button>
+                    </Link>
                 )}
 
                 {/* New Project Action */}
@@ -135,14 +133,6 @@ export function FloatingDock() {
                 </div>
             </motion.div>
 
-            {/* Render Modal Globally if active */}
-            {activeProject && (
-                <ContextWeaverModal
-                    isOpen={isWeaverOpen}
-                    onClose={() => setIsWeaverOpen(false)}
-                    project={activeProject}
-                />
-            )}
         </div>
     );
 }
