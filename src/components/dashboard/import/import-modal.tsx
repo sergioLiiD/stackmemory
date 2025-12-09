@@ -155,7 +155,7 @@ export function ImportModal({ isOpen, onClose, onSave }: ImportModalProps) {
                     }));
                 }
 
-                setIsAnalyzed(true);
+                // setIsAnalyzed(true);
 
             } else {
                 setError("Could not parse package.json from the provided URL.");
@@ -212,6 +212,10 @@ export function ImportModal({ isOpen, onClose, onSave }: ImportModalProps) {
             description: data.description || "",
             status: (data.status as any) || "planning",
             stack: data.stack || [],
+            repoUrl: data.repoUrl || "", // Persist repoUrl
+            liveUrl: data.liveUrl || "",
+            deployProvider: data.deployProvider || "",
+            deployAccount: data.deployAccount || "",
             lastUpdated: "Just now",
             health: 100
         };

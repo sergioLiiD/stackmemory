@@ -28,18 +28,20 @@ export async function POST(req: Request) {
         // For V1/MVP, we'll do it synchronously but limit the file count to avoid Vercel timeout (10s/60s).
         const processedFiles = await processRepository(repoUrl, token, 20); // Start small
 
-        // 3. Return Summary
-        // We don't want to return the full content of 20 files in JSON if rarely needed, 
-        // but finding them is the goal.
+        // 3. Store Embeddings
+        const { storeEmbeddings } = await import('@/lib/vector-store');
+        const totalChunks = await storeEmbeddings(projectId, processedFiles);
 
+        // 4. Return Summary
         return NextResponse.json({
             success: true,
             filesFound: processedFiles.length,
+            chunksStored: totalChunks,
             files: processedFiles.map(f => ({ path: f.path, size: f.size, language: f.language })) // Metadata only
         });
 
     } catch (error: any) {
-        console.error("Crawl error:", error);
+        console.error("Crawl error full details:", JSON.stringify(error, Object.getOwnPropertyNames(error)));
         return NextResponse.json(
             { error: error.message || 'Internal Server Error' },
             { status: 500 }

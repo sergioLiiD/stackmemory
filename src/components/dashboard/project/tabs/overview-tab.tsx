@@ -1,7 +1,8 @@
-import { useState } from "react";
+"use client";
+import { useState, useEffect } from "react";
 import { Project, Service } from "@/data/mock";
 import { useDashboard } from "../../dashboard-context";
-import { CheckCircle2, Copy, Eye, EyeOff, ExternalLink, Github, Globe, Key, Server, Shield, Pencil, Check, X } from "lucide-react";
+import { CheckCircle2, Copy, Eye, EyeOff, ExternalLink, Github, Globe, Key, Server, Shield, Pencil, Check, X, Search, RefreshCw, FileCode } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
 import { ServiceModal } from "./service-modal";
@@ -17,11 +18,33 @@ export function OverviewTab({ project }: { project: Project }) {
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [deleteConfirmation, setDeleteConfirmation] = useState("");
     const [editForm, setEditForm] = useState({
-        repoUrl: project.repoUrl || "",
-        liveUrl: project.liveUrl || "",
-        deployProvider: project.deployProvider || "",
-        deployAccount: project.deployAccount || ""
+        repoUrl: project.repoUrl,
+        liveUrl: project.liveUrl,
+        deployProvider: project.deployProvider || '',
+        deployAccount: project.deployAccount || ''
     });
+
+    // Crawler State
+    const [isCrawling, setIsCrawling] = useState(false);
+    const [crawlResult, setCrawlResult] = useState<{ count: number, files: any[] } | null>(null);
+
+    // Check for existing embeddings on load
+    useEffect(() => {
+        const checkIndex = async () => {
+            if (!supabase) return;
+            // Get count of embeddings for this project
+            const { count, error } = await supabase
+                .from('embeddings')
+                .select('*', { count: 'exact', head: true })
+                .eq('project_id', project.id);
+
+            if (count && count > 0) {
+                // We don't fetch file list to save bandwidth, just the count is enough to show "Indexed"
+                setCrawlResult({ count, files: [] });
+            }
+        };
+        checkIndex();
+    }, [project.id]);
 
     const handleDelete = async () => {
         if (deleteConfirmation === project.name) {
@@ -229,6 +252,88 @@ export function OverviewTab({ project }: { project: Project }) {
                             <div className="text-center py-4 text-neutral-600 text-sm border border-dashed border-white/10 rounded-lg">No secrets recorded</div>
                         )}
                         <button className="w-full py-2 mt-2 rounded-full border border-dashed border-neutral-300 dark:border-white/10 text-neutral-500 text-xs hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-white/5 transition-colors">+ Add Secret Key</button>
+                    </div>
+                </div>
+
+                {/* Ingestion Zone (Vibe Coder) */}
+                <div className="p-6 rounded-3xl bg-neutral-900 border border-neutral-800 shadow-xl overflow-hidden relative group">
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500/10 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+
+                    <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2 relative z-10">
+                        <RefreshCw className={cn("w-5 h-5 text-purple-400", isCrawling && "animate-spin")} />
+                        Semantic Indexing
+                    </h3>
+                    <p className="text-xs text-neutral-400 mb-4 relative z-10">
+                        Sync your repository to generate vector embeddings for the AI.
+                    </p>
+
+                    <div className="relative z-10 space-y-3">
+                        {crawlResult ? (
+                            <div className="bg-black/30 rounded-xl p-3 border border-white/10">
+                                <div className="flex items-center justify-between mb-2">
+                                    <span className="text-sm text-green-400 font-medium flex items-center gap-2">
+                                        <Check className="w-4 h-4" /> Synced Successfully
+                                    </span>
+                                    <span className="text-xs text-neutral-500">{crawlResult.count} files found</span>
+                                </div>
+                                <div className="max-h-32 overflow-y-auto space-y-1 pr-1 custom-scrollbar">
+                                    {crawlResult.files.map((f: any, i: number) => (
+                                        <div key={i} className="flex items-center gap-2 text-[10px] text-neutral-300">
+                                            <FileCode className="w-3 h-3 text-neutral-600" />
+                                            <span className="truncate">{f.path}</span>
+                                            <span className="ml-auto text-neutral-600">{(f.size / 1024).toFixed(1)}kb</span>
+                                        </div>
+                                    ))}
+                                </div>
+                                <button
+                                    onClick={() => setCrawlResult(null)}
+                                    className="w-full mt-3 py-1.5 text-xs text-neutral-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+                                >
+                                    Done
+                                </button>
+                            </div>
+                        ) : (
+                            <button
+                                onClick={async () => {
+                                    if (!project.repoUrl) return;
+                                    setIsCrawling(true);
+                                    try {
+                                        const res = await fetch('/api/crawl', {
+                                            method: 'POST',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify({ repoUrl: project.repoUrl, projectId: project.id })
+                                        });
+                                        const data = await res.json();
+                                        if (data.success) {
+                                            setCrawlResult({ count: data.filesFound, files: data.files });
+                                        } else {
+                                            alert('Error: ' + data.error);
+                                        }
+                                    } catch (e) {
+                                        alert('Failed to crawl');
+                                    } finally {
+                                        setIsCrawling(false);
+                                    }
+                                }}
+                                disabled={isCrawling || !project.repoUrl}
+                                className="w-full py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-sm font-medium transition-all shadow-lg shadow-purple-900/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                            >
+                                {isCrawling ? (
+                                    <>Processing Repository...</>
+                                ) : (
+                                    <>
+                                        <Github className="w-4 h-4" />
+                                        Sync Repository Now
+                                    </>
+                                )}
+                            </button>
+                        )}
+
+                        {!project.repoUrl && (
+                            <p className="text-[10px] text-red-400 text-center">
+                                * Link a GitHub repository in the metadata section first.
+                            </p>
+                        )}
                     </div>
                 </div>
 

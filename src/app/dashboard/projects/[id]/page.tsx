@@ -12,6 +12,7 @@ import { OverviewTab } from "@/components/dashboard/project/tabs/overview-tab";
 import { StackTab } from "@/components/dashboard/project/tabs/stack-tab";
 import { PromptVaultTab } from "@/components/dashboard/project/tabs/prompt-vault-tab";
 import { JournalTab, SnippetsTab } from "@/components/dashboard/project/tabs/journal-tab";
+import { AssistantTab } from "@/components/dashboard/project/tabs/assistant-tab";
 
 import { ContextWeaverModal } from "@/components/dashboard/context-weaver/context-weaver-modal";
 import { BrainCircuit } from "lucide-react";
@@ -77,6 +78,7 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
                 {activeTab === 'prompts' && <PromptVaultTab project={project} />}
                 {activeTab === 'journal' && <JournalTab project={project} />}
                 {activeTab === 'snippets' && <SnippetsTab project={project} />}
+                {activeTab === 'assistant' && <AssistantTab project={project} />}
             </div>
 
             {/* Context Weaver Modal */}

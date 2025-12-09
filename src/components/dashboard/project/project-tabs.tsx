@@ -1,10 +1,10 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { Layout, Box, Terminal, Book, Code2 } from "lucide-react";
+import { Layout, Box, Terminal, Book, Code2, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
 
-export type TabId = 'overview' | 'stack' | 'prompts' | 'journal' | 'snippets';
+export type TabId = 'overview' | 'stack' | 'prompts' | 'journal' | 'snippets' | 'assistant';
 
 interface ProjectTabsProps {
     activeTab: TabId;
@@ -18,6 +18,7 @@ export function ProjectTabs({ activeTab, onTabChange }: ProjectTabsProps) {
         { id: 'prompts', label: 'Prompt Vault', icon: Terminal },
         { id: 'journal', label: 'Journal', icon: Book },
         { id: 'snippets', label: 'Snippets', icon: Code2 },
+        { id: 'assistant', label: 'Vibe Coder', icon: Sparkles },
     ];
 
     return (
