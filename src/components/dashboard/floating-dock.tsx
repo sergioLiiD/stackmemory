@@ -110,6 +110,25 @@ export function FloatingDock() {
 
                 <div className="w-px h-8 bg-white/10 mx-1" />
 
+                {/* Logout Button */}
+                <button
+                    onClick={async () => {
+                        const { createClient } = await import("@/lib/supabase/client");
+                        const supabase = createClient();
+                        await supabase.auth.signOut();
+                        window.location.href = "/login";
+                    }}
+                    className="flex items-center justify-center w-12 h-12 rounded-full text-muted-foreground hover:bg-red-500/10 hover:text-red-500 transition-all group relative"
+                    title="Log Out"
+                >
+                    <LogOut className="w-5 h-5" />
+                    <span className="absolute -top-10 scale-0 group-hover:scale-100 transition-transform bg-black/80 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap">
+                        Log Out
+                    </span>
+                </button>
+
+                <div className="w-px h-8 bg-white/10 mx-1" />
+
                 {/* Theme Toggle */}
                 <div className="flex items-center justify-center w-12 h-12">
                     <ThemeToggle className="rounded-full w-10 h-10 border-0 bg-transparent hover:bg-white/10" />
