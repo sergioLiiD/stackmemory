@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDashboard } from "../dashboard-context";
-import { X, Scan, CheckCircle2, AlertCircle, Loader2, PenTool, Type, Wand2, Github } from "lucide-react";
+import { X, Scan, CheckCircle2, AlertCircle, Loader2, PenTool, Type, Wand2, Github, Key, Search } from "lucide-react";
 import { parsePackageJson, ParsedStack } from "@/lib/parser/package-json";
 import { SmartImportHelper } from "./smart-import-helper";
 import { Project, StackItem } from "@/data/mock";
@@ -26,6 +26,8 @@ export function ImportModal({ isOpen, onClose, onSave }: ImportModalProps) {
     const [result, setResult] = useState<ParsedStack | null>(null);
     const [error, setError] = useState("");
     const [repoUrl, setRepoUrl] = useState("");
+    const [githubToken, setGithubToken] = useState("");
+    const [projectDetails, setProjectDetails] = useState<{ name: string, description: string }>({ name: "", description: "" });
 
     // Manual State
     const [manualName, setManualName] = useState("");
@@ -54,34 +56,130 @@ export function ImportModal({ isOpen, onClose, onSave }: ImportModalProps) {
         setIsAnalyzing(true);
         setResult(null);
 
-        // Simulation for prototype: 
-        // In a real app, we would fetch https://raw.githubusercontent.com/.../package.json
-        // For this demo, we will simulate a "Mock Success" to avoid CORS/404 issues with private/random repos.
+        try {
+            // Clean URL to get raw content
+            let rawUrl = repoUrl;
+            let attemptedUrl = "";
 
-        setTimeout(() => {
+            if (repoUrl.includes("github.com")) {
+                try {
+                    const url = new URL(repoUrl);
+                    if (url.pathname.includes("/blob/")) {
+                        rawUrl = repoUrl.replace("github.com", "raw.githubusercontent.com").replace("/blob/", "/");
+                    } else {
+                        const pathParts = url.pathname.split('/').filter(Boolean);
+                        if (pathParts.length >= 2) {
+                            const user = pathParts[0];
+                            const repo = pathParts[1];
+                            rawUrl = `https://raw.githubusercontent.com/${user}/${repo}/main/package.json`;
+                        }
+                    }
+                } catch (e) {
+                    console.error("Invalid URL format", e);
+                }
+            } else if (repoUrl.includes("raw.githubusercontent.com")) {
+                rawUrl = repoUrl;
+            }
+
+            if (!rawUrl) {
+                throw new Error("Invalid GitHub URL. Please use the format: https://github.com/user/repo");
+            }
+
+            attemptedUrl = rawUrl;
+
+            // Use Proxy to bypass CORS and handle Auth safely
+            const proxyFetch = async (targetUrl: string) => {
+                const res = await fetch('/api/proxy/github', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url: targetUrl, token: githubToken })
+                });
+
+                if (!res.ok) {
+                    const errData = await res.json().catch(() => ({}));
+                    // Propagate 404 specifically
+                    if (res.status === 404) throw new Error("404");
+                    throw new Error(errData.error || `Proxy error: ${res.status}`);
+                }
+                return res;
+            };
+
+            console.log("Attempting to fetch via proxy:", rawUrl);
+            let res;
+            try {
+                res = await proxyFetch(rawUrl);
+            } catch (e: any) {
+                if (e.message === "404") res = { ok: false, status: 404 } as Response;
+                else throw e;
+            }
+
+            // If main fails, try master branch
+            if (!res.ok && rawUrl.includes("/main/") && !repoUrl.includes("/blob/")) {
+                const masterUrl = rawUrl.replace("/main/", "/master/");
+                attemptedUrl = masterUrl;
+                console.log("Attempting fallback via proxy:", masterUrl);
+                try {
+                    res = await proxyFetch(masterUrl);
+                } catch (e: any) {
+                    if (e.message === "404") res = { ok: false, status: 404 } as Response;
+                    else throw e;
+                }
+            }
+
+            if (!res.ok) {
+                if (res.status === 404) {
+                    throw new Error(`Repository not found or private.\nAttempted: ${attemptedUrl}\n\nFor private repos, please provide a GitHub Token below or paste content manually.`);
+                }
+                throw new Error(`Failed to fetch package.json via proxy. (Status: ${res.status})`);
+            }
+
+            // The proxy returns the raw text of the file
+            const text = await res.text();
+            let parsed;
+            try {
+                parsed = parsePackageJson(text);
+            } catch (e) {
+                // If it returned JSON content type but we want to parse it safely
+                // Sometimes proxy might return "Error" string if something leaked, but we handled errors above
+                parsed = null;
+            }
+
+            if (parsed) {
+                setResult({ ...parsed, repo: repoUrl });
+                // Auto-fill details if not set
+                if (!projectDetails.name) {
+                    setProjectDetails(prev => ({
+                        ...prev,
+                        name: parsed?.name || prev.name || repoUrl.split('/').pop() || "New Project",
+                        description: parsed?.description || prev.description || ""
+                    }));
+                }
+
+                setIsAnalyzed(true);
+
+            } else {
+                setError("Could not parse package.json from the provided URL.");
+            }
+        } catch (err: any) {
+            console.error(err);
+            setError(err.message);
+        } finally {
             setIsAnalyzing(false);
-
-            // Mock Result based on URL
-            const repoName = repoUrl.split('/').pop() || "imported-project";
-
-            setResult({
-                name: repoName,
-                description: `Imported from ${repoUrl}`,
-                stack: ["React", "TypeScript", "TailwindCSS", "Next.js", "Vercel"] // Generic modern stack
-            });
-        }, 2000);
+        }
     };
 
     const handleMagicConfirm = () => {
         if (result) {
             const stackItems: StackItem[] = result.stack.map(tech => ({
-                name: tech,
+                name: tech.name,
+                version: tech.version,
                 type: 'other' // Default type, user can edit later
             }));
 
             saveProject({
                 name: result.name,
                 description: result.description || "",
+                repoUrl: repoUrl || result.repo || "", // Use state variable first as it contains the input URL
                 stack: stackItems,
                 status: "active"
             });
@@ -202,6 +300,16 @@ export function ImportModal({ isOpen, onClose, onSave }: ImportModalProps) {
                                                 <div className="h-px bg-white/10 flex-1" />
                                             </div>
 
+                                            {error && (
+                                                <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl flex items-start gap-3 text-red-400">
+                                                    <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
+                                                    <div className="space-y-1">
+                                                        <p className="text-sm font-medium">Error Scanning Repository</p>
+                                                        <p className="text-xs opacity-90">{error}</p>
+                                                    </div>
+                                                </div>
+                                            )}
+
                                             {/* Step 2: Auto-Scan from URL */}
                                             <div className="bg-black/20 p-4 rounded-xl border border-white/5 space-y-3">
                                                 <label className="text-sm font-medium text-white flex items-center gap-2">
@@ -210,19 +318,37 @@ export function ImportModal({ isOpen, onClose, onSave }: ImportModalProps) {
                                                 </label>
                                                 <div className="flex gap-2">
                                                     <input
-                                                        placeholder="https://github.com/username/project"
-                                                        className="flex-1 bg-[#0a0a0a] border border-white/10 rounded-lg px-4 py-2 text-sm text-neutral-300 focus:outline-none focus:border-[#a78bfa] transition-colors"
                                                         value={repoUrl}
                                                         onChange={(e) => setRepoUrl(e.target.value)}
+                                                        placeholder="https://github.com/facebook/react"
+                                                        className="flex-1 bg-black/50 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-[#a78bfa] transition-colors"
                                                     />
                                                     <button
                                                         onClick={handleUrlAnalyze}
-                                                        disabled={!repoUrl.trim() || isAnalyzing}
-                                                        className="bg-[#2D2B52] text-white px-4 py-2 rounded-lg font-bold text-xs hover:bg-[#a78bfa] hover:text-[#180260] transition-colors disabled:opacity-50 whitespace-nowrap flex items-center gap-2"
+                                                        disabled={isAnalyzing || !repoUrl}
+                                                        className="bg-[#180260] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#2a04a3] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                                                     >
-                                                        {isAnalyzing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Scan className="w-4 h-4" />}
+                                                        {isAnalyzing ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Search className="w-4 h-4" />}
                                                         Scan Repo
                                                     </button>
+                                                </div>
+
+                                                {/* Optional Token Field */}
+                                                <div className="relative group">
+                                                    <div className="flex items-center gap-2 mb-1">
+                                                        <Key className="w-3 h-3 text-neutral-500" />
+                                                        <label className="text-[10px] uppercase font-bold text-neutral-500 tracking-wider">Private Repo Token (Optional)</label>
+                                                    </div>
+                                                    <input
+                                                        type="password"
+                                                        value={githubToken}
+                                                        onChange={(e) => setGithubToken(e.target.value)}
+                                                        placeholder="ghp_..."
+                                                        className="w-full bg-black/30 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-[#a78bfa] transition-colors"
+                                                    />
+                                                    <p className="text-[10px] text-neutral-600 mt-1">
+                                                        If your repo is private, paste a <a href="https://github.com/settings/tokens" target="_blank" rel="noreferrer" className="text-neutral-400 hover:text-white underline">Classic Token</a> with <code>repo</code> scope.
+                                                    </p>
                                                 </div>
                                             </div>
 
@@ -273,8 +399,8 @@ export function ImportModal({ isOpen, onClose, onSave }: ImportModalProps) {
                                                 <h4 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Technologies</h4>
                                                 <div className="flex flex-wrap gap-2">
                                                     {result.stack.map(tech => (
-                                                        <span key={tech} className="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-sm text-white">
-                                                            {tech}
+                                                        <span key={tech.name} className="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-sm text-white flex items-center gap-1">
+                                                            {tech.name} <span className="text-neutral-500 text-xs">v{tech.version}</span>
                                                         </span>
                                                     ))}
                                                 </div>

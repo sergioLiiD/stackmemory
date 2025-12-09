@@ -1,19 +1,50 @@
-"use client";
-
-import { Project } from "@/data/mock";
+import { useState } from "react";
+import { Project, JournalEntry } from "@/data/mock";
 import { Book, Calendar, PenLine, Code2, FileCode } from "lucide-react";
+import { JournalModal } from "./journal-modal";
+import { useDashboard } from "../../dashboard-context";
+import { supabase } from "@/lib/supabase";
 
 export function JournalTab({ project }: { project: Project }) {
+    const { updateProject } = useDashboard();
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
+    const handleSaveEntry = async (entry: JournalEntry) => {
+        const newJournal = [entry, ...(project.journal || [])];
+
+        // Optimistic update
+        updateProject(project.id, { journal: newJournal });
+
+        // DB update
+        if (supabase) {
+            const { error } = await supabase
+                .from('projects')
+                .update({ journal: newJournal })
+                .eq('id', project.id);
+
+            if (error) console.error("Error saving journal:", error);
+        }
+    };
+
     return (
         <div>
             <div className="flex items-center justify-between mb-8">
                 <h3 className="text-lg font-bold text-white flex items-center gap-2">
                     <Book className="w-5 h-5 text-white" /> Journal
                 </h3>
-                <button className="text-xs bg-[#180260] text-white px-3 py-1.5 rounded-lg hover:bg-[#2a04a3] transition-colors shadow-lg shadow-[#180260]/20 font-medium">
+                <button
+                    onClick={() => setIsModalOpen(true)}
+                    className="text-xs bg-[#180260] text-white px-3 py-1.5 rounded-lg hover:bg-[#2a04a3] transition-colors shadow-lg shadow-[#180260]/20 font-medium"
+                >
                     + New Entry
                 </button>
             </div>
+
+            <JournalModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                onSave={handleSaveEntry}
+            />
 
             <div className="border-l border-white/10 ml-4 space-y-12">
                 {project.journal?.map((entry) => (
@@ -28,7 +59,7 @@ export function JournalTab({ project }: { project: Project }) {
                                     {entry.date}
                                 </span>
                             </div>
-                            <p className="text-neutral-400 text-sm leading-relaxed mb-4">{entry.content}</p>
+                            <p className="text-neutral-400 text-sm leading-relaxed mb-4 whitespace-pre-wrap">{entry.content}</p>
                             <div className="flex gap-2">
                                 {entry.tags?.map(tag => (
                                     <span key={tag} className="text-[10px] text-neutral-500">#{tag}</span>

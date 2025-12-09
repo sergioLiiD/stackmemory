@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Quicksand, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
+import { AuthProvider } from "@/components/auth/auth-context";
+import { SubscriptionProvider } from "@/components/billing/subscription-context";
 
 const quicksand = Quicksand({
   variable: "--font-sans",
@@ -28,14 +30,18 @@ export default function RootLayout({
       <body
         className={`${quicksand.variable} ${geistMono.variable} antialiased`}
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          {children}
-        </ThemeProvider>
+        <AuthProvider>
+          <SubscriptionProvider>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="system"
+              enableSystem
+              disableTransitionOnChange
+            >
+              {children}
+            </ThemeProvider>
+          </SubscriptionProvider>
+        </AuthProvider>
       </body>
     </html>
   );

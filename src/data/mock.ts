@@ -19,6 +19,7 @@ export interface StackItem {
     version?: string;
     type: 'frontend' | 'backend' | 'ai' | 'database' | 'devops' | 'other';
     icon?: string; // Optional icon identifier
+    notes?: string;
 }
 
 export interface Secret {
@@ -51,17 +52,36 @@ export interface Snippet {
     description?: string;
 }
 
+export interface FirebaseConfig {
+    apiKey: string;
+    authDomain: string;
+    projectId: string;
+    storageBucket: string;
+    messagingSenderId: string;
+    appId: string;
+}
+
+export interface Task {
+    id: string;
+    text: string;
+    completed: boolean;
+}
+
 export interface Project {
     id: string;
     name: string;
     description: string;
     status: 'active' | 'archived' | 'legacy' | 'planning';
     repoUrl?: string;
-    liveUrl?: string;
+    liveUrl?: string; // e.g. https://my-app.vercel.app
+    deployProvider?: string; // e.g. Vercel, Netlify, Dreamhost
+    deployAccount?: string; // e.g. personal@gmail.com
     stack: StackItem[]; // Changed from string[]
     lastUpdated: string;
     health: number; // 0-100
     services?: Service[];
+    firebaseConfig?: FirebaseConfig; // Optional Firebase configuration
+    tasks?: Task[]; // Project To-Dos
     decisions?: Decision[];
     secrets?: Secret[];
     prompts?: TopPrompt[];

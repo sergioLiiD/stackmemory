@@ -1,20 +1,29 @@
+export interface ParsedStackItem {
+    name: string;
+    version: string;
+}
+
 export interface ParsedStack {
     name: string;
     description?: string;
-    stack: string[];
+    repo?: string;
+    stack: ParsedStackItem[];
 }
 
 export function parsePackageJson(content: string): ParsedStack | null {
     try {
         const json = JSON.parse(content);
-        const stack: string[] = [];
+        const stack: ParsedStackItem[] = [];
 
         // Extract dependencies as stack items
         if (json.dependencies) {
             Object.keys(json.dependencies).forEach(dep => {
                 // Filter for common frameworks/libs to avoid noise
                 if (isMajorTech(dep)) {
-                    stack.push(`${dep} ${cleanVersion(json.dependencies[dep])}`);
+                    stack.push({
+                        name: dep,
+                        version: cleanVersion(json.dependencies[dep])
+                    });
                 }
             });
         }
@@ -22,14 +31,25 @@ export function parsePackageJson(content: string): ParsedStack | null {
         if (json.devDependencies) {
             Object.keys(json.devDependencies).forEach(dep => {
                 if (isMajorTech(dep)) {
-                    stack.push(`${dep} ${cleanVersion(json.devDependencies[dep])}`);
+                    stack.push({
+                        name: dep,
+                        version: cleanVersion(json.devDependencies[dep])
+                    });
                 }
             });
+        }
+
+        let repo = "";
+        if (typeof json.repository === 'string') {
+            repo = json.repository;
+        } else if (json.repository?.url) {
+            repo = json.repository.url.replace('git+', '').replace('.git', '');
         }
 
         return {
             name: json.name || "Untitled Project",
             description: json.description || "Imported via Magic Scan",
+            repo: repo,
             stack: stack.slice(0, 10) // Limit to top 10 to avoid clutter
         };
     } catch (e) {
@@ -38,7 +58,7 @@ export function parsePackageJson(content: string): ParsedStack | null {
 }
 
 function cleanVersion(version: string) {
-    return version.replace('^', 'v').replace('~', 'v');
+    return version.replace('^', '').replace('~', '');
 }
 
 // A simple filter to highlight "Major" tech
