@@ -36,26 +36,54 @@ export async function POST(req: Request) {
 
         for (const pkg of packages) {
             try {
-                // Only check for standard npm packages (skip internal or strangely named ones if needed)
-                if (!pkg.name || !pkg.version) continue;
-
-                // Simple check: fetch latest version from npm registry
-                const res = await fetch(`https://registry.npmjs.org/${pkg.name}/latest`, {
+                // 1. Check for Version Updates (NPM Registry)
+                const npmRes = await fetch(`https://registry.npmjs.org/${pkg.name}/latest`, {
                     headers: { 'Accept': 'application/json' },
-                    next: { revalidate: 3600 } // Cache for 1 hour
+                    next: { revalidate: 3600 }
                 });
 
-                if (res.ok) {
-                    const data = await res.json();
+                let updateInfo = null;
+                if (npmRes.ok) {
+                    const data = await npmRes.json();
                     const latestVersion = data.version;
-
                     if (latestVersion && isNewer(pkg.version, latestVersion)) {
-                        updates.push({
-                            name: pkg.name,
-                            current: pkg.version,
-                            latest: latestVersion
-                        });
+                        updateInfo = { latest: latestVersion };
                     }
+                }
+
+                // 2. Check for Security Vulnerabilities (OSV API)
+                const osvRes = await fetch('https://api.osv.dev/v1/query', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        version: pkg.version,
+                        package: {
+                            name: pkg.name,
+                            ecosystem: 'npm'
+                        }
+                    }),
+                    next: { revalidate: 3600 }
+                });
+
+                let vulns = [];
+                if (osvRes.ok) {
+                    const osvData = await osvRes.json();
+                    if (osvData.vulns) {
+                        vulns = osvData.vulns.map((v: any) => ({
+                            id: v.id,
+                            summary: v.summary || v.details || 'Unknown Vulnerability',
+                            severity: v.database_specific?.severity || 'HIGH' // Fallback
+                        }));
+                    }
+                }
+
+                if (updateInfo || vulns.length > 0) {
+                    updates.push({
+                        name: pkg.name,
+                        current: pkg.version,
+                        latest: updateInfo?.latest,
+                        vulnerabilities: vulns
+                    });
                 }
             } catch (err) {
                 console.error(`Failed to check update for ${pkg.name}:`, err);

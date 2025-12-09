@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Project, StackItem } from "@/data/mock";
-import { Box, Layers, Plus, Trash2, Save, X, Pencil } from "lucide-react";
+import { Box, Layers, Plus, Trash2, Save, X, Pencil, ShieldAlert } from "lucide-react";
 import { useDashboard } from "../../dashboard-context";
 import { supabase } from "@/lib/supabase";
 import { StackModal } from "./stack-modal";
@@ -16,7 +16,7 @@ export function StackTab({ project }: { project: Project }) {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingItem, setEditingItem] = useState<StackItem | null>(null);
     const [editingIndex, setEditingIndex] = useState<number | null>(null);
-    const [updates, setUpdates] = useState<{ [key: string]: string }>({});
+    const [updates, setUpdates] = useState<{ [key: string]: { latest?: string, vulnerabilities?: any[] } }>({});
 
     // Check for updates
     useEffect(() => {
@@ -36,9 +36,12 @@ export function StackTab({ project }: { project: Project }) {
                 });
                 const data = await res.json();
                 if (data.updates) {
-                    const updateMap: { [key: string]: string } = {};
+                    const updateMap: { [key: string]: { latest?: string, vulnerabilities?: any[] } } = {};
                     data.updates.forEach((u: any) => {
-                        updateMap[u.name.toLowerCase()] = u.latest;
+                        updateMap[u.name.toLowerCase()] = {
+                            latest: u.latest,
+                            vulnerabilities: u.vulnerabilities
+                        };
                     });
                     setUpdates(updateMap);
                 }
@@ -140,25 +143,49 @@ export function StackTab({ project }: { project: Project }) {
                         <div className="flex items-start justify-between mb-3 pr-12">
                             <div className="w-10 h-10 rounded-2xl bg-neutral-100 dark:bg-white/5 flex items-center justify-center text-neutral-700 dark:text-white relative">
                                 <Box className="w-5 h-5" />
-                                {updates[item.name.toLowerCase()] && (
-                                    <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white dark:border-[#121212]" title={`Update available: v${updates[item.name.toLowerCase()]}`} />
+                                {updates[item.name.toLowerCase()]?.latest && (
+                                    <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white dark:border-[#121212]" title={`Update available: v${updates[item.name.toLowerCase()].latest}`} />
                                 )}
                             </div>
-                            {item.version && (
-                                <span className={`px-2 py-1 rounded-full text-[10px] font-mono border ${updates[item.name.toLowerCase()]
-                                    ? 'bg-red-500/10 text-red-500 border-red-500/20'
-                                    : 'bg-neutral-100 dark:bg-white/5 text-neutral-500 dark:text-neutral-400 border-neutral-200 dark:border-transparent'
-                                    }`}>
-                                    v{item.version}
-                                </span>
-                            )}
+                            <div className="flex items-center gap-2">
+                                {updates[item.name.toLowerCase()]?.vulnerabilities && updates[item.name.toLowerCase()]!.vulnerabilities!.length > 0 && (
+                                    <div className="group/shield relative">
+                                        <ShieldAlert className="w-4 h-4 text-red-500 animate-pulse cursor-help" />
+                                        {/* Tooltip for Vulnerabilities */}
+                                        <div className="absolute bottom-full right-0 mb-2 w-64 bg-red-950/90 border border-red-500/30 rounded-lg p-3 shadow-xl backdrop-blur-md opacity-0 group-hover/shield:opacity-100 transition-opacity pointer-events-none z-50">
+                                            <h5 className="text-xs font-bold text-red-200 mb-2 flex items-center gap-1">
+                                                <ShieldAlert className="w-3 h-3" /> Security Alerts
+                                            </h5>
+                                            <div className="space-y-1 max-h-32 overflow-y-auto custom-scrollbar">
+                                                {updates[item.name.toLowerCase()]!.vulnerabilities!.map((v: any, idx: number) => (
+                                                    <div key={idx} className="pb-1 border-b border-red-500/10 last:border-0">
+                                                        <div className="flex items-center justify-between">
+                                                            <span className="text-[10px] font-mono text-red-300">{v.id}</span>
+                                                            <span className="text-[9px] px-1 rounded bg-red-500/20 text-red-300">{v.severity}</span>
+                                                        </div>
+                                                        <p className="text-[9px] text-red-400/80 line-clamp-1">{v.summary}</p>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                                {item.version && (
+                                    <span className={`px-2 py-1 rounded-full text-[10px] font-mono border ${updates[item.name.toLowerCase()]?.latest
+                                        ? 'bg-red-500/10 text-red-500 border-red-500/20'
+                                        : 'bg-neutral-100 dark:bg-white/5 text-neutral-500 dark:text-neutral-400 border-neutral-200 dark:border-transparent'
+                                        }`}>
+                                        v{item.version}
+                                    </span>
+                                )}
+                            </div>
                         </div>
                         <h4 className="text-base font-bold text-neutral-900 dark:text-white mb-1 group-hover:text-indigo-600 dark:group-hover:text-[#a78bfa] transition-colors">{item.name}</h4>
                         <div className="flex items-center justify-between">
                             <span className="text-[10px] font-bold tracking-wider text-neutral-500 uppercase">{item.type}</span>
-                            {updates[item.name.toLowerCase()] && (
+                            {updates[item.name.toLowerCase()]?.latest && (
                                 <span className="text-[10px] font-bold text-red-400 animate-pulse">
-                                    Latest: v{updates[item.name.toLowerCase()]}
+                                    Latest: v{updates[item.name.toLowerCase()].latest}
                                 </span>
                             )}
                         </div>
