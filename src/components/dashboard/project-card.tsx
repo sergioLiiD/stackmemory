@@ -5,6 +5,8 @@ import { Project } from "@/data/mock";
 import { ArrowUpRight, Activity, AlertTriangle, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 
+import { HealthBar } from "./project/health-bar";
+
 const statusConfig = {
     active: { color: "bg-green-500/10 text-green-400 border-green-500/20", icon: CheckCircle2, label: "Active" },
     legacy: { color: "bg-orange-500/10 text-orange-400 border-orange-500/20", icon: AlertTriangle, label: "Legacy" },
@@ -45,20 +47,7 @@ export function ProjectCard({ project, delay = 0 }: { project: Project; delay?: 
                     </span>
 
                     {/* Health Bar Mini */}
-                    {/* Health Bar Mini */}
-                    <div className="flex items-center gap-2" title={`Completeness Score: ${project.health}%
-- Repo: ${project.repoUrl ? '✅' : '❌'}
-- Live: ${project.liveUrl ? '✅' : '❌'}
-- Stack: ${project.stack.length > 0 ? '✅' : '❌'}
-- Services: ${project.services && project.services.length > 0 ? '✅' : '❌'}`}>
-                        <div className="w-16 h-1 bg-white/10 rounded-full overflow-hidden">
-                            <div
-                                className={`h-full rounded-full ${project.health > 80 ? 'bg-green-500' : project.health > 50 ? 'bg-orange-500' : 'bg-red-500'}`}
-                                style={{ width: `${project.health}%` }}
-                            />
-                        </div>
-                        <span className="text-[10px] text-neutral-500">{project.health}%</span>
-                    </div>
+                    <HealthBar project={project} />
                 </div>
 
                 {/* Stack Tags */}

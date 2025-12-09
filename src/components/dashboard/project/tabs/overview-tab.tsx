@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
 import { ServiceModal } from "./service-modal";
 import { TodoListCard } from "./todo-list-card";
+import { HealthBar } from "../health-bar";
 
 
 import { useRouter } from "next/navigation";
@@ -324,6 +325,11 @@ export function OverviewTab({ project }: { project: Project }) {
                                 )} />
                                 {project.status}
                             </div>
+                        </div>
+
+                        <div>
+                            <label className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-1 block">Health Score</label>
+                            <HealthBar project={project} showLabel={true} />
                         </div>
 
                         <div>
