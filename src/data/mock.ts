@@ -4,6 +4,10 @@ export interface Service {
     account: string;
     cost: string;
     status: 'active' | 'inactive' | 'deprecated';
+    url?: string;
+    category?: 'infrastructure' | 'social' | 'saas' | 'newsletter' | 'other';
+    notes?: string;
+    icon?: string;
 }
 
 export interface Decision {

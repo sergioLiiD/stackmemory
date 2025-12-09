@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { Project, Service } from "@/data/mock";
 import { useDashboard } from "../../dashboard-context";
-import { CheckCircle2, Copy, Eye, EyeOff, ExternalLink, Github, Globe, Key, Server, Shield, Pencil, Check, X, Search, RefreshCw, FileCode } from "lucide-react";
+import { CheckCircle2, Copy, Eye, EyeOff, ExternalLink, Github, Globe, Key, Server, Shield, Pencil, Check, X, Search, RefreshCw, FileCode, Hash, Link as LinkIcon, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
 import { ServiceModal } from "./service-modal";
@@ -431,19 +431,35 @@ export function OverviewTab({ project }: { project: Project }) {
                     <div className="grid grid-cols-1 gap-3">
                         {project.services?.map((service, i) => (
                             <div key={i} className="flex items-center justify-between p-4 rounded-2xl bg-neutral-50 dark:bg-white/5 border border-neutral-200 dark:border-white/5 group hover:border-blue-500/30 transition-colors">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-500">
-                                        <Globe className="w-5 h-5" />
+                                <div className="flex items-center gap-3 min-w-0">
+                                    <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-500 shrink-0">
+                                        {service.category === 'social' ? <Globe className="w-5 h-5" /> : <Server className="w-5 h-5" />}
                                     </div>
-                                    <div>
-                                        <h4 className="text-sm font-bold text-neutral-900 dark:text-white">{service.name}</h4>
-                                        <a href={service.url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-400 hover:underline">{service.url}</a>
+                                    <div className="min-w-0">
+                                        <div className="flex items-center gap-2">
+                                            <h4 className="text-sm font-bold text-neutral-900 dark:text-white truncate">{service.name}</h4>
+                                            {service.category && <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-white/5 border border-white/5 text-neutral-500 uppercase tracking-wide">{service.category}</span>}
+                                        </div>
+                                        <div className="flex items-center gap-3 text-xs text-neutral-500">
+                                            <span className="truncate max-w-[150px]">{service.account}</span>
+                                            {service.url && (
+                                                <a href={service.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-blue-400 hover:underline">
+                                                    <LinkIcon className="w-3 h-3" /> Link
+                                                </a>
+                                            )}
+                                        </div>
+                                        {service.notes && (
+                                            <div className="mt-1 flex items-start gap-1 text-[10px] text-neutral-500 italic">
+                                                <FileText className="w-3 h-3 shrink-0 mt-0.5" />
+                                                <p className="line-clamp-1">{service.notes}</p>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
-                                <div className="text-right">
-                                    <div className="text-xs text-neutral-500 mb-1">{service.username}</div>
+                                <div className="text-right shrink-0">
+                                    <div className="text-xs font-mono text-neutral-400 mb-1">{service.cost}</div>
                                     <div className="flex gap-2 justify-end opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <button className="p-1.5 hover:bg-white/10 rounded-full text-neutral-400 hover:text-white transition-colors">
+                                        <button className="p-1.5 hover:bg-white/10 rounded-full text-neutral-400 hover:text-white transition-colors" title="Copy Account">
                                             <Copy className="w-3 h-3" />
                                         </button>
                                     </div>

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Service } from "@/data/mock";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Server } from "lucide-react";
+import { X, Server, Link as LinkIcon, Hash, FileText, LayoutGrid } from "lucide-react";
 
 interface ServiceModalProps {
     isOpen: boolean;
@@ -16,6 +16,9 @@ export function ServiceModal({ isOpen, onClose, onSave }: ServiceModalProps) {
     const [name, setName] = useState("");
     const [account, setAccount] = useState("");
     const [cost, setCost] = useState("");
+    const [url, setUrl] = useState("");
+    const [category, setCategory] = useState<Service['category']>('infrastructure');
+    const [notes, setNotes] = useState("");
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -24,7 +27,10 @@ export function ServiceModal({ isOpen, onClose, onSave }: ServiceModalProps) {
             name,
             account,
             cost,
-            status: 'active'
+            status: 'active',
+            url,
+            category,
+            notes
         });
         onClose();
         resetForm();
@@ -35,6 +41,9 @@ export function ServiceModal({ isOpen, onClose, onSave }: ServiceModalProps) {
         setName("");
         setAccount("");
         setCost("");
+        setUrl("");
+        setCategory("infrastructure");
+        setNotes("");
     };
 
     const handleClose = () => {
@@ -64,6 +73,36 @@ export function ServiceModal({ isOpen, onClose, onSave }: ServiceModalProps) {
                     </div>
 
                     <form onSubmit={handleSubmit} className="p-6 space-y-4">
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <label className="text-xs font-semibold uppercase text-neutral-500 flex items-center gap-1">
+                                    <LayoutGrid className="w-3 h-3" /> Category
+                                </label>
+                                <select
+                                    value={category}
+                                    onChange={(e) => setCategory(e.target.value as any)}
+                                    className="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-[#a78bfa] appearance-none"
+                                >
+                                    <option value="infrastructure">Infrastructure</option>
+                                    <option value="social">Social Media</option>
+                                    <option value="saas">SaaS</option>
+                                    <option value="newsletter">Newsletter</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-xs font-semibold uppercase text-neutral-500 flex items-center gap-1">
+                                    <LinkIcon className="w-3 h-3" /> URL
+                                </label>
+                                <input
+                                    value={url}
+                                    onChange={(e) => setUrl(e.target.value)}
+                                    placeholder="https://"
+                                    className="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-[#a78bfa]"
+                                />
+                            </div>
+                        </div>
+
                         <div className="space-y-2">
                             <label className="text-sm font-medium text-neutral-400">Provider <span className="text-red-500">*</span></label>
                             <input
@@ -105,6 +144,18 @@ export function ServiceModal({ isOpen, onClose, onSave }: ServiceModalProps) {
                                 onChange={(e) => setCost(e.target.value)}
                                 placeholder="e.g. $20/mo, Free"
                                 className="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-[#a78bfa]"
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="text-xs font-semibold uppercase text-neutral-500 flex items-center gap-1">
+                                <FileText className="w-3 h-3" /> Secure Notes <span className="text-[9px] normal-case text-neutral-600">(Hints only)</span>
+                            </label>
+                            <textarea
+                                value={notes}
+                                onChange={(e) => setNotes(e.target.value)}
+                                placeholder="Backup email: x@x.com, Created via FB Business..."
+                                className="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-[#a78bfa] h-20 resize-none"
                             />
                         </div>
 
