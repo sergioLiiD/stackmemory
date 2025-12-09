@@ -3,6 +3,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { mockProjects, Project } from "@/data/mock";
 import { supabase } from "@/lib/supabase";
+import { calculateProjectHealth } from "@/lib/project-health";
 
 interface DashboardContextType {
     projects: Project[];
@@ -62,7 +63,13 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
                         deployAccount: p.deploy_account,
                         stack: p.stack || [],
                         lastUpdated: new Date(p.created_at).toLocaleDateString(),
-                        health: p.health_score || 100,
+                        health: calculateProjectHealth({
+                            ...p,
+                            repoUrl: p.repository_url,
+                            liveUrl: p.live_url,
+                            stack: p.stack || [],
+                            services: p.services || []
+                        } as Project),
                         services: p.services || [],
                         secrets: p.secrets || [], // Assumes secrets column exists or handled elsewhere?
                         prompts: p.prompts || [],
@@ -84,7 +91,8 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
     }, []);
 
     const addProject = async (project: Project) => {
-        const newProject = { ...project, id: crypto.randomUUID(), lastUpdated: 'Just now' };
+        const health = calculateProjectHealth(project);
+        const newProject = { ...project, id: crypto.randomUUID(), lastUpdated: 'Just now', health };
         setProjects([newProject, ...projects]);
 
         if (supabase) {
@@ -102,7 +110,7 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
                     deploy_account: project.deployAccount,
                     status: project.status,
                     stack: project.stack,
-                    health_score: project.health
+                    health_score: health
                 });
                 if (error) console.error("Error saving project:", error);
             } catch (err) {
@@ -112,7 +120,15 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
     };
 
     const updateProject = (id: string, updates: Partial<Project>) => {
-        setProjects(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p));
+        setProjects(prev => prev.map(p => {
+            if (p.id === id) {
+                const updated = { ...p, ...updates };
+                // Recalculate health on update
+                updated.health = calculateProjectHealth(updated);
+                return updated;
+            }
+            return p;
+        }));
     };
 
     const deleteProject = async (id: string) => {

@@ -13,6 +13,7 @@ import { StackTab } from "@/components/dashboard/project/tabs/stack-tab";
 import { PromptVaultTab } from "@/components/dashboard/project/tabs/prompt-vault-tab";
 import { JournalTab, SnippetsTab } from "@/components/dashboard/project/tabs/journal-tab";
 import { AssistantTab } from "@/components/dashboard/project/tabs/assistant-tab";
+import { GuideTab } from "@/components/dashboard/project/tabs/guide-tab";
 
 import { BrainCircuit } from "lucide-react";
 
@@ -77,6 +78,7 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
                 {activeTab === 'journal' && <JournalTab project={project} />}
                 {activeTab === 'snippets' && <SnippetsTab project={project} />}
                 {activeTab === 'assistant' && <AssistantTab project={project} />}
+                {activeTab === 'guide' && <GuideTab />}
             </div>
 
         </div>

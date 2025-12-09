@@ -45,7 +45,12 @@ export function ProjectCard({ project, delay = 0 }: { project: Project; delay?: 
                     </span>
 
                     {/* Health Bar Mini */}
-                    <div className="flex items-center gap-2" title={`Health Score: ${project.health}%`}>
+                    {/* Health Bar Mini */}
+                    <div className="flex items-center gap-2" title={`Completeness Score: ${project.health}%
+- Repo: ${project.repoUrl ? '✅' : '❌'}
+- Live: ${project.liveUrl ? '✅' : '❌'}
+- Stack: ${project.stack.length > 0 ? '✅' : '❌'}
+- Services: ${project.services && project.services.length > 0 ? '✅' : '❌'}`}>
                         <div className="w-16 h-1 bg-white/10 rounded-full overflow-hidden">
                             <div
                                 className={`h-full rounded-full ${project.health > 80 ? 'bg-green-500' : project.health > 50 ? 'bg-orange-500' : 'bg-red-500'}`}

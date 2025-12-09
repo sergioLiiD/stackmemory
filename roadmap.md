@@ -23,36 +23,55 @@
   - [x] **Firebase Configuration**: Store and manage API keys securely.
   - [x] **Project To-Do List**: Simple task tracking within the dashboard.
 
-## 🚧 Phase 2: Semantic Intelligence (The "Vibe Coder" Core)
+## ✅ Phase 2: Semantic Intelligence (The "Vibe Coder" Core)
 
-1. **Foundation: Secure Access**
-    - [ ] **GitHub OAuth Integration**:
-        - Configure Supabase Auth with GitHub Provider.
-        - Implement secure token storage (Provider Access Tokens).
-        - Replace current ephemeral PAT system with persistent OAuth sessions.
+- **Foundation: Secure Access**
+  - [x] **GitHub OAuth Integration**:
+    - [x] Configure Supabase Auth with GitHub Provider.
+    - [x] Added `repo` scope for private access.
+    - [x] Validated Persistent Login.
 
-2. **Data Ingestion Engine**
-    - [ ] **Repository Crawler**:
-        - Build a backend worker to fetch repository trees recursively.
-        - Implement file filters (ignore `node_modules`, `lock` files, images).
-        - Extract clean code filtering out noise.
+- **Data Ingestion Engine**
+  - [x] **Repository Crawler**:
+    - [x] Backend worker to crawl GitHub repo trees.
+    - [x] Smart filtering (ignoring `node_modules`, images).
+    - [x] Optimized for Markdown documentation priority.
 
-3. **The Brain: Vector Storage**
-    - [ ] **Database Upgrade**:
-        - Enable `pgvector` extension in Supabase.
-        - Create `embeddings` table linked to `projects`.
-    - [ ] **Embedding Generation**:
-        - Integration with OpenAI/Gemini Embeddings API.
-        - Generate vectors for code chunks upon ingestion.
+- **The Brain: Vector Storage**
+  - [x] **Database Upgrade**:
+    - [x] Enabled `pgvector` extension.
+    - [x] Created `embeddings` table with RLS.
+  - [x] **Embedding Generation**:
+    - [x] OpenAI `text-embedding-ada-002` integration.
+    - [x] Chunking strategy implemented.
 
-4. **User Experience**
-    - [ ] **Semantic Search UI**:
-        - "Smart Search" bar across all projects.
-        - Results visualization (showing code distinct from metadata).
+- **The Mouth: Semantic Search & Chat**
+  - [x] **Vibe Coder Assistant**:
+    - [x] Full RAG (Retrieval Augmented Generation) pipeline.
+    - [x] Streaming Responses with citations.
+    - [x] Integrated `GPT-4o-mini`.
+
+## 🛠️ Phase 3: Advanced Tools & Admin
+
+- **Context Weaver (The "Mega-Prompt" Generator)**
+  - [x] **Automatic Context Injection**:
+    - [x] Fetches README.md & package.json from DB.
+    - [x] Generates File Tree.
+  - [x] **Manual Context Input**: Dedicated area for functional requirements.
+  - [x] **Prompt Persistence**:
+    - [x] Save custom prompts to Database.
+    - [x] "Saved Prompts" library per project.
+
+- **Admin Dashboard**
+  - [x] **Usage Monitoring**:
+    - [x] Track Token Usage & Estimated Costs.
+    - [x] `usage_logs` table.
+  - [x] **Client Management**:
+    - [x] List all users.
+    - [x] Sort by Total Spend.
 
 ## 🔮 Future Ideas
 
-- **AI Context Synthesizer**: Use LLMs to read the repository structure/files and generate a smart "Briefing" summary for the Context Weaver.
-- **Sync with GitHub**: "Re-scan" button to update stack/versions automatically.
-- **Cost Analysis**: Sum total monthly costs from Service Locker.
+- **Deep Cost Analysis**: Break down costs per project.
 - **AI Insights**: Analyze journal entries for decision patterns.
+- **Team Collaboration**: Shared projects and comments.
