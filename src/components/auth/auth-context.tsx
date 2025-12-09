@@ -10,6 +10,7 @@ interface AuthContextType {
     session: Session | null;
     isLoading: boolean;
     signInWithGoogle: () => Promise<void>;
+    signInWithGithub: () => Promise<void>;
     signOut: () => Promise<void>;
 }
 
@@ -51,6 +52,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (error) console.error("Google verify error:", error);
     };
 
+    const signInWithGithub = async () => {
+        if (!supabase) return;
+        const { error } = await supabase.auth.signInWithOAuth({
+            provider: 'github',
+            options: {
+                redirectTo: `${window.location.origin}/auth/callback`
+            }
+        });
+        if (error) console.error("GitHub verify error:", error);
+    };
+
     const signOut = async () => {
         if (!supabase) return;
         await supabase.auth.signOut();
@@ -58,7 +70,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     return (
-        <AuthContext.Provider value={{ user, session, isLoading, signInWithGoogle, signOut }}>
+        <AuthContext.Provider value={{ user, session, isLoading, signInWithGoogle, signInWithGithub, signOut }}>
             {children}
         </AuthContext.Provider>
     );

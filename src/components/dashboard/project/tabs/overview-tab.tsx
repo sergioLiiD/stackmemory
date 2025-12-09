@@ -205,32 +205,7 @@ export function OverviewTab({ project }: { project: Project }) {
                     </div>
                 </div>
 
-                {/* Project Metadata */}
-                <div className="p-6 rounded-3xl bg-white dark:bg-[#121212] border border-neutral-200 dark:border-white/10 shadow-sm dark:shadow-none h-full">
-                    <h3 className="text-lg font-bold text-neutral-900 dark:text-white flex items-center gap-2 mb-4">
-                        <Globe className="w-5 h-5 text-[#a78bfa]" /> Metadata
-                    </h3>
-                    <div className="space-y-4">
-                        <div className="p-3 rounded-2xl bg-neutral-50 dark:bg-white/5 border border-neutral-200 dark:border-white/5">
-                            <label className="text-[10px] uppercase font-bold text-neutral-500 tracking-wider mb-1 block">Project ID</label>
-                            <code className="text-xs text-neutral-700 dark:text-neutral-300 font-mono block break-all">{project.id}</code>
-                        </div>
-                        <div className="p-3 rounded-2xl bg-neutral-50 dark:bg-white/5 border border-neutral-200 dark:border-white/5">
-                            <label className="text-[10px] uppercase font-bold text-neutral-500 tracking-wider mb-1 block">Created At</label>
-                            <code className="text-xs text-neutral-700 dark:text-neutral-300 font-mono block">
-                                {new Date(project.createdAt).toLocaleDateString(undefined, { dateStyle: 'long' })}
-                            </code>
-                        </div>
-                        <div className="flex gap-2">
-                            <button className="flex-1 py-2 rounded-full bg-neutral-100 dark:bg-white/5 hover:bg-neutral-200 dark:hover:bg-white/10 text-xs font-medium text-neutral-700 dark:text-white transition-colors">
-                                Edit Metadata
-                            </button>
-                            <button className="flex-1 py-2 rounded-full bg-red-50 dark:bg-red-500/10 hover:bg-red-100 dark:hover:bg-red-500/20 text-xs font-medium text-red-600 dark:text-red-400 transition-colors">
-                                Archive
-                            </button>
-                        </div>
-                    </div>
-                </div>
+
 
                 {/* Secrets Metadata */}
                 <div className="p-6 rounded-3xl bg-white dark:bg-[#121212] border border-neutral-200 dark:border-white/10 shadow-sm dark:shadow-none">
@@ -253,7 +228,7 @@ export function OverviewTab({ project }: { project: Project }) {
                         {!project.secrets?.length && (
                             <div className="text-center py-4 text-neutral-600 text-sm border border-dashed border-white/10 rounded-lg">No secrets recorded</div>
                         )}
-                        <button className="w-full py-2 mt-2 rounded-lg border border-dashed border-white/10 text-neutral-500 text-xs hover:text-white hover:bg-white/5 transition-colors">+ Add Secret Key</button>
+                        <button className="w-full py-2 mt-2 rounded-full border border-dashed border-neutral-300 dark:border-white/10 text-neutral-500 text-xs hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-white/5 transition-colors">+ Add Secret Key</button>
                     </div>
                 </div>
 
