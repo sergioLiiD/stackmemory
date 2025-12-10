@@ -30,6 +30,80 @@ export function OverviewTab({ project }: { project: Project }) {
     // Crawler State
     const [isCrawling, setIsCrawling] = useState(false);
     const [crawlResult, setCrawlResult] = useState<{ count: number, files: any[] } | null>(null);
+    const [lastSynced, setLastSynced] = useState<string | null>(null);
+
+    // Auth Fallback State
+    const [authError, setAuthError] = useState(false);
+    const [showManualInput, setShowManualInput] = useState(false);
+    const [manualToken, setManualToken] = useState("");
+
+    const handleConnectGithub = async () => {
+        if (!supabase) return;
+        // Set flag to resume sync after redirect
+        if (typeof window !== 'undefined') {
+            localStorage.setItem('pending_sync_project', project.id);
+        }
+        const { error } = await supabase.auth.signInWithOAuth({
+            provider: 'github',
+            options: {
+                scopes: 'repo',
+                redirectTo: window.location.href
+            }
+        });
+        if (error) console.error("GitHub Auth failed:", error);
+    };
+
+    const checkSyncStatus = async () => {
+        try {
+            const res = await fetch('/api/project/sync/status', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ projectId: project.id })
+            });
+            const data = await res.json();
+            if (data.success && data.lastSynced) {
+                setLastSynced(data.lastSynced);
+            }
+        } catch (e) {
+            console.error("Failed to check sync status", e);
+        }
+    };
+
+    const startCrawl = async (overrideToken?: string) => {
+        if (!project.repoUrl) return;
+        setIsCrawling(true);
+        setAuthError(false);
+
+        try {
+            const res = await fetch('/api/crawl', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    repoUrl: project.repoUrl,
+                    projectId: project.id,
+                    githubToken: overrideToken
+                })
+            });
+            const data = await res.json();
+
+            if (res.status === 401) {
+                setAuthError(true);
+                return;
+            }
+
+            if (data.success) {
+                setCrawlResult({ count: data.filesFound, files: data.files });
+                setShowManualInput(false);
+            } else {
+                alert('Error: ' + data.error);
+            }
+        } catch (e) {
+            alert('Failed to crawl');
+        } finally {
+            setIsCrawling(false);
+            checkSyncStatus();
+        }
+    };
 
     // Check for existing embeddings on load
     useEffect(() => {
@@ -47,6 +121,19 @@ export function OverviewTab({ project }: { project: Project }) {
             }
         };
         checkIndex();
+        checkSyncStatus();
+
+        // Check for pending sync (from OAuth redirect)
+        if (typeof window !== 'undefined') {
+            const pendingAndId = localStorage.getItem('pending_sync_project');
+            if (pendingAndId === project.id) {
+                localStorage.removeItem('pending_sync_project');
+                // Allow a small delay for session to stabilize
+                setTimeout(() => {
+                    startCrawl();
+                }, 1000);
+            }
+        }
     }, [project.id]);
 
     const handleDelete = async () => {
@@ -148,16 +235,73 @@ export function OverviewTab({ project }: { project: Project }) {
                 <div className="p-6 rounded-3xl bg-neutral-900 border border-neutral-800 shadow-xl overflow-hidden relative group">
                     <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500/10 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/2 pointer-events-none" />
 
-                    <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2 relative z-10">
-                        <RefreshCw className={cn("w-5 h-5 text-purple-400", isCrawling && "animate-spin")} />
-                        Semantic Indexing
-                    </h3>
-                    <p className="text-xs text-neutral-400 mb-4 relative z-10">
-                        Sync your repository to generate vector embeddings for the AI.
-                    </p>
+                    <div className="mb-4 relative z-10">
+                        <div className="flex items-center justify-between mb-1">
+                            <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                                <RefreshCw className={cn("w-5 h-5 text-purple-400", isCrawling && "animate-spin")} />
+                                Semantic Indexing
+                            </h3>
+                            {lastSynced && (
+                                <span className="text-[10px] text-neutral-500 font-mono bg-black/20 px-2 py-1 rounded">
+                                    Last synced: {new Date(lastSynced).toLocaleString()}
+                                </span>
+                            )}
+                        </div>
+                        <p className="text-xs text-neutral-400">
+                            Sync your repository to generate vector embeddings for the AI.
+                        </p>
+                    </div>
 
                     <div className="relative z-10 space-y-3">
-                        {crawlResult ? (
+                        {authError ? (
+                            <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 animate-in fade-in zoom-in-95 duration-200">
+                                <h4 className="text-sm font-bold text-red-400 mb-2">Authentication Failed</h4>
+                                <p className="text-xs text-neutral-400 mb-4">
+                                    We couldn't access your repository. Please re-authenticate or provide a token manually.
+                                </p>
+
+                                <div className="space-y-3">
+                                    <button onClick={handleConnectGithub} className="w-full flex items-center justify-center gap-2 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-medium transition-colors">
+                                        <Github className="w-4 h-4" /> Connect GitHub
+                                    </button>
+
+                                    <div className="relative">
+                                        <div className="absolute inset-0 flex items-center">
+                                            <div className="w-full border-t border-white/5"></div>
+                                        </div>
+                                        <div className="relative flex justify-center text-[10px] uppercase">
+                                            <span className="bg-[#121212] px-2 text-neutral-500">Or use token</span>
+                                        </div>
+                                    </div>
+
+                                    {showManualInput ? (
+                                        <div className="flex gap-2">
+                                            <input
+                                                value={manualToken}
+                                                onChange={(e) => setManualToken(e.target.value)}
+                                                placeholder="ghp_..."
+                                                className="flex-1 bg-black/30 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-red-500 transition-colors"
+                                                autoFocus
+                                            />
+                                            <button
+                                                onClick={() => startCrawl(manualToken)}
+                                                disabled={!manualToken || isCrawling}
+                                                className="px-3 py-1.5 bg-red-500 text-white rounded-lg text-xs font-medium hover:bg-red-600 disabled:opacity-50 transition-colors"
+                                            >
+                                                {isCrawling ? <RefreshCw className="w-3 h-3 animate-spin" /> : "Sync"}
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <button
+                                            onClick={() => setShowManualInput(true)}
+                                            className="w-full text-xs text-neutral-500 hover:text-neutral-300 transition-colors underline decoration-white/5 hover:decoration-neutral-300"
+                                        >
+                                            I have a Personal Access Token
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        ) : crawlResult ? (
                             <div className="bg-black/30 rounded-xl p-3 border border-white/10">
                                 <div className="flex items-center justify-between mb-2">
                                     <span className="text-sm text-green-400 font-medium flex items-center gap-2">
@@ -183,27 +327,7 @@ export function OverviewTab({ project }: { project: Project }) {
                             </div>
                         ) : (
                             <button
-                                onClick={async () => {
-                                    if (!project.repoUrl) return;
-                                    setIsCrawling(true);
-                                    try {
-                                        const res = await fetch('/api/crawl', {
-                                            method: 'POST',
-                                            headers: { 'Content-Type': 'application/json' },
-                                            body: JSON.stringify({ repoUrl: project.repoUrl, projectId: project.id })
-                                        });
-                                        const data = await res.json();
-                                        if (data.success) {
-                                            setCrawlResult({ count: data.filesFound, files: data.files });
-                                        } else {
-                                            alert('Error: ' + data.error);
-                                        }
-                                    } catch (e) {
-                                        alert('Failed to crawl');
-                                    } finally {
-                                        setIsCrawling(false);
-                                    }
-                                }}
+                                onClick={() => startCrawl()}
                                 disabled={isCrawling || !project.repoUrl}
                                 className="w-full py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-sm font-medium transition-all shadow-lg shadow-purple-900/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                             >

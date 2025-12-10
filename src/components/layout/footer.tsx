@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Github, Twitter, Mail } from "lucide-react";
+import Image from "next/image";
 
 export function Footer() {
     return (
@@ -46,9 +47,22 @@ export function Footer() {
                 </div>
 
                 <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4">
-                    <p className="text-xs text-neutral-500">
-                        © {new Date().getFullYear()} StackMemory. All rights reserved.
-                    </p>
+                    <div className="flex flex-col md:flex-row items-center gap-4 md:gap-8">
+                        <p className="text-xs text-neutral-500">
+                            © {new Date().getFullYear()} StackMemory. All rights reserved.
+                        </p>
+                        <a href="https://ideapunkt.de" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 group opacity-50 hover:opacity-100 transition-opacity">
+                            <span className="text-[10px] text-neutral-500 group-hover:text-white transition-colors">Developed by</span>
+                            <Image
+                                src="/logo_ideapunkt-t-w.png"
+                                alt="Ideapunkt"
+                                width={80}
+                                height={24}
+                                className="h-4 w-auto grayscale group-hover:grayscale-0 transition-all"
+                            />
+                        </a>
+                    </div>
+
                     <div className="flex items-center gap-2 text-xs text-neutral-500">
                         <Mail className="w-3 h-3" />
                         <a href="mailto:hello@stackmemory.app" className="hover:text-white transition-colors">

@@ -6,22 +6,26 @@ import { processRepository } from '@/lib/crawler/github-crawler';
 
 export async function POST(req: Request) {
     try {
-        const { repoUrl, projectId } = await req.json();
+        const { repoUrl, projectId, githubToken } = await req.json();
 
         if (!repoUrl) {
             return NextResponse.json({ error: 'Repository URL is required' }, { status: 400 });
         }
 
         // 1. Get Session & Token
-        const cookieStore = await cookies();
-        const supabase = createClient(cookieStore);
-        const { data: { session } } = await supabase.auth.getSession();
+        // Priority: Manual Token > Session Token
+        let token = githubToken;
 
-        if (!session || !session.provider_token) {
-            return NextResponse.json({ error: 'Unauthorized: Missing GitHub Provider Token. Please re-login with GitHub.' }, { status: 401 });
+        if (!token) {
+            const cookieStore = await cookies();
+            const supabase = createClient(cookieStore);
+            const { data: { session } } = await supabase.auth.getSession();
+            token = session?.provider_token;
         }
 
-        const token = session.provider_token;
+        if (!token) {
+            return NextResponse.json({ error: 'Unauthorized: Missing GitHub Provider Token. Please re-login with GitHub or provide a manual token.' }, { status: 401 });
+        }
 
         // 2. Start Crawling
         // Note: In a production app, this should be offloaded to a queue (Inngest, BullMQ, etc.)
