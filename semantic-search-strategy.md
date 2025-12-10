@@ -1,6 +1,6 @@
 # Semantic Search Strategy (Phase 2)
 
-**Technical Architecture for "The Vibe Coder"**
+## Technical Architecture for "The Vibe Coder"
 
 ## 1. Core Architecture: "The Modern Monolith"
 

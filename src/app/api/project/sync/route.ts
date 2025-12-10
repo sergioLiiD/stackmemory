@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
-import { projects } from '@/data/mock';
+import { mockProjects as projects } from '@/data/mock'; // Fixed import
 
 export async function POST(req: Request) {
     try {

@@ -1,11 +1,38 @@
+
 "use client";
 
 import { BentoCard, BentoHeader } from "@/components/ui/bento-card";
-import { ArrowRight, Box, Code2, Database, History, Terminal, Scan, BrainCircuit, MessageSquareText, Briefcase, MonitorPlay, Layers } from "lucide-react";
+import { ArrowRight, Box, Code2, Database, History, Terminal, Scan, BrainCircuit, MessageSquareText, Briefcase, MonitorPlay, Layers, Brain, Search, Sparkles, BookOpen } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import Image from "next/image";
+import { Footer } from "@/components/layout/footer";
+import { CookieConsent } from "@/components/layout/cookie-consent";
 
 export default function Home() {
+  const steps = [
+    {
+      icon: Terminal,
+      title: "1. Auto-Sync CLI",
+      desc: "Don't copy-paste. Run 'npm install stackmemory' and our invisible CLI watcher updates your Vault whenever you install a new package.",
+      color: "text-blue-400",
+      badge: "New"
+    },
+    {
+      icon: BrainCircuit,
+      title: "2. Context Weaver",
+      desc: "One click to compile your Stack + Rules + Active Prompts into a single payload for ChatGPT or Claude.",
+      color: "text-purple-400"
+    },
+    {
+      icon: MessageSquareText,
+      title: "3. Active Recall",
+      desc: "Ask specifically: 'Where is the production DB key?' and get the answer instantly from your secure Vault.",
+      color: "text-green-400"
+    }
+  ];
+
+
   return (
     <main className="min-h-screen w-full bg-[#050505] relative overflow-hidden flex flex-col items-center">
       {/* Ambient background glow */}
@@ -17,7 +44,7 @@ export default function Home() {
 
           {/* BIG HERO CARD */}
           <BentoCard className="md:col-span-2 md:row-span-2 flex flex-col justify-between group overflow-visible" delay={0.1}>
-            <div className="z-10">
+            <div className="z-10 flex flex-col items-center text-center">
               <motion.div
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -27,16 +54,24 @@ export default function Home() {
                 <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
                 v1.0 Early Access
               </motion.div>
-              <h1 className="text-5xl md:text-6xl font-bold text-white tracking-tighter mb-4">
-                Stack<span className="text-[#8b5cf6]">Memory</span>
-              </h1>
-              <p className="text-lg text-neutral-400 max-w-sm">
+              <div className="mb-8 flex justify-center relative group w-full">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-gradient-to-r from-white/20 to-white/5 rounded-full blur-3xl opacity-50 pointer-events-none group-hover:opacity-75 transition-opacity" />
+                <Image
+                  src="/logo_sm_w.png"
+                  alt="StackMemory Logo"
+                  width={600}
+                  height={160}
+                  className="h-auto w-auto max-w-[300px] md:max-w-[400px] object-contain relative z-10"
+                  priority
+                />
+              </div>
+              <p className="text-lg text-neutral-400 max-w-sm mb-4">
                 The intelligent journal for Developers, Agencies, and Live Coders. Stop forgetting your stack.
               </p>
             </div>
 
-            <div className="mt-8 flex gap-4 z-10">
-              <Link href="/dashboard" className="px-6 py-3 rounded-full bg-white text-black font-semibold hover:scale-105 transition-transform flex items-center gap-2">
+            <div className="flex justify-center z-10 w-full mb-4">
+              <Link href="/dashboard" className="px-6 py-3 rounded-full bg-white text-black font-semibold hover:scale-105 transition-transform flex items-center gap-2 shadow-[0_0_20px_rgba(255,255,255,0.3)]">
                 Start Memory <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
@@ -56,13 +91,13 @@ export default function Home() {
 
             <div className="mt-4 p-3 rounded-lg bg-black/40 font-mono text-xs text-green-400 overflow-hidden relative">
               <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/90" />
-              <p>{`{`}</p>
-              <p className="pl-4">{`"name": "super-app",`}</p>
-              <p className="pl-4">{`"dependencies": {`}</p>
-              <p className="pl-8">{`"next": "^14.0.0",`}</p>
-              <p className="pl-8">{`"react": "^18.2.0"`}</p>
-              <p className="pl-4">{`}`}</p>
-              <p>{`}`}</p>
+              <p>{"{"}</p>
+              <p className="pl-4">"name": "super-app",</p>
+              <p className="pl-4">"dependencies": {"{"}</p>
+              <p className="pl-8">"next": "^14.0.0",</p>
+              <p className="pl-8">"react": "^18.2.0"</p>
+              <p className="pl-4">{"}"}</p>
+              <p>{"}"}</p>
 
               <div className="absolute top-2 right-2 px-2 py-1 bg-[#180260] rounded text-[10px] text-white animate-pulse">
                 Auto-Scanning...
@@ -132,27 +167,7 @@ export default function Home() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {[
-            {
-              icon: Terminal,
-              title: "1. Auto-Sync CLI",
-              desc: "Don't copy-paste. Run 'npm install stackmemory' and our invisible CLI watcher updates your Vault whenever you install a new package.",
-              color: "text-blue-400",
-              badge: "New"
-            },
-            {
-              icon: BrainCircuit,
-              title: "2. Context Weaver",
-              desc: "One click to compile your Stack + Rules + Active Prompts into a single payload for ChatGPT or Claude.",
-              color: "text-purple-400"
-            },
-            {
-              icon: MessageSquareText,
-              title: "3. Active Recall",
-              desc: "Ask specifically: 'Where is the production DB key?' and get the answer instantly from your secure Vault.",
-              color: "text-green-400"
-            },
-          ].map((step, i) => (
+          {steps.map((step, i) => (
             <motion.div
               whileHover={{ y: -5 }}
               key={i}
@@ -173,39 +188,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* --- WHO IS THIS FOR SECTION --- */}
-      <section className="w-full max-w-6xl p-4 pb-32">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Who is StackMemory for?</h2>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <BentoCard className="bg-[#180260]/10 border-[#180260]/30" delay={0.2}>
-            <Briefcase className="w-10 h-10 text-white mb-6" />
-            <h3 className="text-xl font-bold text-white mb-2">The Multi-Project Pro</h3>
-            <p className="text-neutral-400 text-sm">
-              Managing 15+ client projects? Never forget which one uses Next.js 12 vs 14, or where the Vercel deploy hook is.
-            </p>
-          </BentoCard>
-
-          <BentoCard className="bg-white/5" delay={0.3}>
-            <MonitorPlay className="w-10 h-10 text-white mb-6" />
-            <h3 className="text-xl font-bold text-white mb-2">The Live Coder</h3>
-            <p className="text-neutral-400 text-sm">
-              Show your viewers your "Current Stack" with a public widget, without accidentally revealing your .env secrets.
-            </p>
-          </BentoCard>
-
-          <BentoCard className="bg-white/5" delay={0.4}>
-            <Layers className="w-10 h-10 text-white mb-6" />
-            <h3 className="text-xl font-bold text-white mb-2">The Agency Owner</h3>
-            <p className="text-neutral-400 text-sm">
-              Handing off a legacy project? Generate an instant "Resurrection Manual" for the next developer.
-            </p>
-          </BentoCard>
-        </div>
-      </section>
-
-    </main>
+      <Footer />
+      <CookieConsent />
+    </main >
   );
 }

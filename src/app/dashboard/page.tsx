@@ -3,9 +3,15 @@
 import { ProjectCard } from "@/components/dashboard/project-card";
 import { Search, Filter } from "lucide-react";
 import { useDashboard } from "@/components/dashboard/dashboard-context";
+import Image from "next/image";
+import { cn } from "@/lib/utils";
 
 export default function DashboardPage() {
     const { projects } = useDashboard();
+
+    const averageHealth = projects.length > 0
+        ? Math.round(projects.reduce((acc, p) => acc + (p.health || 0), 0) / projects.length)
+        : 0;
 
     return (
         <div className="max-w-7xl mx-auto">
@@ -14,7 +20,26 @@ export default function DashboardPage() {
                 {/* Visual Arc Decoration (CSS Only) */}
                 <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-b from-primary/10 to-transparent rounded-full blur-3xl -translate-y-1/2 translate-x-1/4 pointer-events-none" />
 
-                <div className="relative z-10 flex flex-col md:flex-row items-end justify-start gap-8 max-w-4xl">
+                <div className="relative z-10 flex flex-col md:flex-row items-center md:items-end justify-start gap-6 max-w-4xl">
+                    <div className="relative group shrink-0 z-0">
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-white/20 dark:bg-white/40 rounded-full blur-3xl -z-10 opacity-80 group-hover:opacity-100 transition-opacity" />
+                        {/* Light Mode Logo */}
+                        <Image
+                            src="/logo_sm.png"
+                            alt="StackMemory"
+                            width={80}
+                            height={80}
+                            className="w-20 h-20 object-contain relative z-20 block dark:hidden"
+                        />
+                        {/* Dark Mode Logo */}
+                        <Image
+                            src="/logo_sm_w.png"
+                            alt="StackMemory"
+                            width={80}
+                            height={80}
+                            className="w-20 h-20 object-contain relative z-20 hidden dark:block"
+                        />
+                    </div>
                     <div>
                         <h1 className="text-3xl md:text-4xl font-bold text-foreground tracking-tight mb-1">
                             My Portfolio
@@ -26,13 +51,16 @@ export default function DashboardPage() {
 
                     {/* Quick Stats - Inline to save height */}
                     <div className="flex gap-4">
-                        <div className="bg-background/40 backdrop-blur-md rounded-xl px-4 py-2 border border-white/5 min-w-[100px] shadow-sm">
+                        <div className="bg-white/50 dark:bg-black/40 backdrop-blur-md rounded-2xl px-5 py-2.5 border border-black/5 dark:border-white/5 min-w-[100px] shadow-sm">
                             <div className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold mb-0.5">Projects</div>
                             <div className="text-xl font-bold text-foreground">{projects.length}</div>
                         </div>
-                        <div className="bg-background/40 backdrop-blur-md rounded-xl px-4 py-2 border border-white/5 min-w-[100px] shadow-sm">
+                        <div className="bg-white/50 dark:bg-black/40 backdrop-blur-md rounded-2xl px-5 py-2.5 border border-black/5 dark:border-white/5 min-w-[100px] shadow-sm">
                             <div className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold mb-0.5">Health</div>
-                            <div className="text-xl font-bold text-emerald-500">89%</div>
+                            <div className={cn("text-xl font-bold",
+                                averageHealth >= 80 ? "text-emerald-500" :
+                                    averageHealth >= 50 ? "text-yellow-500" : "text-red-500"
+                            )}>{averageHealth}%</div>
                         </div>
                     </div>
                 </div>
