@@ -1,13 +1,16 @@
 "use client";
 
 import { ProjectCard } from "@/components/dashboard/project-card";
-import { Search, Filter } from "lucide-react";
+import { Search, Filter, Terminal } from "lucide-react";
 import { useDashboard } from "@/components/dashboard/dashboard-context";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
+import { CliInstructionsModal } from "@/components/dashboard/cli-instructions-modal";
 
 export default function DashboardPage() {
     const { projects } = useDashboard();
+    const [isCliModalOpen, setIsCliModalOpen] = useState(false);
 
     const averageHealth = projects.length > 0
         ? Math.round(projects.reduce((acc, p) => acc + (p.health || 0), 0) / projects.length)
@@ -66,7 +69,14 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Search Bar Floating in Hero */}
-                <div className="absolute top-8 right-8 hidden xl:flex items-center gap-3">
+                <div className="absolute top-8 right-8 hidden xl:flex items-center gap-3 z-50">
+                    <button
+                        onClick={() => setIsCliModalOpen(true)}
+                        className="flex items-center gap-2 px-4 py-3 rounded-full bg-white/10 hover:bg-white/20 border border-white/10 text-sm font-medium text-white transition-colors"
+                    >
+                        <Terminal className="w-4 h-4" />
+                        Connect CLI
+                    </button>
                     <div className="relative group/search">
                         <Search className="w-4 h-4 absolute left-4 top-3.5 text-muted-foreground group-focus-within/search:text-primary transition-colors" />
                         <input
@@ -92,6 +102,11 @@ export default function DashboardPage() {
                     <ProjectCard key={project.id} project={project} delay={index * 0.1} />
                 ))}
             </div>
+
+            <CliInstructionsModal
+                isOpen={isCliModalOpen}
+                onClose={() => setIsCliModalOpen(false)}
+            />
         </div>
     );
 }

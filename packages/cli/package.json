@@ -1,0 +1,23 @@
+{
+    "name": "stackmemory",
+    "version": "0.0.1",
+    "description": "The silent observer for your stack. Syncs dependencies and scripts to your StackMemory Vault.",
+    "main": "bin/stackmemory.js",
+    "bin": {
+        "stackmemory": "./bin/stackmemory.js"
+    },
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "author": "Sergio",
+    "license": "ISC",
+    "keywords": [
+        "stackmemory",
+        "cli",
+        "sync",
+        "developer-tools"
+    ],
+    "engines": {
+        "node": ">=18"
+    }
+}

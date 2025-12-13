@@ -70,8 +70,46 @@
     - [x] List all users.
     - [x] Sort by Total Spend.
 
+## 💎 Monetization & Growth (Beta Launch)
+
+- **Commercial Infrastructure**:
+  - [ ] **Payment Gateway**: Integration (Stripe/LemonSqueezy).
+  - [ ] **Discount Codes**: System to manage invite codes/discounts.
+- **Beta Program (500 Users)**:
+  - [ ] **Lifetime Deal (LTD) Strategy**:
+    - [ ] Define limits (Projects, Storage, AI Tokens).
+    - [ ] Create signup flow for Beta Testers.
+- **Analytics**:
+  - [ ] Google Analytics Integration.
+
 ## 🔮 Future Ideas
 
 - **Deep Cost Analysis**: Break down costs per project.
 - **AI Insights**: Analyze journal entries for decision patterns.
 - **Team Collaboration**: Shared projects and comments.
+
+## 🚀 Phase 3.5: CLI & Public Launch (MVP Polish)
+
+- **CLI Package**:
+  - [ ] Prepare `package.json` for NPM publication (`bin`, `files`).
+  - [ ] Publish `stackmemory` to NPM Registry.
+  - [ ] Verify `npm install -g stackmemory` works on clean machine.
+- **Onboarding Experience**:
+  - [x] "Connect CLI" Modal with instructions.
+  - [ ] "Empty State" for new users (Quick Start Guide).
+  - [ ] Verify End-to-End flow (SignUp -> Install -> Sync).
+- **Compliance**:
+  - [ ] Add Privacy Policy Page (Required for Google Auth).
+  - [ ] Add Terms of Service Page.
+
+## 🧩 Phase 4: Low-Code Operations (n8n Integration)
+
+- **Prompt Hub & Extraction**:
+  - [ ] Import n8n workflows (.json).
+  - [ ] Auto-extract System Prompts from semantic nodes (OpenAI, LangChain).
+- **Semantic Logic Parsing**:
+  - [ ] Convert visual graph (JSON) to pseudo-code representation.
+  - [ ] Enable "What does this workflow do?" search queries.
+- **Dependency & Credential Mapping**:
+  - [ ] Visualize credential usage across workflows.
+  - [ ] Map "Invisible" dependencies (Webhook A -> Workflow B).

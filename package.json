@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "cli:watch": "node src/cli/watch.js"
+    "cli:watch": "node packages/cli/bin/stackmemory.js"
   },
   "dependencies": {
     "@stripe/stripe-js": "^8.5.3",
