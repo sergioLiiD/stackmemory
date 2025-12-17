@@ -8,7 +8,23 @@ import { FeatureGrid } from "@/components/landing/feature-grid";
 import { ProblemSection } from "@/components/landing/problem-section";
 import { WorkflowSection } from "@/components/landing/workflow-section";
 
-export default function Home() {
+import { useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense } from "react";
+
+function LandingContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const code = searchParams.get('code');
+    if (code) {
+      // Redirect to the auth callback with the code
+      // We use window.location to ensure we hit the server route fully
+      window.location.href = `/auth/callback?code=${code}`;
+    }
+  }, [searchParams]);
+
   return (
     <main className="min-h-screen w-full bg-[#050505] relative overflow-hidden flex flex-col items-center">
       {/* Ambient background glow */}
@@ -23,5 +39,13 @@ export default function Home() {
       <Footer />
       <CookieConsent />
     </main >
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#050505]" />}>
+      <LandingContent />
+    </Suspense>
   );
 }
