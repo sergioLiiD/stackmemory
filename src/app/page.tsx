@@ -13,7 +13,7 @@ import { WorkflowSection } from "@/components/landing/workflow-section";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Suspense } from "react";
-import { useAuth } from "@/components/auth/auth-context";
+
 
 function LandingContent() {
   const router = useRouter();
