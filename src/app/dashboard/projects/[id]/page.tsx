@@ -3,7 +3,7 @@
 import { use, useEffect, useState } from "react";
 import { useDashboard } from "@/components/dashboard/dashboard-context";
 import { Project } from "@/data/mock";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Pencil, Check, X as XIcon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -19,15 +19,24 @@ import { BrainCircuit, Copy } from "lucide-react";
 
 export default function ProjectDetailsPage({ params }: { params: Promise<{ id: string }> }) {
     const unwrappedParams = use(params);
-    const { projects } = useDashboard();
+    const { projects, updateProject } = useDashboard();
     const router = useRouter();
     const [project, setProject] = useState<Project | null>(null);
     const [activeTab, setActiveTab] = useState<TabId>('overview');
 
+    // Edit State
+    const [isEditing, setIsEditing] = useState(false);
+    const [editName, setEditName] = useState("");
+    const [editDesc, setEditDesc] = useState("");
+
     useEffect(() => {
         const found = projects.find(p => p.id === unwrappedParams.id);
         if (found) {
-            setProject(found);
+            if (found) {
+                setProject(found);
+                setEditName(found.name);
+                setEditDesc(found.description);
+            }
         }
     }, [unwrappedParams.id, projects]);
 
@@ -48,9 +57,58 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
 
             {/* Header */}
             <div className="flex items-start justify-between mb-8">
-                <div>
-                    <h1 className="text-4xl font-bold text-neutral-900 dark:text-white mb-2">{project.name}</h1>
-                    <p className="text-xl text-neutral-600 dark:text-neutral-400 mb-3">{project.description}</p>
+                <div className="flex-1 mr-8">
+                    {!isEditing ? (
+                        <>
+                            <div className="flex items-center gap-3 mb-2 group">
+                                <h1 className="text-4xl font-bold text-neutral-900 dark:text-white">{project.name}</h1>
+                                <button
+                                    onClick={() => setIsEditing(true)}
+                                    className="p-2 rounded-full hover:bg-white/5 text-neutral-500 hover:text-white opacity-0 group-hover:opacity-100 transition-all"
+                                >
+                                    <Pencil className="w-4 h-4" />
+                                </button>
+                            </div>
+                            <p className="text-xl text-neutral-600 dark:text-neutral-400 mb-3">{project.description}</p>
+                        </>
+                    ) : (
+                        <div className="space-y-3 mb-4 max-w-xl">
+                            <input
+                                value={editName}
+                                onChange={(e) => setEditName(e.target.value)}
+                                className="w-full bg-[#121212] border border-white/10 rounded-lg px-4 py-2 text-2xl font-bold text-white focus:outline-none focus:border-[#a78bfa] transition-colors"
+                                placeholder="Project Name"
+                                autoFocus
+                            />
+                            <textarea
+                                value={editDesc}
+                                onChange={(e) => setEditDesc(e.target.value)}
+                                className="w-full bg-[#121212] border border-white/10 rounded-lg px-4 py-2 text-base text-white focus:outline-none focus:border-[#a78bfa] transition-colors resize-none h-24"
+                                placeholder="Project Description"
+                            />
+                            <div className="flex items-center gap-2">
+                                <button
+                                    onClick={() => {
+                                        updateProject(project.id, { name: editName, description: editDesc });
+                                        setIsEditing(false);
+                                    }}
+                                    className="flex items-center gap-2 px-3 py-1.5 bg-[#180260] hover:bg-[#2e1065] text-white text-sm font-medium rounded-lg transition-colors border border-white/10"
+                                >
+                                    <Check className="w-4 h-4" /> Save
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        setIsEditing(false);
+                                        setEditName(project.name);
+                                        setEditDesc(project.description);
+                                    }}
+                                    className="flex items-center gap-2 px-3 py-1.5 hover:bg-white/10 text-neutral-400 hover:text-white text-sm font-medium rounded-lg transition-colors"
+                                >
+                                    <XIcon className="w-4 h-4" /> Cancel
+                                </button>
+                            </div>
+                        </div>
+                    )}
 
                     <div className="flex items-center gap-2">
                         <span className="text-xs font-bold text-neutral-500 uppercase tracking-wider">Project ID:</span>

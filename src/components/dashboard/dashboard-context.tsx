@@ -119,7 +119,7 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
         }
     };
 
-    const updateProject = (id: string, updates: Partial<Project>) => {
+    const updateProject = async (id: string, updates: Partial<Project>) => {
         setProjects(prev => prev.map(p => {
             if (p.id === id) {
                 const updated = { ...p, ...updates };
@@ -129,6 +129,30 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
             }
             return p;
         }));
+
+        if (supabase) {
+            try {
+                // Map frontend fields to DB columns
+                const dbUpdates: any = {};
+                if (updates.name) dbUpdates.name = updates.name;
+                if (updates.description) dbUpdates.description = updates.description;
+                if (updates.repoUrl) dbUpdates.repository_url = updates.repoUrl;
+                if (updates.liveUrl) dbUpdates.live_url = updates.liveUrl;
+                if (updates.status) dbUpdates.status = updates.status;
+                if (updates.stack) dbUpdates.stack = updates.stack;
+
+                if (Object.keys(dbUpdates).length > 0) {
+                    const { error } = await supabase
+                        .from('projects')
+                        .update(dbUpdates)
+                        .eq('id', id);
+
+                    if (error) console.error("Error updating project:", error);
+                }
+            } catch (err) {
+                console.error("Supabase update failed", err);
+            }
+        }
     };
 
     const deleteProject = async (id: string) => {
