@@ -19,7 +19,7 @@ export function Footer() {
                             <Link href="#" className="p-2 rounded-full bg-white/5 hover:bg-white/10 text-neutral-400 hover:text-white transition-colors">
                                 <Twitter className="w-4 h-4" />
                             </Link>
-                            <a href="mailto:hello@stackmemory.app" className="p-2 rounded-full bg-white/5 hover:bg-white/10 text-neutral-400 hover:text-white transition-colors">
+                            <a href="mailto:hello@stackmemory.app" suppressHydrationWarning className="p-2 rounded-full bg-white/5 hover:bg-white/10 text-neutral-400 hover:text-white transition-colors">
                                 <Mail className="w-4 h-4" />
                             </a>
                         </div>
@@ -65,7 +65,7 @@ export function Footer() {
 
                     <div className="flex items-center gap-2 text-xs text-neutral-500">
                         <Mail className="w-3 h-3" />
-                        <a href="mailto:hello@stackmemory.app" className="hover:text-white transition-colors">
+                        <a href="mailto:hello@stackmemory.app" suppressHydrationWarning className="hover:text-white transition-colors">
                             hello@stackmemory.app
                         </a>
                     </div>
