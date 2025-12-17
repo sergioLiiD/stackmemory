@@ -1,63 +1,76 @@
-# Análisis de Costos de Modelos AI
+# 💰 Plan de Costos y Escalabilidad (StackMemory)
 
-Este documento detalla los costos asociados con el uso de la API de OpenAI para "StackMemory" (Vibe Coder).
+Este documento proyecta los costos operativos mensuales estimados considerando Infraestructura (Vercel, Supabase) e Inteligencia Artificial (OpenAI), permitiendo definir el precio del "Lifetime Deal".
 
-## 1. El Cerebro (Embeddings)
+## 1. Estructura de Costos Base
 
-**Modelo**: `text-embedding-ada-002`
-Se usa para: Indexar el código del repositorio (sincronización).
+### ☁️ Infraestructura (Fixed Costs)
 
-| Concepto | Precio |
-| :--- | :--- |
-| **Input (Lectura)** | **$0.02** / 1,000,000 tokens |
+Para operar comercialmente (y evitar límites de planes gratuitos), asumimos los planes "Pro" desde el inicio del programa Beta.
 
-### Ejemplo Práctico: Sincronización
-
-Un repositorio mediano de Next.js suele tener unos **50 archivos** de código puro, con un promedio de 2,000 tokens por archivo.
-
-* Total tokens: 100,000 tokens
-* **Costo por Sync**: $0.002 (¡Menos de un centavo!)
-
----
-
-## 2. La Boca (Chat / RAG)
-
-**Modelo**: `gpt-4o-mini`
-Se usa para: Responder preguntas y explicar el código.
-
-| Concepto | Precio |
-| :--- | :--- |
-| **Input (Contexto)** | **$0.15** / 1,000,000 tokens |
-| **Output (Respuesta)** | **$0.60** / 1,000,000 tokens |
-
-### Ejemplo Práctico: Una Pregunta
-
-Cuando haces una pregunta, enviamos tu pregunta + fragmentos de código relevantes (contexto).
-
-* **Input**: ~3,000 tokens de contexto (código recuperado). Costo: $0.00045
-* **Output**: ~500 tokens de respuesta (explicación). Costo: $0.0003
-* **Costo Total por Pregunta**: **$0.00075** (Menos de una décima de centavo)
-
----
-
-## Comparativa con Otros Modelos
-
-Para entender por qué elegimos `gpt-4o-mini`:
-
-| Modelo | Input (1M tokens) | Output (1M tokens) | Costo por Pregunta (aprox) |
+| Servicio | Plan | Costo Base Mensual | Incluye |
 | :--- | :--- | :--- | :--- |
-| **GPT-4o-mini (Actual)** | **$0.15** | **$0.60** | **~$0.0007** |
-| GPT-3.5-Turbo | $0.50 | $1.50 | ~$0.0025 (3x más caro) |
-| GPT-4o (Potente) | $5.00 | $15.00 | ~$0.0250 (35x más caro) |
-| Claude 3.5 Sonnet | $3.00 | $15.00 | ~$0.0180 (25x más caro) |
+| **Vercel** | Pro | **$20** | 1TB Bandwidth, 1M Edge Requests (Suficiente hasta ~5k usuarios). |
+| **Supabase** | Pro | **$25** | 8GB Database, 100GB Transfer, Backups diarios. |
+| **Total Fijo** | | **$45 / mes** | Base operativa mínima. |
 
-## Conclusión Mensual Estimada
+### 🧠 Inteligencia Artificial (Variable Costs)
 
-Si usas el asistente intensamente (ej: 10 sincronizaciones de repo y 500 preguntas al mes):
+Estimación basada en uso "Intensivo Promedio" (sincronización semanal + consultas diarias).
 
-1. **Syncs**: 10 * $0.002 = $0.02
-2. **Chats**: 500 * $0.00075 = $0.375
+* **Promedio por Usuario**: ~$0.50 USD / mes
+  * *Desglose*: $0.05 (Sync) + $0.45 (Chat/RAG con GPT-4o-mini).
 
-**Total Estimado al Mes: ~$0.40 USD**
+---
 
-Es una solución extremadamente económica y escalable.
+## 2. Tabla de Escalamiento
+
+Proyección de costos totales según el volumen de usuarios activos.
+
+| Escenario | Usuarios | Costo Fijo (Infra) | Costo Variable (AI @ $0.50) | **Costo Total Mensual** | **Costo Real por Usuario** |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **MVP / Testing** | 10 | $0 (Free Tier) | $5 | **$5** | $0.50 |
+| **Alpha** | 50 | $0 (Free Tier) | $25 | **$25** | $0.50 |
+| **Beta (Objetivo)** | **500** | $45 | $250 | **$295** | **$0.59** |
+| **Growth 1** | 1,000 | $45 | $500 | **$545** | $0.55 |
+| **Growth 2** | 5,000 | $65* | $2,500 | **$2,565** | $0.51 |
+
+*\*Nota: En 5,000 usuarios, podríamos exceder ligeramente los límites base de Supabase/Vercel (Disk/Requests), añadiendo un estimado de $20 extra.*
+
+---
+
+## 3. Estrategia de Precios (Lifetime Deal)
+
+Para el programa de **500 Beta Testers**, el objetivo es financiar el desarrollo y cubrir costos operativos de al menos 2-3 años.
+
+### Análisis de Lifetime Deal (LTD)
+
+Si el costo operativo de un usuario es **~$0.60 / mes** ($7.20 / año).
+
+* **Costo a 3 años**: ~$21.60 USD
+* **Costo a 5 años**: ~$36.00 USD
+
+### Propuesta de Precio LTD
+
+Para ser rentable y atractivo:
+
+* **Precio LTD Sugerido**: **$49 - $69 USD** (Pago único).
+  * *Ingresos (500 usuarios @ $49)*: **$24,500 USD**.
+  * *Runway (Costos operativos @ $295/mes)*: **~83 Meses (casi 7 años)** de operación cubierta solo con el LTD.
+
+### Límites Sugeridos para el LTD
+
+Para evitar abusos ("Whales") que disparen los costos de AI:
+
+1. **Proyectos**: Ilimitados (El almacenamiento es barato).
+2. **Sincronizaciones**: 50 / mes (Evita resyncs compulsivos).
+3. **Chat (Fair Use)**: 2,000 mensajes / mes (~$1.50 de costo en el peor caso).
+    * *Si exceden*: Ofrecer paquete de "créditos AI" o pedir su propia API Key.
+
+---
+
+## 4. Próximos Pasos de Implementación
+
+1. [ ] Configurar **Vercel Pro** y **Supabase Pro** (antes de recibir tráfico real del LTD).
+2. [ ] Implementar **Límites de Uso** en el backend (Contador de tokens/mensajes por usuario).
+3. [ ] Integrar Pasarela de Pago (Stripe) para el cobro del LTD.

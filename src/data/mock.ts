@@ -96,6 +96,7 @@ export interface Project {
     prompts?: TopPrompt[];
     journal?: JournalEntry[];
     snippets?: Snippet[];
+    design?: DesignSystem;
 }
 
 export const mockProjects: Project[] = [

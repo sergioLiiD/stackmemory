@@ -20,12 +20,12 @@ export default function PricingPage() {
             const response = await fetch('/api/stripe/checkout', {
                 method: 'POST',
             });
-            const { sessionId } = await response.json();
-
-            const stripe = await stripePromise;
-            if (!stripe) throw new Error("Stripe failed to load");
-
-            await stripe.redirectToCheckout({ sessionId });
+            const { sessionId, url } = await response.json();
+            if (url) {
+                window.location.href = url;
+            } else {
+                throw new Error("No checkout URL received");
+            }
         } catch (error) {
             console.error("Upgrade failed:", error);
             // Ideally show a toast here
