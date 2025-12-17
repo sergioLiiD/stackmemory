@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Project, StackItem } from "@/data/mock";
-import { Box, Layers, Plus, Trash2, Save, X, Pencil, ShieldAlert } from "lucide-react";
+import { Box, Layers, Plus, Trash2, Save, X, Pencil, ShieldAlert, ArrowUpRight } from "lucide-react";
 import { useDashboard } from "../../dashboard-context";
 import { supabase } from "@/lib/supabase";
 import { StackModal } from "./stack-modal";
@@ -192,19 +192,25 @@ export function StackTab({ project }: { project: Project }) {
 
                         {/* Explicit Warning/Alert Section */}
                         {(updates[item.name.toLowerCase()]?.latest || (updates[item.name.toLowerCase()]?.vulnerabilities && updates[item.name.toLowerCase()]!.vulnerabilities!.length > 0)) && (
-                            <div className="mt-3 p-3 rounded-xl bg-red-500/5 border border-red-500/10 space-y-2">
+                            <div className="mt-3 p-3 rounded-xl bg-red-500/5 border border-red-500/10 space-y-3">
                                 {updates[item.name.toLowerCase()]?.latest && (
                                     <div className="flex items-start gap-2 text-xs text-red-300">
                                         <ArrowUpRight className="w-3.5 h-3.5 mt-0.5 shrink-0" />
-                                        <span>Update available: <span className="font-bold text-red-200">v{updates[item.name.toLowerCase()].latest}</span></span>
+                                        <div className="flex flex-col">
+                                            <span className="font-bold text-red-200">New Version Available</span>
+                                            <span className="opacity-80">Update to <span className="font-mono bg-red-500/10 px-1 rounded">v{updates[item.name.toLowerCase()].latest}</span> recommended.</span>
+                                        </div>
                                     </div>
                                 )}
                                 {updates[item.name.toLowerCase()]?.vulnerabilities?.map((v: any, idx: number) => (
                                     <div key={idx} className="flex items-start gap-2 text-xs text-red-400/80">
                                         <ShieldAlert className="w-3.5 h-3.5 mt-0.5 shrink-0" />
-                                        <span>
-                                            <span className="font-bold">{v.id}</span>: {v.summary}
-                                        </span>
+                                        <div className="flex flex-col">
+                                            <span className="font-bold text-red-100 flex items-center gap-1">Security Vulnerability <span className="text-[9px] bg-red-500/20 px-1 rounded uppercase tracking-wider text-red-200">Critical</span></span>
+                                            <span className="font-mono text-[10px] opacity-70 mb-0.5">{v.id}</span>
+                                            <span className="leading-relaxed">{v.summary}</span>
+                                            <span className="mt-1 text-red-300 underline cursor-pointer hover:text-red-200">View Patch Info</span>
+                                        </div>
                                     </div>
                                 ))}
                             </div>
