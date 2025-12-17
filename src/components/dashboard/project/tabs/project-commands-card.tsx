@@ -104,10 +104,10 @@ export function ProjectCommandsCard({ project }: { project: Project }) {
                         <div>
                             <p className="font-bold mb-1 text-blue-400">Automate this with CLI</p>
                             <p className="opacity-80 mb-2">
-                                Run the watcher to automatically sync your <code>package.json</code> scripts to this dashboard.
+                                Run the watcher in your project root to auto-sync <code>package.json</code>.
                             </p>
-                            <div className="bg-black/30 rounded px-2 py-1.5 font-mono text-white inline-block border border-white/5">
-                                npm run cli:watch
+                            <div className="bg-black/30 rounded px-2 py-1.5 font-mono text-white inline-block border border-white/5 select-all">
+                                npx stackmemory --project {project.id}
                             </div>
                         </div>
                     </div>

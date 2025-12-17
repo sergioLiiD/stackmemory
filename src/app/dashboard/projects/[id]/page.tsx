@@ -15,7 +15,7 @@ import { JournalTab, SnippetsTab } from "@/components/dashboard/project/tabs/jou
 import { AssistantTab } from "@/components/dashboard/project/tabs/assistant-tab";
 import { GuideTab } from "@/components/dashboard/project/tabs/guide-tab";
 
-import { BrainCircuit } from "lucide-react";
+import { BrainCircuit, Copy } from "lucide-react";
 
 export default function ProjectDetailsPage({ params }: { params: Promise<{ id: string }> }) {
     const unwrappedParams = use(params);
@@ -50,7 +50,22 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
             <div className="flex items-start justify-between mb-8">
                 <div>
                     <h1 className="text-4xl font-bold text-neutral-900 dark:text-white mb-2">{project.name}</h1>
-                    <p className="text-xl text-neutral-600 dark:text-neutral-400">{project.description}</p>
+                    <p className="text-xl text-neutral-600 dark:text-neutral-400 mb-3">{project.description}</p>
+
+                    <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold text-neutral-500 uppercase tracking-wider">Project ID:</span>
+                        <button
+                            onClick={() => {
+                                navigator.clipboard.writeText(project.id);
+                                // Optional: You might want to add a toast toast here if you have a toast system
+                            }}
+                            className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-white/5 border border-white/10 hover:bg-white/10 transition-colors group"
+                            title="Click to copy"
+                        >
+                            <code className="text-xs font-mono text-[#a78bfa]">{project.id}</code>
+                            <Copy className="w-3 h-3 text-neutral-500 group-hover:text-white transition-colors" />
+                        </button>
+                    </div>
                 </div>
                 <div className="flex items-center gap-3">
                     <button

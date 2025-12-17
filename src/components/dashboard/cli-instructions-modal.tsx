@@ -8,9 +8,10 @@ import { cn } from "@/lib/utils";
 interface CliInstructionsModalProps {
     isOpen: boolean;
     onClose: () => void;
+    projectId: string;
 }
 
-export function CliInstructionsModal({ isOpen, onClose }: CliInstructionsModalProps) {
+export function CliInstructionsModal({ isOpen, onClose, projectId }: CliInstructionsModalProps) {
     const [copiedStep, setCopiedStep] = useState<number | null>(null);
 
     const copyToClipboard = (text: string, stepIndex: number) => {
@@ -21,21 +22,15 @@ export function CliInstructionsModal({ isOpen, onClose }: CliInstructionsModalPr
 
     const steps = [
         {
-            title: "Install the CLI",
-            description: "Install the StackMemory package globally to use it in any project.",
-            command: "npm install -g stackmemory",
+            title: "Run the Magic Command",
+            description: "Go to your project's root folder and run this single command. No installation required.",
+            command: `npx stackmemory --project ${projectId}`,
             icon: Terminal
         },
         {
-            title: "Authenticate",
-            description: "Set your API Key as an environment variable.",
-            command: "export STACKMEMORY_API_KEY=sm_live_xxxxxxxxxxxx",
-            icon: Key
-        },
-        {
-            title: "Start Watching",
-            description: "Run the watcher in your project root. It will detect new packages automatically.",
-            command: "stackmemory watch",
+            title: "Watch it Sync",
+            description: "The CLI will silently watch your package.json and sync any dependency changes or scripts instantly.",
+            command: "Parsing package.json... Sync Success! ✔",
             icon: ChevronRight
         }
     ];

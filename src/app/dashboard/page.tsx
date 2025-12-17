@@ -106,6 +106,7 @@ export default function DashboardPage() {
             <CliInstructionsModal
                 isOpen={isCliModalOpen}
                 onClose={() => setIsCliModalOpen(false)}
+                projectId={projects.length > 0 ? projects[0].id : "YOUR_PROJECT_ID"}
             />
         </div>
     );
