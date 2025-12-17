@@ -46,7 +46,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const { error } = await supabase.auth.signInWithOAuth({
             provider: 'google',
             options: {
-                redirectTo: `${window.location.origin}/auth/callback`
+                redirectTo: `${window.location.origin}/auth/callback?next=/dashboard`
             }
         });
         if (error) console.error("Google verify error:", error);
@@ -57,7 +57,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const { error } = await supabase.auth.signInWithOAuth({
             provider: 'github',
             options: {
-                redirectTo: `${window.location.origin}/auth/callback`,
+                redirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
                 scopes: 'repo'
             }
         });
