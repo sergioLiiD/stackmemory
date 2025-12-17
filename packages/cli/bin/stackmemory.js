@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 const fs = require('fs');
 const path = require('path');
-const { exec } = require('child_process');
 
 // Colors for console
 const colors = {
@@ -13,10 +12,22 @@ const colors = {
     red: "\x1b[31m",
 };
 
-const LOG_PREFIX = `${colors.blue}[StacKMemory CLI]${colors.reset}`;
+const LOG_PREFIX = `${colors.blue}[StackMemory]${colors.reset}`;
+const API_URL = process.env.STACKMEMORY_API_URL || 'https://stackmemory.app/api/project/sync';
 
-console.log(`${LOG_PREFIX} Starting Auto-Sync Watcher... 👻`);
-console.log(`${LOG_PREFIX} Watching package.json for changes...`);
+// Parse Args
+const args = process.argv.slice(2);
+const projectIdx = args.indexOf('--project');
+const projectId = projectIdx !== -1 ? args[projectIdx + 1] : process.env.STACKMEMORY_PROJECT_ID;
+
+if (!projectId) {
+    console.error(`${LOG_PREFIX} ${colors.red}Error: No Project ID provided.${colors.reset}`);
+    console.log(`Usage: npx stackmemory --project <YOUR_PROJECT_ID>`);
+    process.exit(1);
+}
+
+console.log(`${LOG_PREFIX} Starting Auto-Sync for Project: ${colors.bright}${projectId}${colors.reset}`);
+console.log(`${LOG_PREFIX} Target API: ${API_URL}`);
 
 const targetFile = path.resolve(process.cwd(), 'package.json');
 
@@ -25,13 +36,14 @@ if (!fs.existsSync(targetFile)) {
     process.exit(1);
 }
 
+// Debounce logic
 let fsWait = false;
 fs.watch(targetFile, (event, filename) => {
     if (filename && event === 'change') {
         if (fsWait) return;
         fsWait = setTimeout(() => {
             fsWait = false;
-        }, 100);
+        }, 500); // 500ms debounce
 
         console.log(`${LOG_PREFIX} ${colors.yellow}Change detected in ${filename}!${colors.reset}`);
         analyzeAndSync();
@@ -39,54 +51,49 @@ fs.watch(targetFile, (event, filename) => {
 });
 
 async function analyzeAndSync() {
-    console.log(`${LOG_PREFIX} Reading package.json...`);
-
     try {
         const fileContent = fs.readFileSync(targetFile, 'utf8');
         const pkg = JSON.parse(fileContent);
 
         // 1. Extract Stack
-        const dependencies = { ...pkg.dependencies, ...pkg.devDependencies };
+        const dependencies = { ...pkg.dependencies, ...pkg.devDependencies, ...pkg.peerDependencies };
         const stack = Object.keys(dependencies).map(key => ({
             name: key,
-            version: dependencies[key].replace('^', '').replace('~', '')
+            version: dependencies[key].replace(/[\^~]/g, '')
         }));
 
         // 2. Extract Scripts
         const scripts = pkg.scripts || {};
 
-        console.log(`${LOG_PREFIX} ${colors.green}Found ${stack.length} deps & ${Object.keys(scripts).length} scripts.${colors.reset}`);
-        console.log(`${LOG_PREFIX} Syncing to Dashboard API...`);
+        console.log(`${LOG_PREFIX} Found ${stack.length} dependencies & ${Object.keys(scripts).length} scripts.`);
+        console.log(`${LOG_PREFIX} Syncing...`);
 
         // 3. Send to API
-        try {
-            const response = await fetch('http://localhost:3000/api/project/sync', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    projectId: '1', // Default ID for demo
-                    stack,
-                    scripts
-                })
-            });
-            const data = await response.json();
+        const response = await fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                projectId,
+                stack,
+                scripts
+            })
+        });
 
-            if (data.success) {
-                console.log(`${LOG_PREFIX} ${colors.green}✔ Sync Success! Updated Command Zone.${colors.reset}`);
-            } else {
-                console.log(`${LOG_PREFIX} ${colors.red}Sync Failed: ${data.error}${colors.reset}`);
-            }
-        } catch (netError) {
-            console.log(`${LOG_PREFIX} ${colors.yellow}Warning: API not reachable (Is dev server running?)${colors.reset}`);
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+            console.log(`${LOG_PREFIX} ${colors.green}✔ Sync Success!${colors.reset}`);
+        } else {
+            console.error(`${LOG_PREFIX} ${colors.red}Sync Failed: ${data.error || 'Unknown Error'}${colors.reset}`);
         }
 
     } catch (error) {
-        console.error(`${LOG_PREFIX} ${colors.red}Failed to parse package.json: ${error.message}${colors.reset}`);
+        console.error(`${LOG_PREFIX} ${colors.red}Error: ${error.message}${colors.reset}`);
     }
 }
 
 // Initial scan
 analyzeAndSync();
 
-// Keep process alive
-setInterval(() => { }, 1000);
+// Keep alive
+setInterval(() => { }, 10000);

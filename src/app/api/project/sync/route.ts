@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
-import { mockProjects as projects } from '@/data/mock'; // Fixed import
 
 export async function POST(req: Request) {
     try {
@@ -8,55 +7,55 @@ export async function POST(req: Request) {
         const { projectId, stack, scripts } = body;
 
         if (!projectId) {
-            // Fallback for demo: use the first project if ID not provided
-            // or we could assume a specific ID for this "CLI" demo context.
-            // For now, let's just log.
+            return NextResponse.json({ success: false, error: 'Missing projectId' }, { status: 400 });
         }
 
-        // Simulating DB update for Mock Mode
-        // In a real app, this would update the specific project using projectId
-        // For the mock, we'll assume we are updating the default project '1'
-        const targetId = projectId || '1';
-        const project = projects.find(p => p.id === targetId);
+        if (!supabase) {
+            return NextResponse.json({ success: false, error: 'Supabase client unavailable' }, { status: 500 });
+        }
 
-        if (project) {
-            // Update Stack
-            // Merge existing stack with new one to preserve manually added items not in package.json?
-            // Or overwrite? "Sync" implies source of truth is package.json.
-            // Let's overwrite for dependencies found.
+        // 1. Update Project Stack
+        const { error: stackError } = await supabase
+            .from('projects')
+            .update({ stack: stack })
+            .eq('id', projectId);
 
-            // Map scripts to Snippets
-            const scriptSnippets = Object.entries(scripts || {}).map(([key, value]) => ({
-                id: `script-${key}`,
+        if (stackError) {
+            console.error("Stack update error:", stackError);
+            // Verify if project exists
+            return NextResponse.json({ success: false, error: 'Project not found or update failed' }, { status: 404 });
+        }
+
+        // 2. Sync Scripts as Snippets
+        if (scripts) {
+            // A. Delete existing auto-synced snippets to prevent duplicates
+            await supabase
+                .from('snippets')
+                .delete()
+                .eq('project_id', projectId)
+                .eq('description', 'Synced from package.json');
+
+            // B. Insert new scripts
+            const scriptSnippets = Object.entries(scripts).map(([key, value]) => ({
+                project_id: projectId,
                 title: `npm run ${key}`,
                 code: value as string,
                 language: 'bash',
-                description: 'Synced from package.json',
-                project_id: targetId
+                description: 'Synced from package.json'
             }));
 
-            // In Memory Update
-            project.snippets = [
-                ...(project.snippets || []).filter(s => !s.id.startsWith('script-')), // Remove old synced scripts
-                ...scriptSnippets
-            ];
+            if (scriptSnippets.length > 0) {
+                const { error: snippetsError } = await supabase
+                    .from('snippets')
+                    .insert(scriptSnippets);
 
-            // Stack update logic is complex if we want to keep versions, etc.
-            // For now let's focus on Snippets as that was the main goal.
-
-            // Persist to Supabase if available
-            if (supabase) {
-                // Delete old synced snippets for this project
-                // (This requires a way to identify them, maybe a metadata column? 
-                // For now, simple insert might duplicate if we don't be careful. 
-                // We'll skip complex DB logic for this demo step and focus on the "Show".)
+                if (snippetsError) console.error("Snippets insert error:", snippetsError);
             }
         }
 
         return NextResponse.json({
             success: true,
-            message: `Synced ${Object.keys(scripts || {}).length} scripts`,
-            snippets: project?.snippets
+            message: `Synced stack and ${Object.keys(scripts || {}).length} scripts`
         });
 
     } catch (error: any) {
