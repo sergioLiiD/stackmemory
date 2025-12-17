@@ -16,9 +16,12 @@ export async function GET(request: Request) {
         if (!error) {
             const requestUrl = new URL(request.url)
             return NextResponse.redirect(new URL(next, requestUrl.origin))
+        } else {
+            console.error("Auth Loop Error:", error);
+            return NextResponse.redirect(`${origin}/auth/auth-code-error?error=${encodeURIComponent(error.message)}&code=${code}`)
         }
     }
 
     // return the user to an error page with instructions
-    return NextResponse.redirect(`${origin}/auth/auth-code-error`)
+    return NextResponse.redirect(`${origin}/auth/auth-code-error?error=No_Code_Provided`)
 }
