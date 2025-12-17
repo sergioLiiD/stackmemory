@@ -43,6 +43,16 @@ export function StackTab({ project }: { project: Project }) {
                             vulnerabilities: u.vulnerabilities
                         };
                     });
+
+                    const hasNewUpdates = data.updates.some((u: any) => u.latest || (u.vulnerabilities && u.vulnerabilities.length > 0));
+
+                    if (hasNewUpdates !== project.hasUpdates) {
+                        updateProject(project.id, { hasUpdates: hasNewUpdates });
+                        if (supabase) {
+                            supabase.from('projects').update({ has_updates: hasNewUpdates }).eq('id', project.id).then();
+                        }
+                    }
+
                     setUpdates(updateMap);
                 }
             } catch (error) {
@@ -151,23 +161,6 @@ export function StackTab({ project }: { project: Project }) {
                                 {updates[item.name.toLowerCase()]?.vulnerabilities && updates[item.name.toLowerCase()]!.vulnerabilities!.length > 0 && (
                                     <div className="group/shield relative">
                                         <ShieldAlert className="w-4 h-4 text-red-500 animate-pulse cursor-help" />
-                                        {/* Tooltip for Vulnerabilities */}
-                                        <div className="absolute bottom-full right-0 mb-2 w-64 bg-red-950/90 border border-red-500/30 rounded-lg p-3 shadow-xl backdrop-blur-md opacity-0 group-hover/shield:opacity-100 transition-opacity pointer-events-none z-50">
-                                            <h5 className="text-xs font-bold text-red-200 mb-2 flex items-center gap-1">
-                                                <ShieldAlert className="w-3 h-3" /> Security Alerts
-                                            </h5>
-                                            <div className="space-y-1 max-h-32 overflow-y-auto custom-scrollbar">
-                                                {updates[item.name.toLowerCase()]!.vulnerabilities!.map((v: any, idx: number) => (
-                                                    <div key={idx} className="pb-1 border-b border-red-500/10 last:border-0">
-                                                        <div className="flex items-center justify-between">
-                                                            <span className="text-[10px] font-mono text-red-300">{v.id}</span>
-                                                            <span className="text-[9px] px-1 rounded bg-red-500/20 text-red-300">{v.severity}</span>
-                                                        </div>
-                                                        <p className="text-[9px] text-red-400/80 line-clamp-1">{v.summary}</p>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
                                     </div>
                                 )}
                                 {item.version && (
@@ -194,6 +187,26 @@ export function StackTab({ project }: { project: Project }) {
                                 <p className="text-xs text-neutral-600 dark:text-neutral-500 leading-relaxed line-clamp-2">
                                     {item.notes}
                                 </p>
+                            </div>
+                        )}
+
+                        {/* Explicit Warning/Alert Section */}
+                        {(updates[item.name.toLowerCase()]?.latest || (updates[item.name.toLowerCase()]?.vulnerabilities && updates[item.name.toLowerCase()]!.vulnerabilities!.length > 0)) && (
+                            <div className="mt-3 p-3 rounded-xl bg-red-500/5 border border-red-500/10 space-y-2">
+                                {updates[item.name.toLowerCase()]?.latest && (
+                                    <div className="flex items-start gap-2 text-xs text-red-300">
+                                        <ArrowUpRight className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+                                        <span>Update available: <span className="font-bold text-red-200">v{updates[item.name.toLowerCase()].latest}</span></span>
+                                    </div>
+                                )}
+                                {updates[item.name.toLowerCase()]?.vulnerabilities?.map((v: any, idx: number) => (
+                                    <div key={idx} className="flex items-start gap-2 text-xs text-red-400/80">
+                                        <ShieldAlert className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+                                        <span>
+                                            <span className="font-bold">{v.id}</span>: {v.summary}
+                                        </span>
+                                    </div>
+                                ))}
                             </div>
                         )}
                     </div>

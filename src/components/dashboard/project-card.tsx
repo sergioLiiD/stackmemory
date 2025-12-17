@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Project } from "@/data/mock";
-import { ArrowUpRight, Activity, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { ArrowUpRight, Activity, AlertTriangle, CheckCircle2, ShieldAlert } from "lucide-react";
 import Link from "next/link";
 
 import { HealthBar } from "./project/health-bar";
@@ -33,9 +33,19 @@ export function ProjectCard({ project, delay = 0 }: { project: Project; delay?: 
                 {/* Header */}
                 <div className="flex items-start justify-between mb-4">
                     <div>
-                        <h3 className="text-lg font-bold text-foreground mb-1 group-hover:text-primary transition-colors">
-                            {project.name}
-                        </h3>
+                        < div className="flex items-center gap-2 mb-1" >
+                            <h3 className="text-lg font-bold text-foreground group-hover:text-primary transition-colors">
+                                {project.name}
+                            </h3>
+                            {project.hasUpdates && (
+                                <div className="relative group/tooltip">
+                                    <ShieldAlert className="w-4 h-4 text-red-500 animate-pulse" />
+                                    <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-2 py-1 bg-red-500/10 border border-red-500/20 text-red-400 text-[10px] rounded whitespace-nowrap opacity-0 group-hover/tooltip:opacity-100 transition-opacity">
+                                        Stack Updates Available
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                         <p className="text-xs text-muted-foreground line-clamp-1">{project.description}</p>
                     </div>
                 </div>

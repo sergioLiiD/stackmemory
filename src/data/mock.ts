@@ -86,6 +86,7 @@ export interface Project {
     deployProvider?: string; // e.g. Vercel, Netlify, Dreamhost
     deployAccount?: string; // e.g. personal@gmail.com
     stack: StackItem[]; // Changed from string[]
+    hasUpdates?: boolean;
     lastUpdated: string;
     health: number; // 0-100
     services?: Service[];

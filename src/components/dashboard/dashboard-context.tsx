@@ -76,7 +76,9 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
                         journal: p.journal || [],
                         snippets: p.snippets || [],
                         tasks: p.tasks || [],
-                        firebaseConfig: p.firebase_config || undefined
+                        tasks: p.tasks || [],
+                        firebaseConfig: p.firebase_config || undefined,
+                        hasUpdates: p.has_updates || false
                     }));
                     setProjects(mappedProjects);
                 }
@@ -140,6 +142,7 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
                 if (updates.liveUrl) dbUpdates.live_url = updates.liveUrl;
                 if (updates.status) dbUpdates.status = updates.status;
                 if (updates.stack) dbUpdates.stack = updates.stack;
+                if (updates.hasUpdates !== undefined) dbUpdates.has_updates = updates.hasUpdates;
 
                 if (Object.keys(dbUpdates).length > 0) {
                     const { error } = await supabase
