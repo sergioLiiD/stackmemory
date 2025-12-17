@@ -1,7 +1,7 @@
 "use client";
 
 import { useAuth } from "@/components/auth/auth-context";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 import { ArrowRight, Mail, Key } from "lucide-react";
@@ -12,13 +12,20 @@ import { CookieConsent } from "@/components/layout/cookie-consent";
 import { cn } from "@/lib/utils";
 
 export default function LoginPage() {
-    const { signInWithGithub } = useAuth();
+    const { signInWithGithub, user, isLoading } = useAuth();
     const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [mode, setMode] = useState<'signin' | 'signup'>('signin');
     const [message, setMessage] = useState<{ type: 'error' | 'success', text: string } | null>(null);
+
+    // Auto-redirect if already logged in (Fixes race conditions)
+    useEffect(() => {
+        if (!isLoading && user) {
+            router.replace('/dashboard');
+        }
+    }, [user, isLoading, router]);
 
     const handleEmailAuth = async (e: React.FormEvent) => {
         e.preventDefault();
