@@ -185,9 +185,9 @@ export function ImportModal({ isOpen, onClose, onSave }: ImportModalProps) {
             }));
 
             saveProject({
-                name: result.name,
-                description: result.description || "",
-                repoUrl: repoUrl || result.repo || "", // Use state variable first as it contains the input URL
+                name: projectDetails.name || result.name,
+                description: projectDetails.description || result.description || "",
+                repoUrl: repoUrl || result.repo || "",
                 stack: stackItems,
                 status: "active"
             });
@@ -438,7 +438,28 @@ export function ImportModal({ isOpen, onClose, onSave }: ImportModalProps) {
                                                 <CheckCircle2 className="w-6 h-6" />
                                                 <div>
                                                     <h3 className="font-bold">Stack Detected</h3>
-                                                    <p className="text-xs opacity-80">Ready to import <strong>{result.name}</strong></p>
+                                                    <p className="text-xs opacity-80">Ready to import this project.</p>
+                                                </div>
+                                            </div>
+
+                                            <div className="space-y-3">
+                                                <div>
+                                                    <label className="text-xs font-medium text-neutral-500 uppercase tracking-wider mb-1.5 block">Project Name</label>
+                                                    <input
+                                                        value={projectDetails.name}
+                                                        onChange={(e) => setProjectDetails(prev => ({ ...prev, name: e.target.value }))}
+                                                        className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-[#a78bfa] transition-colors"
+                                                        placeholder="Project Name"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="text-xs font-medium text-neutral-500 uppercase tracking-wider mb-1.5 block">Description</label>
+                                                    <textarea
+                                                        value={projectDetails.description}
+                                                        onChange={(e) => setProjectDetails(prev => ({ ...prev, description: e.target.value }))}
+                                                        className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-[#a78bfa] transition-colors resize-none h-20"
+                                                        placeholder="Project Description"
+                                                    />
                                                 </div>
                                             </div>
 
