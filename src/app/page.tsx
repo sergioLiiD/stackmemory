@@ -1,5 +1,7 @@
 "use client";
 
+import { useAuth } from "@/components/auth/auth-context";
+
 import { Footer } from "@/components/layout/footer";
 import { CookieConsent } from "@/components/layout/cookie-consent";
 import { Hero } from "@/components/landing/hero";
@@ -9,40 +11,23 @@ import { ProblemSection } from "@/components/landing/problem-section";
 import { WorkflowSection } from "@/components/landing/workflow-section";
 
 import { useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Suspense } from "react";
+import { useAuth } from "@/components/auth/auth-context";
 
 function LandingContent() {
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const { user, isLoading } = useAuth();
 
+  // Simple auto-redirect: If Supabase client detects session (e.g. from auto-PKCE),
+  // just send them to dashboard. No manual code exchange.
   useEffect(() => {
-    const handleAuth = async () => {
-      const code = searchParams.get('code');
-      if (code) {
-        // Attempt client-side exchange since server-side redirects are failing
-        // caused by missing cookies in the request chain.
-        const { createClient } = await import('@/lib/supabase/client');
-        const supabase = createClient();
+    if (!isLoading && user) {
+      router.push('/dashboard');
+    }
+  }, [user, isLoading, router]);
 
-        const { error } = await supabase.auth.exchangeCodeForSession(code);
-
-        if (!error) {
-          // Success! Session established.
-          router.replace('/dashboard');
-        } else {
-          // If client exchange fails, it might be because the code is invalid 
-          // or already used. We can try forwarding to server callback as a last resort,
-          // or just show the error.
-          console.error("Client Auth Fallback Error:", error);
-          window.location.href = `/auth/auth-code-error?error=${encodeURIComponent(error.message)}`;
-        }
-      }
-    };
-
-    handleAuth();
-  }, [searchParams, router]);
-
+  // Pass through layout...
   return (
     <main className="min-h-screen w-full bg-[#050505] relative overflow-hidden flex flex-col items-center">
       {/* Ambient background glow */}
