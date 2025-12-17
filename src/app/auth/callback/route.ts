@@ -2,9 +2,15 @@ import { NextResponse } from 'next/server'
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 
 export async function GET(request: Request) {
-    const { searchParams, origin } = new URL(request.url)
+    const origin = new URL(request.url).origin
+    const searchParams = new URL(request.url).searchParams
     const code = searchParams.get('code')
-    const next = searchParams.get('next') ?? '/dashboard'
+
+    // Enforce dashboard unless explicitly somewhere else (blocking root redirects)
+    let next = searchParams.get('next')
+    if (!next || next === '/' || next === '') {
+        next = '/dashboard'
+    }
 
     if (code) {
         const cookieStore = new Map<string, { value: string, options: CookieOptions }>()
