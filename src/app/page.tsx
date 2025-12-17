@@ -22,9 +22,21 @@ function LandingContent() {
   // Simple auto-redirect: If Supabase client detects session (e.g. from auto-PKCE),
   // just send them to dashboard. No manual code exchange.
   useEffect(() => {
+    // 1. Check updated context
     if (!isLoading && user) {
       router.push('/dashboard');
     }
+
+    // 2. Explicitly check session on mount (catches stale context cases)
+    const checkSession = async () => {
+      const { createClient } = await import('@/lib/supabase/client');
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        router.push('/dashboard');
+      }
+    };
+    checkSession();
   }, [user, isLoading, router]);
 
   // Pass through layout...
