@@ -154,7 +154,10 @@ export function StackTab({ project }: { project: Project }) {
                             <div className="w-10 h-10 rounded-2xl bg-neutral-100 dark:bg-white/5 flex items-center justify-center text-neutral-700 dark:text-white relative">
                                 <Box className="w-5 h-5" />
                                 {updates[item.name.toLowerCase()]?.latest && (
-                                    <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white dark:border-[#121212]" title={`Update available: v${updates[item.name.toLowerCase()].latest}`} />
+                                    <div className={`absolute -top-1 -right-1 w-3 h-3 rounded-full border-2 border-white dark:border-[#121212] ${updates[item.name.toLowerCase()]?.vulnerabilities?.length
+                                        ? 'bg-red-500'
+                                        : 'bg-yellow-500'}`}
+                                        title={`Update available: v${updates[item.name.toLowerCase()].latest}`} />
                                 )}
                             </div>
                             <div className="flex items-center gap-2">
@@ -164,9 +167,11 @@ export function StackTab({ project }: { project: Project }) {
                                     </div>
                                 )}
                                 {item.version && (
-                                    <span className={`px-2 py-1 rounded-full text-[10px] font-mono border ${updates[item.name.toLowerCase()]?.latest
+                                    <span className={`px-2 py-1 rounded-full text-[10px] font-mono border ${updates[item.name.toLowerCase()]?.vulnerabilities?.length
                                         ? 'bg-red-500/10 text-red-500 border-red-500/20'
-                                        : 'bg-neutral-100 dark:bg-white/5 text-neutral-500 dark:text-neutral-400 border-neutral-200 dark:border-transparent'
+                                        : updates[item.name.toLowerCase()]?.latest
+                                            ? 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20'
+                                            : 'bg-neutral-100 dark:bg-white/5 text-neutral-500 dark:text-neutral-400 border-neutral-200 dark:border-transparent'
                                         }`}>
                                         v{item.version}
                                     </span>
@@ -177,7 +182,8 @@ export function StackTab({ project }: { project: Project }) {
                         <div className="flex items-center justify-between">
                             <span className="text-[10px] font-bold tracking-wider text-neutral-500 uppercase">{item.type}</span>
                             {updates[item.name.toLowerCase()]?.latest && (
-                                <span className="text-[10px] font-bold text-red-400 animate-pulse">
+                                <span className={`text-[10px] font-bold animate-pulse ${updates[item.name.toLowerCase()]?.vulnerabilities?.length ? 'text-red-400' : 'text-yellow-500'
+                                    }`}>
                                     Latest: v{updates[item.name.toLowerCase()].latest}
                                 </span>
                             )}
@@ -192,13 +198,19 @@ export function StackTab({ project }: { project: Project }) {
 
                         {/* Explicit Warning/Alert Section */}
                         {(updates[item.name.toLowerCase()]?.latest || (updates[item.name.toLowerCase()]?.vulnerabilities && updates[item.name.toLowerCase()]!.vulnerabilities!.length > 0)) && (
-                            <div className="mt-3 p-3 rounded-xl bg-red-500/5 border border-red-500/10 space-y-3">
+                            <div className={`mt-3 p-3 rounded-xl border space-y-3 ${updates[item.name.toLowerCase()]?.vulnerabilities?.length
+                                ? 'bg-red-500/5 border-red-500/10'
+                                : 'bg-yellow-500/5 border-yellow-500/10'
+                                }`}>
                                 {updates[item.name.toLowerCase()]?.latest && (
-                                    <div className="flex items-start gap-2 text-xs text-red-300">
+                                    <div className={`flex items-start gap-2 text-xs ${updates[item.name.toLowerCase()]?.vulnerabilities?.length ? 'text-red-300' : 'text-yellow-600 dark:text-yellow-500'
+                                        }`}>
                                         <ArrowUpRight className="w-3.5 h-3.5 mt-0.5 shrink-0" />
                                         <div className="flex flex-col">
-                                            <span className="font-bold text-red-200">New Version Available</span>
-                                            <span className="opacity-80">Update to <span className="font-mono bg-red-500/10 px-1 rounded">v{updates[item.name.toLowerCase()].latest}</span> recommended.</span>
+                                            <span className={`font-bold ${updates[item.name.toLowerCase()]?.vulnerabilities?.length ? 'text-red-200' : 'text-yellow-700 dark:text-yellow-400'
+                                                }`}>New Version Available</span>
+                                            <span className="opacity-80">Update to <span className={`font-mono px-1 rounded ${updates[item.name.toLowerCase()]?.vulnerabilities?.length ? 'bg-red-500/10' : 'bg-yellow-500/10'
+                                                }`}>v{updates[item.name.toLowerCase()].latest}</span> recommended.</span>
                                         </div>
                                     </div>
                                 )}

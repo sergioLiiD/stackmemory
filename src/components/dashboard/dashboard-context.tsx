@@ -76,7 +76,6 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
                         journal: p.journal || [],
                         snippets: p.snippets || [],
                         tasks: p.tasks || [],
-                        tasks: p.tasks || [],
                         firebaseConfig: p.firebase_config || undefined,
                         hasUpdates: p.has_updates || false
                     }));
