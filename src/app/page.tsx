@@ -17,13 +17,31 @@ function LandingContent() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    const code = searchParams.get('code');
-    if (code) {
-      // Redirect to the auth callback with the code
-      // We use window.location to ensure we hit the server route fully
-      window.location.href = `/auth/callback?code=${code}`;
-    }
-  }, [searchParams]);
+    const handleAuth = async () => {
+      const code = searchParams.get('code');
+      if (code) {
+        // Attempt client-side exchange since server-side redirects are failing
+        // caused by missing cookies in the request chain.
+        const { createClient } = await import('@/lib/supabase/client');
+        const supabase = createClient();
+
+        const { error } = await supabase.auth.exchangeCodeForSession(code);
+
+        if (!error) {
+          // Success! Session established.
+          router.replace('/dashboard');
+        } else {
+          // If client exchange fails, it might be because the code is invalid 
+          // or already used. We can try forwarding to server callback as a last resort,
+          // or just show the error.
+          console.error("Client Auth Fallback Error:", error);
+          window.location.href = `/auth/auth-code-error?error=${encodeURIComponent(error.message)}`;
+        }
+      }
+    };
+
+    handleAuth();
+  }, [searchParams, router]);
 
   return (
     <main className="min-h-screen w-full bg-[#050505] relative overflow-hidden flex flex-col items-center">
