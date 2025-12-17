@@ -8,6 +8,8 @@ import { parsePackageJson, ParsedStack } from "@/lib/parser/package-json";
 import { SmartImportHelper } from "./smart-import-helper";
 import { Project, StackItem } from "@/data/mock";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/components/auth/auth-context";
+import { getUserRepos, GitHubRepo } from "@/lib/github/client";
 
 interface ImportModalProps {
     isOpen: boolean;
@@ -15,7 +17,7 @@ interface ImportModalProps {
     onSave: (project: Project) => void;
 }
 
-type Tab = 'magic' | 'manual';
+type Tab = 'magic' | 'manual' | 'github';
 
 export function ImportModal({ isOpen, onClose, onSave }: ImportModalProps) {
     const [activeTab, setActiveTab] = useState<Tab>('magic');
@@ -33,6 +35,12 @@ export function ImportModal({ isOpen, onClose, onSave }: ImportModalProps) {
     const [manualName, setManualName] = useState("");
     const [manualDesc, setManualDesc] = useState("");
     const [manualStack, setManualStack] = useState("");
+
+    // GitHub State
+    const { session, signInWithGithub } = useAuth();
+    const [repos, setRepos] = useState<GitHubRepo[]>([]);
+    const [isLoadingRepos, setIsLoadingRepos] = useState(false);
+    const [repoSearch, setRepoSearch] = useState("");
 
     const handleAnalyze = () => {
         setError("");
@@ -92,7 +100,7 @@ export function ImportModal({ isOpen, onClose, onSave }: ImportModalProps) {
                 const res = await fetch('/api/proxy/github', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ url: targetUrl, token: githubToken })
+                    body: JSON.stringify({ url: targetUrl, token: githubToken || session?.provider_token })
                 });
 
                 if (!res.ok) {
@@ -232,7 +240,28 @@ export function ImportModal({ isOpen, onClose, onSave }: ImportModalProps) {
         setManualDesc("");
         setManualStack("");
         setActiveTab('magic');
+        setRepos([]);
     };
+
+    const loadRepos = async () => {
+        if (!session?.provider_token) return;
+        setIsLoadingRepos(true);
+        try {
+            const data = await getUserRepos(session.provider_token);
+            setRepos(data);
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setIsLoadingRepos(false);
+        }
+    };
+
+    // Load repos when switching to GitHub activeTab
+    useState(() => {
+        if (activeTab === 'github' && session?.provider_token && repos.length === 0) {
+            loadRepos();
+        }
+    });
 
     return (
         <AnimatePresence>
@@ -286,6 +315,20 @@ export function ImportModal({ isOpen, onClose, onSave }: ImportModalProps) {
                             >
                                 Manual Entry
                                 {activeTab === 'manual' && <motion.div layoutId="tab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#a78bfa]" />}
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setActiveTab('github');
+                                    if (session?.provider_token) loadRepos();
+                                }}
+                                className={cn(
+                                    "pb-3 text-sm font-medium transition-colors relative flex items-center gap-2",
+                                    activeTab === 'github' ? "text-white" : "text-neutral-500 hover:text-neutral-300"
+                                )}
+                            >
+                                <Github className="w-4 h-4" />
+                                From GitHub
+                                {activeTab === 'github' && <motion.div layoutId="tab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#a78bfa]" />}
                             </button>
                         </div>
 
@@ -460,6 +503,81 @@ export function ImportModal({ isOpen, onClose, onSave }: ImportModalProps) {
                                             Create Project
                                         </button>
                                     </div>
+                                </div>
+                            )}
+
+                            {activeTab === 'github' && (
+                                <div className="space-y-4">
+                                    {!session?.provider_token ? (
+                                        <div className="flex flex-col items-center justify-center py-12 text-center text-neutral-400 space-y-4">
+                                            <div className="p-4 bg-white/5 rounded-full mb-2">
+                                                <Key className="w-8 h-8 text-neutral-500" />
+                                            </div>
+                                            <h3 className="text-white font-medium">GitHub Access Required</h3>
+                                            <p className="max-w-xs text-sm">We need permission to read your repositories to import them automatically.</p>
+                                            <button
+                                                onClick={() => signInWithGithub()}
+                                                className="bg-[#24292F] hover:bg-[#24292F]/80 text-white px-6 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
+                                            >
+                                                <Github className="w-4 h-4" />
+                                                Connect GitHub
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <div className="space-y-4 h-full">
+                                            <div className="relative">
+                                                <Search className="w-4 h-4 text-neutral-500 absolute left-3 top-3" />
+                                                <input
+                                                    placeholder="Search repositories..."
+                                                    value={repoSearch}
+                                                    onChange={e => setRepoSearch(e.target.value)}
+                                                    className="w-full bg-[#121212] border border-white/10 rounded-lg pl-10 pr-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#a78bfa]"
+                                                />
+                                            </div>
+
+                                            {isLoadingRepos ? (
+                                                <div className="flex justify-center py-12">
+                                                    <Loader2 className="w-6 h-6 animate-spin text-[#a78bfa]" />
+                                                </div>
+                                            ) : (
+                                                <div className="space-y-2 max-h-[300px] overflow-y-auto custom-scrollbar pr-2">
+                                                    {repos
+                                                        .filter(r => r.name.toLowerCase().includes(repoSearch.toLowerCase()))
+                                                        .map(repo => (
+                                                            <div key={repo.id} className="flex items-center justify-between p-3 bg-white/5 border border-white/5 rounded-xl hover:border-white/10 transition-colors group">
+                                                                <div className="min-w-0">
+                                                                    <h4 className="text-white text-sm font-medium truncate flex items-center gap-2">
+                                                                        {repo.name}
+                                                                        {repo.private && <span className="text-[10px] px-1.5 py-0.5 bg-neutral-800 rounded border border-neutral-700 text-neutral-400">Private</span>}
+                                                                    </h4>
+                                                                    <p className="text-neutral-500 text-xs truncate max-w-[300px]">{repo.description || "No description"}</p>
+                                                                </div>
+                                                                <button
+                                                                    onClick={() => {
+                                                                        setRepoUrl(repo.html_url);
+                                                                        setError("");
+                                                                        setResult(null);
+                                                                        setInput("");
+                                                                        setActiveTab('magic');
+                                                                        // Auto-trigger analysis
+                                                                        // We need to wait for state update, or just call logic directly
+                                                                        // For now, let's pre-fill and switch tab where "Scan" is available
+                                                                        // Ideally, we'd trigger the scan immediately.
+                                                                        setTimeout(() => setRepoUrl(repo.html_url), 100);
+                                                                    }}
+                                                                    className="px-3 py-1.5 bg-[#180260] hover:bg-[#2e1065] text-[#a78bfa] text-xs font-medium rounded-lg opacity-0 group-hover:opacity-100 transition-all translate-x-2 group-hover:translate-x-0"
+                                                                >
+                                                                    Import
+                                                                </button>
+                                                            </div>
+                                                        ))}
+                                                    {repos.length === 0 && (
+                                                        <p className="text-center text-neutral-500 py-8 text-sm">No repositories found.</p>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
                             )}
                         </div>
