@@ -1,36 +1,36 @@
 import { NextResponse } from 'next/server'
-import { createServerClient, type CookieOptions } from '@supabase/ssr'
+import { createServerClient } from '@supabase/ssr'
+import { cookies } from 'next/headers'
 
 export async function GET(request: Request) {
-    const origin = new URL(request.url).origin
-    const searchParams = new URL(request.url).searchParams
+    const { searchParams, origin } = new URL(request.url)
     const code = searchParams.get('code')
 
-    // Enforce dashboard unless explicitly somewhere else (blocking root redirects)
+    // Enforce dashboard redirect
     let next = searchParams.get('next')
     if (!next || next === '/' || next === '') {
         next = '/dashboard'
     }
 
     if (code) {
-        const cookieStore = new Map<string, { value: string, options: CookieOptions }>()
-
-        // Create a temporary client that writes to our map
+        const cookieStore = await cookies()
         const supabase = createServerClient(
             process.env.NEXT_PUBLIC_SUPABASE_URL!,
             process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
             {
                 cookies: {
-                    get(name: string) {
-                        // Read from incoming request
-                        const match = request.headers.get('cookie')?.match(new RegExp(`(^| )${name}=([^;]+)`));
-                        return match ? match[2] : undefined;
+                    getAll() {
+                        return cookieStore.getAll()
                     },
-                    set(name: string, value: string, options: CookieOptions) {
-                        cookieStore.set(name, { value, options })
-                    },
-                    remove(name: string, options: CookieOptions) {
-                        cookieStore.set(name, { value: '', options: { ...options, maxAge: -1 } })
+                    setAll(cookiesToSet) {
+                        try {
+                            cookiesToSet.forEach(({ name, value, options }) => {
+                                cookieStore.set(name, value, options)
+                            })
+                        } catch (error) {
+                            // Ignore if called from server component, but this is a Route Handler so it works.
+                            console.error("Cookie setting failed:", error)
+                        }
                     },
                 },
             }
@@ -39,15 +39,7 @@ export async function GET(request: Request) {
         const { error } = await supabase.auth.exchangeCodeForSession(code)
 
         if (!error) {
-            // Create response
-            const response = NextResponse.redirect(`${origin}${next}`)
-
-            // Copy cookies from our map to the response
-            cookieStore.forEach(({ value, options }, name) => {
-                response.cookies.set(name, value, options);
-            });
-
-            return response
+            return NextResponse.redirect(`${origin}${next}`)
         } else {
             console.error("Auth Exchange Error:", error);
             return NextResponse.redirect(`${origin}/auth/auth-code-error?error=${encodeURIComponent(error.message)}`)
