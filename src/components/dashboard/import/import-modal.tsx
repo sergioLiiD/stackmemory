@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDashboard } from "../dashboard-context";
-import { X, Scan, CheckCircle2, AlertCircle, Loader2, PenTool, Type, Wand2, Github, Key, Search } from "lucide-react";
+import { X, Scan, CheckCircle2, AlertCircle, Loader2, PenTool, Type, Wand2, Github, Key, Search, Folder } from "lucide-react";
 import { parsePackageJson, ParsedStack } from "@/lib/parser/package-json";
 import { SmartImportHelper } from "./smart-import-helper";
 import { Project, StackItem } from "@/data/mock";
@@ -30,6 +30,7 @@ export function ImportModal({ isOpen, onClose, onSave }: ImportModalProps) {
     const [repoUrl, setRepoUrl] = useState("");
     const [githubToken, setGithubToken] = useState("");
     const [projectDetails, setProjectDetails] = useState<{ name: string, description: string }>({ name: "", description: "" });
+    const [candidateProjects, setCandidateProjects] = useState<{ name: string, path: string, url: string }[]>([]);
 
     // Manual State
     const [manualName, setManualName] = useState("");
@@ -59,41 +60,18 @@ export function ImportModal({ isOpen, onClose, onSave }: ImportModalProps) {
         }, 1500);
     };
 
-    const handleUrlAnalyze = async () => {
+    const handleUrlAnalyze = async (specificPath?: string) => {
         setError("");
         setIsAnalyzing(true);
         setResult(null);
+        setCandidateProjects([]);
 
         try {
             // Clean URL to get raw content
             let rawUrl = repoUrl;
             let attemptedUrl = "";
 
-            if (repoUrl.includes("github.com")) {
-                try {
-                    const url = new URL(repoUrl);
-                    if (url.pathname.includes("/blob/")) {
-                        rawUrl = repoUrl.replace("github.com", "raw.githubusercontent.com").replace("/blob/", "/");
-                    } else {
-                        const pathParts = url.pathname.split('/').filter(Boolean);
-                        if (pathParts.length >= 2) {
-                            const user = pathParts[0];
-                            const repo = pathParts[1];
-                            rawUrl = `https://raw.githubusercontent.com/${user}/${repo}/main/package.json`;
-                        }
-                    }
-                } catch (e) {
-                    console.error("Invalid URL format", e);
-                }
-            } else if (repoUrl.includes("raw.githubusercontent.com")) {
-                rawUrl = repoUrl;
-            }
-
-            if (!rawUrl) {
-                throw new Error("Invalid GitHub URL. Please use the format: https://github.com/user/repo");
-            }
-
-            // Use Proxy to bypass CORS and handle Auth safely
+            // Helper for proxy fetch
             const proxyFetch = async (targetUrl: string) => {
                 const res = await fetch('/api/proxy/github', {
                     method: 'POST',
@@ -103,15 +81,58 @@ export function ImportModal({ isOpen, onClose, onSave }: ImportModalProps) {
 
                 if (!res.ok) {
                     const errData = await res.json().catch(() => ({}));
-                    // Propagate 404 specifically
                     if (res.status === 404) throw new Error("404");
                     throw new Error(errData.error || `Proxy error: ${res.status}`);
                 }
                 return res;
             };
 
+            // If specific path provided (e.g. from monorepo selection), use it directly
+            if (specificPath) {
+                console.log("Fetching specific project file:", specificPath);
+                const res = await proxyFetch(specificPath);
+                const text = await res.text();
+                const parsed = parsePackageJson(text);
+                if (parsed) {
+                    setResult({ ...parsed, repo: repoUrl }); // Use base repo url
+                    // Auto-fill project details if not already set
+                    if (!projectDetails.name) {
+                        setProjectDetails(prev => ({
+                            ...prev,
+                            name: parsed?.name || prev.name || "New Project",
+                            description: parsed?.description || prev.description || ""
+                        }));
+                    }
+                } else {
+                    setError("Could not parse package.json.");
+                }
+                setIsAnalyzing(false);
+                return;
+            } else {
+                if (repoUrl.includes("github.com")) {
+                    try {
+                        const url = new URL(repoUrl);
+                        if (url.pathname.includes("/blob/")) {
+                            rawUrl = repoUrl.replace("github.com", "raw.githubusercontent.com").replace("/blob/", "/");
+                        } else {
+                            const pathParts = url.pathname.split('/').filter(Boolean);
+                            if (pathParts.length >= 2) {
+                                // Standard github URL
+                            }
+                        }
+                    } catch (e) {
+                        console.error("Invalid URL format", e);
+                    }
+                } else if (repoUrl.includes("raw.githubusercontent.com")) {
+                    rawUrl = repoUrl;
+                }
+
+                if (!rawUrl) {
+                    throw new Error("Invalid GitHub URL. Please use the format: https://github.com/user/repo");
+                }
+            }
+
             // 1. Fetch Repo Metadata using Proxy to get default_branch
-            // We need to parse owner/repo from the URL again if it was a direct raw URL, but mainly we expect standard github URLs here
             let statsUrl = "";
             let owner = "";
             let repo = "";
@@ -137,10 +158,8 @@ export function ImportModal({ isOpen, onClose, onSave }: ImportModalProps) {
                     const metaRes = await proxyFetch(statsUrl);
                     if (metaRes.ok) {
                         const meta = await metaRes.json();
-                        if (meta.default_branch) {
-                            defaultBranch = meta.default_branch;
-                            console.log("Detected default branch:", defaultBranch);
-                        }
+                        defaultBranch = meta.default_branch || "main";
+                        console.log("Detected default branch:", defaultBranch);
                     }
                 } catch (e) {
                     console.warn("Failed to fetch repo metadata, falling back to 'main'", e);
@@ -151,6 +170,7 @@ export function ImportModal({ isOpen, onClose, onSave }: ImportModalProps) {
             // 2. Fetch Root Directory Listing to find package.json and verify access
             let targetFileUrl = "";
             let foundFile = null;
+            let subDirectories: any[] = [];
 
             if (owner && repo) {
                 const contentsUrl = `https://api.github.com/repos/${owner}/${repo}/contents/?ref=${defaultBranch}`;
@@ -166,11 +186,11 @@ export function ImportModal({ isOpen, onClose, onSave }: ImportModalProps) {
 
                             if (foundFile) {
                                 console.log("Found package.json:", foundFile.path);
-                                // Construct API URL for raw content of this specific file
-                                // We use the API endpoint for content to ensure auth headers work
                                 targetFileUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${foundFile.path}?ref=${defaultBranch}`;
                             } else {
                                 console.warn("package.json not found in root");
+                                // Collect directories to scan
+                                subDirectories = files.filter((f: any) => f.type === 'dir');
                             }
                         }
                     } else {
@@ -181,16 +201,53 @@ export function ImportModal({ isOpen, onClose, onSave }: ImportModalProps) {
                 }
             }
 
-            // 3. Determine Final URL to Fetch
+            // 3. Logic Branch: File Found OR Scan Subdirs
+            if (targetFileUrl) {
+                // Found in root - proceed to fetch
+                attemptedUrl = targetFileUrl;
+            } else if (subDirectories.length > 0) {
+                // Not found in root - Scan subdirectories
+                console.log("Scanning subdirectories for projects...", subDirectories.length);
+                const candidates: { name: string, path: string, url: string }[] = [];
+
+                // Limit scan to first 10 dirs to avoid timeout
+                const dirsToScan = subDirectories.slice(0, 10);
+
+                await Promise.all(dirsToScan.map(async (dir) => {
+                    try {
+                        const dirUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${dir.path}?ref=${defaultBranch}`;
+                        const dirRes = await proxyFetch(dirUrl);
+                        if (dirRes.ok) {
+                            const dirFiles = await dirRes.json();
+                            if (Array.isArray(dirFiles)) {
+                                const pkg = dirFiles.find((f: any) => f.name.toLowerCase() === 'package.json');
+                                if (pkg) {
+                                    candidates.push({
+                                        name: dir.name,
+                                        path: dir.path,
+                                        url: `https://api.github.com/repos/${owner}/${repo}/contents/${pkg.path}?ref=${defaultBranch}`
+                                    });
+                                }
+                            }
+                        }
+                    } catch (e) { console.warn("Failed to scan dir", dir.path); }
+                }));
+
+                if (candidates.length > 0) {
+                    setCandidateProjects(candidates);
+                    setIsAnalyzing(false);
+                    return; // STOP here and wait for user selection
+                }
+            }
+
+            // If we are here, either found in root (targetFileUrl set) OR failed to find anywhere
             if (targetFileUrl) {
                 attemptedUrl = targetFileUrl;
-            } else if (foundFile === null && owner && repo) {
-                // If listing succeeded but file missing -> Error immediately or try fallback?
-                // If we are sure listing worked, then file is missing.
-                // But let's be safe and try the direct guess as fallback in case listing failed for some reason
-                attemptedUrl = `https://api.github.com/repos/${owner}/${repo}/contents/package.json?ref=${defaultBranch}`;
             } else {
-                attemptedUrl = rawUrl;
+                if (statsUrl) {
+                    throw new Error(`File 'package.json' not found in root or immediate subdirectories.`);
+                }
+                attemptedUrl = rawUrl; // Last ditch fallback
             }
 
             console.log("Attempting to fetch via proxy:", attemptedUrl);
@@ -212,6 +269,22 @@ export function ImportModal({ isOpen, onClose, onSave }: ImportModalProps) {
                     throw new Error(`Repository not found or private.\nAttempted: ${attemptedUrl}\n\nFor private repos, please provide a GitHub Token below or paste content manually.`);
                 }
                 throw new Error(`Failed to fetch package.json via proxy. (Status: ${res.status})`);
+            }
+
+            const text = await res.text();
+            const parsed = parsePackageJson(text);
+            if (parsed) {
+                setResult({ ...parsed, repo: repoUrl });
+                // Auto-fill project details if not already set
+                if (!projectDetails.name) {
+                    setProjectDetails(prev => ({
+                        ...prev,
+                        name: parsed?.name || prev.name || "New Project",
+                        description: parsed?.description || prev.description || ""
+                    }));
+                }
+            } else {
+                setError("Could not parse package.json.");
             }
         } catch (err: any) {
             console.error(err);
@@ -402,80 +475,121 @@ export function ImportModal({ isOpen, onClose, onSave }: ImportModalProps) {
                                                 </div>
                                             )}
 
-                                            {/* Step 2: Auto-Scan from URL */}
-                                            <div className="bg-black/20 p-4 rounded-xl border border-white/5 space-y-3">
-                                                <label className="text-sm font-medium text-white flex items-center gap-2">
-                                                    <Github className="w-4 h-4" />
-                                                    Scan Repository
-                                                </label>
-                                                <div className="flex gap-2">
-                                                    <input
-                                                        value={repoUrl}
-                                                        onChange={(e) => setRepoUrl(e.target.value)}
-                                                        placeholder="https://github.com/facebook/react"
-                                                        className="flex-1 bg-black/50 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-[#a78bfa] transition-colors"
-                                                    />
+                                            {/* Step 3: Candidate Selection (Monorepo) */}
+                                            {candidateProjects.length > 0 && !result && (
+                                                <div className="space-y-3 pb-2 animate-in fade-in slide-in-from-bottom-2">
+                                                    <div className="flex items-center gap-2 text-white">
+                                                        <Folder className="w-4 h-4 text-[#a78bfa]" />
+                                                        <h3 className="text-sm font-medium">Multiple Projects Detected</h3>
+                                                    </div>
+                                                    <p className="text-xs text-neutral-400">Select which project you want to import from this repository:</p>
+
+                                                    <div className="grid grid-cols-1 gap-2 max-h-[200px] overflow-y-auto custom-scrollbar">
+                                                        {candidateProjects.map((proj) => (
+                                                            <button
+                                                                key={proj.path}
+                                                                onClick={() => handleUrlAnalyze(proj.url)}
+                                                                className="flex items-center gap-3 p-3 bg-white/5 hover:bg-white/10 border border-white/5 hover:border-[#a78bfa]/30 rounded-xl transition-all text-left group"
+                                                            >
+                                                                <div className="p-2 bg-[#180260]/50 rounded-lg text-[#a78bfa] group-hover:bg-[#a78bfa] group-hover:text-black transition-colors">
+                                                                    <Folder className="w-4 h-4" />
+                                                                </div>
+                                                                <div>
+                                                                    <div className="text-sm font-medium text-white">{proj.name}</div>
+                                                                    <div className="text-[10px] text-neutral-500 font-mono">/{proj.path}</div>
+                                                                </div>
+                                                            </button>
+                                                        ))}
+                                                    </div>
                                                     <button
-                                                        onClick={handleUrlAnalyze}
-                                                        disabled={isAnalyzing || !repoUrl}
-                                                        className="bg-[#180260] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#2a04a3] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                                                        onClick={() => setCandidateProjects([])}
+                                                        className="text-xs text-neutral-500 hover:text-white underline"
                                                     >
-                                                        {isAnalyzing ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Search className="w-4 h-4" />}
-                                                        Scan Repo
+                                                        Cancel and try another URL
                                                     </button>
                                                 </div>
+                                            )}
 
-                                                {/* Optional Token Field */}
-                                                <div className="relative group">
-                                                    <div className="flex items-center gap-2 mb-1">
-                                                        <Key className="w-3 h-3 text-neutral-500" />
-                                                        <label className="text-[10px] uppercase font-bold text-neutral-500 tracking-wider">Private Repo Token (Optional)</label>
+                                            {/* Step 2: Auto-Scan from URL (Hide if candidates shown) */}
+                                            {candidateProjects.length === 0 && !result && (
+                                                <div className="bg-black/20 p-4 rounded-xl border border-white/5 space-y-3">
+                                                    <label className="text-sm font-medium text-white flex items-center gap-2">
+                                                        <Github className="w-4 h-4" />
+                                                        Scan Repository
+                                                    </label>
+                                                    <div className="flex gap-2">
+                                                        <input
+                                                            value={repoUrl}
+                                                            onChange={(e) => setRepoUrl(e.target.value)}
+                                                            placeholder="https://github.com/facebook/react"
+                                                            className="flex-1 bg-black/50 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-[#a78bfa] transition-colors"
+                                                        />
+                                                        <button
+                                                            onClick={() => handleUrlAnalyze()}
+                                                            disabled={isAnalyzing || !repoUrl}
+                                                            className="bg-[#180260] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#2a04a3] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                                                        >
+                                                            {isAnalyzing ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Search className="w-4 h-4" />}
+                                                            Scan Repo
+                                                        </button>
                                                     </div>
-                                                    <input
-                                                        type="password"
-                                                        value={githubToken}
-                                                        onChange={(e) => setGithubToken(e.target.value)}
-                                                        placeholder="ghp_..."
-                                                        className="w-full bg-black/30 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-[#a78bfa] transition-colors"
-                                                    />
-                                                    <p className="text-[10px] text-neutral-600 mt-1">
-                                                        If your repo is private, paste a <a href="https://github.com/settings/tokens" target="_blank" rel="noreferrer" className="text-neutral-400 hover:text-white underline">Classic Token</a> with <code>repo</code> scope.
-                                                    </p>
-                                                </div>
-                                            </div>
 
-                                            {/* Step 3: Manual Paste Area */}
-                                            <div className="space-y-2 pt-2">
-                                                <label className="text-sm font-medium text-white flex items-center justify-between">
-                                                    <span>Paste Content Manually</span>
-                                                    <span className="text-xs text-neutral-500 font-normal">Accepts package.json or DEV_MEMORY.md</span>
-                                                </label>
-                                                <div className="relative">
-                                                    <textarea
-                                                        placeholder="{ 'name': 'my-app', ... } or # My Project ..."
-                                                        className="w-full h-32 bg-[#0a0a0a] border border-white/10 rounded-xl p-4 text-sm font-mono text-neutral-300 focus:outline-none focus:border-[#a78bfa] transition-colors resize-none shadow-inner"
-                                                        value={input}
-                                                        onChange={(e) => setInput(e.target.value)}
-                                                    />
-                                                    {/* Visual hint if empty */}
-                                                    {!input && (
-                                                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-20">
-                                                            <Type className="w-12 h-12 text-white" />
+                                                    {/* Optional Token Field */}
+                                                    <div className="relative group">
+                                                        <div className="flex items-center gap-2 mb-1">
+                                                            <Key className="w-3 h-3 text-neutral-500" />
+                                                            <label className="text-[10px] uppercase font-bold text-neutral-500 tracking-wider">Private Repo Token (Optional)</label>
                                                         </div>
-                                                    )}
+                                                        <input
+                                                            type="password"
+                                                            value={githubToken}
+                                                            onChange={(e) => setGithubToken(e.target.value)}
+                                                            placeholder="ghp_..."
+                                                            className="w-full bg-black/30 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-[#a78bfa] transition-colors"
+                                                        />
+                                                        <p className="text-[10px] text-neutral-600 mt-1">
+                                                            If your repo is private, paste a <a href="https://github.com/settings/tokens" target="_blank" rel="noreferrer" className="text-neutral-400 hover:text-white underline">Classic Token</a> with <code>repo</code> scope.
+                                                        </p>
+                                                    </div>
                                                 </div>
-                                            </div>
+                                            )}
 
-                                            <div className="flex justify-end pt-2">
-                                                <button
-                                                    onClick={handleAnalyze}
-                                                    disabled={!input.trim()}
-                                                    className="bg-[#180260] text-white px-6 py-2.5 rounded-lg font-bold text-sm hover:bg-[#2e1065] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 border border-[#a78bfa]/20 shadow-lg shadow-indigo-500/10"
-                                                >
-                                                    <Wand2 className="w-4 h-4 text-[#a78bfa]" />
-                                                    Process text
-                                                </button>
-                                            </div>
+                                            {/* Step 3: Manual Paste Area (Hide if candidates shown) */}
+                                            {candidateProjects.length === 0 && !result && (
+                                                <div className="space-y-2 pt-2">
+                                                    <label className="text-sm font-medium text-white flex items-center justify-between">
+                                                        <span>Paste Content Manually</span>
+                                                        <span className="text-xs text-neutral-500 font-normal">Accepts package.json or DEV_MEMORY.md</span>
+                                                    </label>
+                                                    <div className="relative">
+                                                        <textarea
+                                                            placeholder="{ 'name': 'my-app', ... } or # My Project ..."
+                                                            className="w-full h-32 bg-[#0a0a0a] border border-white/10 rounded-xl p-4 text-sm font-mono text-neutral-300 focus:outline-none focus:border-[#a78bfa] transition-colors resize-none shadow-inner"
+                                                            value={input}
+                                                            onChange={(e) => setInput(e.target.value)}
+                                                        />
+                                                        {/* Visual hint if empty */}
+                                                        {!input && (
+                                                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-20">
+                                                                <Type className="w-12 h-12 text-white" />
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {candidateProjects.length === 0 && !result && (
+                                                <div className="flex justify-end pt-2">
+                                                    <button
+                                                        onClick={handleAnalyze}
+                                                        disabled={!input.trim()}
+                                                        className="bg-[#180260] text-white px-6 py-2.5 rounded-lg font-bold text-sm hover:bg-[#2e1065] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 border border-[#a78bfa]/20 shadow-lg shadow-indigo-500/10"
+                                                    >
+                                                        <Wand2 className="w-4 h-4 text-[#a78bfa]" />
+                                                        Process text
+                                                    </button>
+                                                </div>
+                                            )}
                                         </div>
                                     ) : (
                                         <div className="space-y-6">
