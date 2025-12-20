@@ -40,7 +40,7 @@ export function OverviewTab({ project }: { project: Project }) {
     // Secrets State
     const [isAddingSecret, setIsAddingSecret] = useState(false);
     const [newSecretKey, setNewSecretKey] = useState("");
-    const [newSecretEnv, setNewSecretEnv] = useState("prod");
+    const [newSecretEnv, setNewSecretEnv] = useState<"production" | "preview" | "development">("production");
 
     const handleSaveSecret = async () => {
         if (!newSecretKey.trim()) return;
@@ -51,15 +51,13 @@ export function OverviewTab({ project }: { project: Project }) {
             lastUpdated: new Date().toISOString()
         };
 
-        const updatedSecrets = [...(project.secrets || []), newSecret];
-
         // Optimistic Update
         updateProject(project.id, { secrets: updatedSecrets });
 
         // Reset Form
         setIsAddingSecret(false);
         setNewSecretKey("");
-        setNewSecretEnv("prod");
+        setNewSecretEnv("production");
 
         // DB Update
         if (supabase) {
