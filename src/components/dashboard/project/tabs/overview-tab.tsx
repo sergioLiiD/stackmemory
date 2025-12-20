@@ -48,8 +48,9 @@ export function OverviewTab({ project }: { project: Project }) {
         const newSecret = {
             key: newSecretKey.toUpperCase().replace(/\s+/g, '_'),
             environment: newSecretEnv,
-            lastUpdated: new Date().toISOString()
         };
+
+        const updatedSecrets = [...(project.secrets || []), newSecret];
 
         // Optimistic Update
         updateProject(project.id, { secrets: updatedSecrets });
@@ -273,12 +274,12 @@ export function OverviewTab({ project }: { project: Project }) {
                                 />
                                 <select
                                     value={newSecretEnv}
-                                    onChange={(e) => setNewSecretEnv(e.target.value)}
+                                    onChange={(e) => setNewSecretEnv(e.target.value as any)}
                                     className="bg-black/30 border border-white/10 rounded px-1 py-0.5 text-[10px] text-neutral-400 focus:outline-none focus:border-[#a78bfa]"
                                 >
-                                    <option value="prod">PROD</option>
-                                    <option value="dev">DEV</option>
-                                    <option value="test">TEST</option>
+                                    <option value="production">PROD</option>
+                                    <option value="development">DEV</option>
+                                    <option value="preview">PREVIEW</option>
                                 </select>
                                 <button onClick={handleSaveSecret} className="text-green-400 hover:text-green-300 p-1">
                                     <Check className="w-3 h-3" />
