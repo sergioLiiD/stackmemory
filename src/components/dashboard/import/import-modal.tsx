@@ -93,8 +93,6 @@ export function ImportModal({ isOpen, onClose, onSave }: ImportModalProps) {
                 throw new Error("Invalid GitHub URL. Please use the format: https://github.com/user/repo");
             }
 
-            attemptedUrl = rawUrl;
-
             // Use Proxy to bypass CORS and handle Auth safely
             const proxyFetch = async (targetUrl: string) => {
                 const res = await fetch('/api/proxy/github', {
@@ -112,26 +110,57 @@ export function ImportModal({ isOpen, onClose, onSave }: ImportModalProps) {
                 return res;
             };
 
-            console.log("Attempting to fetch via proxy:", rawUrl);
+            // 1. Fetch Repo Metadata using Proxy to get default_branch
+            // We need to parse owner/repo from the URL again if it was a direct raw URL, but mainly we expect standard github URLs here
+            let statsUrl = "";
+            let owner = "";
+            let repo = "";
+
+            try {
+                if (repoUrl.includes("github.com")) {
+                    const urlObj = new URL(repoUrl);
+                    const parts = urlObj.pathname.split('/').filter(Boolean);
+                    if (parts.length >= 2) {
+                        owner = parts[0];
+                        repo = parts[1];
+                        statsUrl = `https://api.github.com/repos/${owner}/${repo}`;
+                    }
+                }
+            } catch (e) {
+                console.error("Error parsing repo URL for metadata", e);
+            }
+
+            let defaultBranch = "main";
+            if (statsUrl) {
+                console.log("Fetching metadata from:", statsUrl);
+                try {
+                    const metaRes = await proxyFetch(statsUrl);
+                    if (metaRes.ok) {
+                        const meta = await metaRes.json();
+                        if (meta.default_branch) {
+                            defaultBranch = meta.default_branch;
+                            console.log("Detected default branch:", defaultBranch);
+                        }
+                    }
+                } catch (e) {
+                    console.warn("Failed to fetch repo metadata, falling back to 'main'", e);
+                }
+            }
+
+            // 2. Construct Raw URL with detected branch
+            if (owner && repo) {
+                attemptedUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${defaultBranch}/package.json`;
+            } else {
+                attemptedUrl = rawUrl; // Fallback if parsing failed
+            }
+
+            console.log("Attempting to fetch via proxy:", attemptedUrl);
             let res;
             try {
-                res = await proxyFetch(rawUrl);
+                res = await proxyFetch(attemptedUrl);
             } catch (e: any) {
                 if (e.message === "404") res = { ok: false, status: 404 } as Response;
                 else throw e;
-            }
-
-            // If main fails, try master branch
-            if (!res.ok && rawUrl.includes("/main/") && !repoUrl.includes("/blob/")) {
-                const masterUrl = rawUrl.replace("/main/", "/master/");
-                attemptedUrl = masterUrl;
-                console.log("Attempting fallback via proxy:", masterUrl);
-                try {
-                    res = await proxyFetch(masterUrl);
-                } catch (e: any) {
-                    if (e.message === "404") res = { ok: false, status: 404 } as Response;
-                    else throw e;
-                }
             }
 
             if (!res.ok) {

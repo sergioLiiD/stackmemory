@@ -13,7 +13,12 @@ export async function POST(req: Request) {
         if (token) {
             headers['Authorization'] = `Bearer ${token}`;
         }
-        headers['Accept'] = 'application/vnd.github.v3.raw';
+        // Dynamically set Accept header based on target URL
+        if (url.includes('api.github.com') && !url.includes('raw.githubusercontent.com')) {
+            headers['Accept'] = 'application/vnd.github.v3+json';
+        } else {
+            headers['Accept'] = 'application/vnd.github.v3.raw';
+        }
 
         const res = await fetch(url, { headers });
 
