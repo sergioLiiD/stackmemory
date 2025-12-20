@@ -37,6 +37,41 @@ export function OverviewTab({ project }: { project: Project }) {
     const [showManualInput, setShowManualInput] = useState(false);
     const [manualToken, setManualToken] = useState("");
 
+    // Secrets State
+    const [isAddingSecret, setIsAddingSecret] = useState(false);
+    const [newSecretKey, setNewSecretKey] = useState("");
+    const [newSecretEnv, setNewSecretEnv] = useState("prod");
+
+    const handleSaveSecret = async () => {
+        if (!newSecretKey.trim()) return;
+
+        const newSecret = {
+            key: newSecretKey.toUpperCase().replace(/\s+/g, '_'),
+            environment: newSecretEnv,
+            lastUpdated: new Date().toISOString()
+        };
+
+        const updatedSecrets = [...(project.secrets || []), newSecret];
+
+        // Optimistic Update
+        updateProject(project.id, { secrets: updatedSecrets });
+
+        // Reset Form
+        setIsAddingSecret(false);
+        setNewSecretKey("");
+        setNewSecretEnv("prod");
+
+        // DB Update
+        if (supabase) {
+            const { error } = await supabase
+                .from('projects')
+                .update({ secrets: updatedSecrets })
+                .eq('id', project.id);
+
+            if (error) console.error("Failed to save secret", error);
+        }
+    };
+
     const handleConnectGithub = async () => {
         if (!supabase) return;
         // Set flag to resume sync after redirect
@@ -227,7 +262,41 @@ export function OverviewTab({ project }: { project: Project }) {
                         {!project.secrets?.length && (
                             <div className="text-center py-4 text-neutral-600 text-sm border border-dashed border-white/10 rounded-lg">No secrets recorded</div>
                         )}
-                        <button className="w-full py-2 mt-2 rounded-full border border-dashed border-neutral-300 dark:border-white/10 text-neutral-500 text-xs hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-white/5 transition-colors">+ Add Secret Key</button>
+                        {isAddingSecret ? (
+                            <div className="flex items-center gap-2 p-2 rounded-lg bg-white/5 border border-[#a78bfa]/50 animate-in fade-in slide-in-from-top-1">
+                                <Key className="w-3 h-3 text-[#a78bfa]" />
+                                <input
+                                    autoFocus
+                                    value={newSecretKey}
+                                    onChange={(e) => setNewSecretKey(e.target.value)}
+                                    placeholder="API_KEY_NAME"
+                                    className="flex-1 bg-transparent text-xs text-white placeholder:text-neutral-600 focus:outline-none font-mono uppercase"
+                                    onKeyDown={(e) => e.key === 'Enter' && handleSaveSecret()}
+                                />
+                                <select
+                                    value={newSecretEnv}
+                                    onChange={(e) => setNewSecretEnv(e.target.value)}
+                                    className="bg-black/30 border border-white/10 rounded px-1 py-0.5 text-[10px] text-neutral-400 focus:outline-none focus:border-[#a78bfa]"
+                                >
+                                    <option value="prod">PROD</option>
+                                    <option value="dev">DEV</option>
+                                    <option value="test">TEST</option>
+                                </select>
+                                <button onClick={handleSaveSecret} className="text-green-400 hover:text-green-300 p-1">
+                                    <Check className="w-3 h-3" />
+                                </button>
+                                <button onClick={() => setIsAddingSecret(false)} className="text-red-400 hover:text-red-300 p-1">
+                                    <X className="w-3 h-3" />
+                                </button>
+                            </div>
+                        ) : (
+                            <button
+                                onClick={() => setIsAddingSecret(true)}
+                                className="w-full py-2 mt-2 rounded-full border border-dashed border-neutral-300 dark:border-white/10 text-neutral-500 text-xs hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-white/5 transition-colors"
+                            >
+                                + Add Secret Key
+                            </button>
+                        )}
                     </div>
                 </div>
 
