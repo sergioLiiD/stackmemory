@@ -147,12 +147,50 @@ export function ImportModal({ isOpen, onClose, onSave }: ImportModalProps) {
                 }
             }
 
-            // 2. Construct Raw URL with detected branch
+
+            // 2. Fetch Root Directory Listing to find package.json and verify access
+            let targetFileUrl = "";
+            let foundFile = null;
+
             if (owner && repo) {
-                // Use API endpoint for content to leverage standard Auth header cleanly
+                const contentsUrl = `https://api.github.com/repos/${owner}/${repo}/contents/?ref=${defaultBranch}`;
+                console.log("Listing root contents from:", contentsUrl);
+
+                try {
+                    const listRes = await proxyFetch(contentsUrl);
+                    if (listRes.ok) {
+                        const files = await listRes.json();
+                        if (Array.isArray(files)) {
+                            // Find package.json (case-insensitive)
+                            foundFile = files.find((f: any) => f.name.toLowerCase() === 'package.json');
+
+                            if (foundFile) {
+                                console.log("Found package.json:", foundFile.path);
+                                // Construct API URL for raw content of this specific file
+                                // We use the API endpoint for content to ensure auth headers work
+                                targetFileUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${foundFile.path}?ref=${defaultBranch}`;
+                            } else {
+                                console.warn("package.json not found in root");
+                            }
+                        }
+                    } else {
+                        console.warn("Failed to list directory", listRes.status);
+                    }
+                } catch (e) {
+                    console.error("Directory listing failed", e);
+                }
+            }
+
+            // 3. Determine Final URL to Fetch
+            if (targetFileUrl) {
+                attemptedUrl = targetFileUrl;
+            } else if (foundFile === null && owner && repo) {
+                // If listing succeeded but file missing -> Error immediately or try fallback?
+                // If we are sure listing worked, then file is missing.
+                // But let's be safe and try the direct guess as fallback in case listing failed for some reason
                 attemptedUrl = `https://api.github.com/repos/${owner}/${repo}/contents/package.json?ref=${defaultBranch}`;
             } else {
-                attemptedUrl = rawUrl; // Fallback if parsing failed
+                attemptedUrl = rawUrl;
             }
 
             console.log("Attempting to fetch via proxy:", attemptedUrl);
@@ -166,37 +204,14 @@ export function ImportModal({ isOpen, onClose, onSave }: ImportModalProps) {
 
             if (!res.ok) {
                 if (res.status === 404) {
+                    // Logic to differentiate "Repo not found" vs "File not found"
+                    // If metadata succeeded, Repo exists. So this 404 is definitely File Not Found.
+                    if (statsUrl) {
+                        throw new Error(`File 'package.json' not found in the root of '${defaultBranch}'.\nPlease check if the file exists or is named correctly.`);
+                    }
                     throw new Error(`Repository not found or private.\nAttempted: ${attemptedUrl}\n\nFor private repos, please provide a GitHub Token below or paste content manually.`);
                 }
                 throw new Error(`Failed to fetch package.json via proxy. (Status: ${res.status})`);
-            }
-
-            // The proxy returns the raw text of the file
-            const text = await res.text();
-            let parsed;
-            try {
-                parsed = parsePackageJson(text);
-            } catch (e) {
-                // If it returned JSON content type but we want to parse it safely
-                // Sometimes proxy might return "Error" string if something leaked, but we handled errors above
-                parsed = null;
-            }
-
-            if (parsed) {
-                setResult({ ...parsed, repo: repoUrl });
-                // Auto-fill details if not set
-                if (!projectDetails.name) {
-                    setProjectDetails(prev => ({
-                        ...prev,
-                        name: parsed?.name || prev.name || repoUrl.split('/').pop() || "New Project",
-                        description: parsed?.description || prev.description || ""
-                    }));
-                }
-
-                // setIsAnalyzed(true);
-
-            } else {
-                setError("Could not parse package.json from the provided URL.");
             }
         } catch (err: any) {
             console.error(err);
