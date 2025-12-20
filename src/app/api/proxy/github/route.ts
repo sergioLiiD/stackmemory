@@ -11,7 +11,7 @@ export async function POST(req: Request) {
 
         const headers: HeadersInit = {};
         if (token) {
-            headers['Authorization'] = `token ${token}`;
+            headers['Authorization'] = `Bearer ${token}`;
         }
         headers['Accept'] = 'application/vnd.github.v3.raw';
 
