@@ -149,7 +149,8 @@ export function ImportModal({ isOpen, onClose, onSave }: ImportModalProps) {
 
             // 2. Construct Raw URL with detected branch
             if (owner && repo) {
-                attemptedUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${defaultBranch}/package.json`;
+                // Use API endpoint for content to leverage standard Auth header cleanly
+                attemptedUrl = `https://api.github.com/repos/${owner}/${repo}/contents/package.json?ref=${defaultBranch}`;
             } else {
                 attemptedUrl = rawUrl; // Fallback if parsing failed
             }

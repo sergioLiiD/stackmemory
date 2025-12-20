@@ -14,7 +14,12 @@ export async function POST(req: Request) {
             headers['Authorization'] = `Bearer ${token}`;
         }
         // Dynamically set Accept header based on target URL
-        if (url.includes('api.github.com') && !url.includes('raw.githubusercontent.com')) {
+        // If fetching file content via API, request raw
+        if (url.includes('/contents/')) {
+            headers['Accept'] = 'application/vnd.github.v3.raw';
+        }
+        // If standard API call (metadata, user info), request JSON
+        else if (url.includes('api.github.com') && !url.includes('raw.githubusercontent.com')) {
             headers['Accept'] = 'application/vnd.github.v3+json';
         } else {
             headers['Accept'] = 'application/vnd.github.v3.raw';
