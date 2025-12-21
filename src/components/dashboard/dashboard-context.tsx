@@ -62,7 +62,7 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
                         deployProvider: p.deploy_provider,
                         deployAccount: p.deploy_account,
                         stack: p.stack || [],
-                        lastUpdated: new Date(p.created_at).toLocaleDateString(),
+                        lastUpdated: p.updated_at ? new Date(p.updated_at).toLocaleString() : new Date(p.created_at).toLocaleDateString(),
                         health: calculateProjectHealth({
                             ...p,
                             repoUrl: p.repository_url,

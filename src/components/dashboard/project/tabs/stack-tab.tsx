@@ -171,6 +171,11 @@ export function StackTab({ project }: { project: Project }) {
             <div className="flex items-center justify-between mb-6">
                 <h3 className="text-lg font-bold text-neutral-900 dark:text-white flex items-center gap-2">
                     <Layers className="w-5 h-5 text-[#a78bfa]" /> Technology Stack
+                    {project.lastUpdated && (
+                        <span className="text-xs font-normal text-neutral-400 ml-2">
+                            (Last check: {project.lastUpdated})
+                        </span>
+                    )}
                 </h3>
                 <div className="flex gap-2">
                     <button
