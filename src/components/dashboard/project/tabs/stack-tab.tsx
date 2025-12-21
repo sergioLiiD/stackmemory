@@ -35,12 +35,20 @@ export function StackTab({ project }: { project: Project }) {
                 })
             });
 
+            const data = await res.json();
+
             if (res.ok) {
-                // Reload to fetch fresh data from DB
-                window.location.reload();
+                if (data.stackUpdate?.updated) {
+                    window.location.reload();
+                } else if (data.stackUpdate?.error) {
+                    alert("Sync warning: Stack update failed - " + data.stackUpdate.error);
+                } else if (data.stackUpdate && !data.stackUpdate.found) {
+                    alert("No package.json found. Crawler analyzed " + data.filesFound + " files.");
+                } else {
+                    window.location.reload(); // Fallback for embeddings sync success
+                }
             } else {
-                const data = await res.json();
-                alert("Failed to sync stack: " + (data.error || "Unknown error"));
+                alert("Failed to sync: " + (data.error || "Unknown error"));
             }
         } catch (e) {
             console.error(e);
