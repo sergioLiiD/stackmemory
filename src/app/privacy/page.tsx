@@ -42,7 +42,22 @@ export default function PrivacyPage() {
                 </section>
 
                 <section className="space-y-4">
-                    <h2 className="text-2xl font-bold">5. Contact Us</h2>
+                    <h2 className="text-2xl font-bold">5. GDPR Data Protection Rights</h2>
+                    <p className="text-neutral-300 leading-relaxed">
+                        We would like to make sure you are fully aware of all of your data protection rights. Every user is entitled to the following:
+                    </p>
+                    <ul className="list-disc pl-5 space-y-2 text-neutral-300">
+                        <li><strong>The right to access</strong> – You have the right to request copies of your personal data.</li>
+                        <li><strong>The right to rectification</strong> – You have the right to request that we correct any information you believe is inaccurate.</li>
+                        <li><strong>The right to erasure</strong> – You have the right to request that we erase your personal data, under certain conditions.</li>
+                        <li><strong>The right to restrict processing</strong> – You have the right to request that we restrict the processing of your personal data, under certain conditions.</li>
+                        <li><strong>The right to object to processing</strong> – You have the right to object to our processing of your personal data, under certain conditions.</li>
+                        <li><strong>The right to data portability</strong> – You have the right to request that we transfer the data that we have collected to another organization, or directly to you, under certain conditions.</li>
+                    </ul>
+                </section>
+
+                <section className="space-y-4">
+                    <h2 className="text-2xl font-bold">6. Contact Us</h2>
                     <p className="text-neutral-300 leading-relaxed">
                         If you have questions or comments about this policy, you may email us at <a href="mailto:hello@stackmemory.app" className="text-blue-400 hover:underline">hello@stackmemory.app</a>.
                     </p>

@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { AuthProvider } from "@/components/auth/auth-context";
 import { SubscriptionProvider } from "@/components/billing/subscription-context";
+import { CookieBanner } from "@/components/cookie-banner";
 
 const quicksand = Quicksand({
   variable: "--font-sans",
@@ -39,6 +40,7 @@ export default function RootLayout({
               disableTransitionOnChange
             >
               {children}
+              <CookieBanner />
             </ThemeProvider>
           </SubscriptionProvider>
         </AuthProvider>

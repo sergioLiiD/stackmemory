@@ -101,6 +101,8 @@
 - **Compliance**:
   - [x] Add Privacy Policy Page (Required for Google Auth).
   - [x] Add Terms of Service Page.
+  - [x] Add Cookie Policy Page.
+  - [x] Add GDPR Rights Section and Cookie Consent Banner.
 
 ## 🧩 Phase 4: Low-Code Operations (n8n Integration)
 
