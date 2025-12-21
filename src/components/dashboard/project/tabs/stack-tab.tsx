@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Project, StackItem } from "@/data/mock";
-import { Box, Layers, Plus, Trash2, Save, X, Pencil, ShieldAlert, ArrowUpRight } from "lucide-react";
+import { Box, Layers, Plus, Trash2, Save, X, Pencil, ShieldAlert, ArrowUpRight, RefreshCw } from "lucide-react";
 import { useDashboard } from "../../dashboard-context";
 import { supabase } from "@/lib/supabase";
 import { StackModal } from "./stack-modal";
@@ -17,6 +17,39 @@ export function StackTab({ project }: { project: Project }) {
     const [editingItem, setEditingItem] = useState<StackItem | null>(null);
     const [editingIndex, setEditingIndex] = useState<number | null>(null);
     const [updates, setUpdates] = useState<{ [key: string]: { latest?: string, vulnerabilities?: any[] } }>({});
+
+    // Sync state
+    const [isSyncing, setIsSyncing] = useState(false);
+
+    const handleStackSync = async () => {
+        if (!project.repoUrl) return;
+        setIsSyncing(true);
+        try {
+            // Re-use crawl endpoint which now updates stack from package.json
+            const res = await fetch('/api/crawl', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    repoUrl: project.repoUrl,
+                    projectId: project.id
+                })
+            });
+
+            if (res.ok) {
+                // Reload to fetch fresh data from DB
+                window.location.reload();
+            } else {
+                const data = await res.json();
+                alert("Failed to sync stack: " + (data.error || "Unknown error"));
+            }
+        } catch (e) {
+            console.error(e);
+            alert("Error syncing stack");
+        } finally {
+            setIsSyncing(false);
+        }
+    };
+
 
     // Check for updates
     useEffect(() => {
@@ -120,6 +153,15 @@ export function StackTab({ project }: { project: Project }) {
                     <Layers className="w-5 h-5 text-[#a78bfa]" /> Technology Stack
                 </h3>
                 <div className="flex gap-2">
+                    <button
+                        onClick={handleStackSync}
+                        disabled={!project.repoUrl || isSyncing}
+                        className="text-xs bg-white/5 border border-white/10 text-neutral-400 hover:text-white px-4 py-2 rounded-full hover:bg-white/10 transition-colors font-medium flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                        title={project.repoUrl ? "Update stack from package.json" : "Link a repository first"}
+                    >
+                        <RefreshCw className={`w-3 h-3 ${isSyncing ? 'animate-spin' : ''}`} />
+                        {isSyncing ? 'Syncing...' : 'Sync with Repo'}
+                    </button>
                     <button
                         onClick={handleAdd}
                         className="text-xs bg-[#180260] text-white px-4 py-2 rounded-full hover:bg-[#2a04a3] transition-colors shadow-lg shadow-[#180260]/20 font-medium flex items-center gap-1"
