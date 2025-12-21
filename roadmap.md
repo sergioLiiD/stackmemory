@@ -97,10 +97,10 @@
 - **Onboarding Experience**:
   - [x] "Connect CLI" Modal with instructions.
   - [x] "Empty State" for new users (Quick Start Guide).
-  - [ ] Verify End-to-End flow (SignUp -> Install -> Sync).
+  - [x] Verify End-to-End flow (SignUp -> Install -> Sync).
 - **Compliance**:
-  - [ ] Add Privacy Policy Page (Required for Google Auth).
-  - [ ] Add Terms of Service Page.
+  - [x] Add Privacy Policy Page (Required for Google Auth).
+  - [x] Add Terms of Service Page.
 
 ## 🧩 Phase 4: Low-Code Operations (n8n Integration)
 
