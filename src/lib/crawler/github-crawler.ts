@@ -53,7 +53,8 @@ export async function fetchRepoFileTree(owner: string, repo: string, token: stri
         headers: {
             'Authorization': `token ${token}`,
             'Accept': 'application/vnd.github.v3+json',
-        }
+        },
+        cache: 'no-store'
     });
 
     if (!res.ok) {
@@ -93,7 +94,8 @@ export async function fetchFileContent(url: string, token: string): Promise<stri
         headers: {
             'Authorization': `token ${token}`,
             'Accept': 'application/vnd.github.v3.raw', // Request raw content
-        }
+        },
+        cache: 'no-store'
     });
 
     if (!res.ok) {
