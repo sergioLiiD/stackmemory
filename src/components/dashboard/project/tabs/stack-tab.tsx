@@ -25,7 +25,6 @@ export function StackTab({ project }: { project: Project }) {
         if (!project.repoUrl) return;
         setIsSyncing(true);
         try {
-            // Re-use crawl endpoint which now updates stack from package.json
             const res = await fetch('/api/crawl', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -34,6 +33,11 @@ export function StackTab({ project }: { project: Project }) {
                     projectId: project.id
                 })
             });
+
+            if (res.status === 401) {
+                alert("GitHub session expired. Please sign out and sign in again to refresh your connection.");
+                return;
+            }
 
             const data = await res.json();
 
@@ -45,7 +49,7 @@ export function StackTab({ project }: { project: Project }) {
                 } else if (data.stackUpdate && !data.stackUpdate.found) {
                     alert("No package.json found. Crawler analyzed " + data.filesFound + " files.");
                 } else {
-                    window.location.reload(); // Fallback for embeddings sync success
+                    window.location.reload();
                 }
             } else {
                 alert("Failed to sync: " + (data.error || "Unknown error"));
