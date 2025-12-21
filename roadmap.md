@@ -72,9 +72,11 @@
 
 ## 💎 Monetization & Growth (Beta Launch)
 
-- **Commercial Infrastructure**:
-  - [ ] **Payment Gateway**: Integration (Stripe/LemonSqueezy).
-  - [ ] **Discount Codes**: System to manage invite codes/discounts.
+- **Commercial Infrastructure (LemonSqueezy)**:
+  - [ ] **Setup**: Create Store, Products (LTD/Monthly), and Webhooks.
+  - [ ] **Checkout Integration**: Generate magic links or overlay checkout.
+  - [ ] **Webhook Handler**: `api/webhooks/lemonsqueezy` to provision access (update DB).
+  - [ ] **Billing Portal**: Link for users to manage subscription/invoices.
 - **Beta Program (500 Users)**:
   - [ ] **Lifetime Deal (LTD) Strategy**:
     - [ ] Define limits (Projects, Storage, AI Tokens).
