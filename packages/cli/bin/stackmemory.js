@@ -17,12 +17,49 @@ const API_URL = process.env.STACKMEMORY_API_URL || 'https://stackmemory.app/api/
 
 // Parse Args
 const args = process.argv.slice(2);
-const projectIdx = args.indexOf('--project');
+
+// Find flags
+const helpIdx = args.findIndex(arg => arg === '--help' || arg === '-h');
+const versionIdx = args.findIndex(arg => arg === '--version' || arg === '-v');
+const projectIdx = args.findIndex(arg => arg === '--project' || arg === '-p');
+
+// Show Version
+if (versionIdx !== -1) {
+    const pkg = require('../package.json');
+    console.log(`${pkg.name} version ${pkg.version}`);
+    process.exit(0);
+}
+
+// Show Help
+if (helpIdx !== -1) {
+    console.log(`
+${colors.bright}StackMemory CLI${colors.reset} - The Silent Observer
+
+${colors.yellow}Usage:${colors.reset}
+  npx stackmemory --project <PROJECT_ID>
+
+${colors.yellow}Options:${colors.reset}
+  --project, -p   Required. The Project ID from your StackMemory Dashboard.
+  --help, -h      Show this help message.
+  --version, -v   Show version number.
+
+${colors.yellow}Description:${colors.reset}
+  This tool runs in the background and watches your ${colors.bright}package.json${colors.reset} file.
+  When changes are detected (new dependencies, scripts), it automatically
+  syncs them to your StackMemory Vault.
+
+${colors.yellow}Environment Variables:${colors.reset}
+  STACKMEMORY_PROJECT_ID  (Optional) Auto-fill project ID.
+  STACKMEMORY_API_URL     (Debug) Override API endpoint.
+`);
+    process.exit(0);
+}
+
 const projectId = projectIdx !== -1 ? args[projectIdx + 1] : process.env.STACKMEMORY_PROJECT_ID;
 
 if (!projectId) {
     console.error(`${LOG_PREFIX} ${colors.red}Error: No Project ID provided.${colors.reset}`);
-    console.log(`Usage: npx stackmemory --project <YOUR_PROJECT_ID>`);
+    console.log(`Try: ${colors.green}npx stackmemory --help${colors.reset}`);
     process.exit(1);
 }
 
