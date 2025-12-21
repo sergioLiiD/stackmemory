@@ -36,6 +36,61 @@ export async function POST(req: Request) {
         const { storeEmbeddings } = await import('@/lib/vector-store');
         const totalChunks = await storeEmbeddings(projectId, processedFiles);
 
+        // 3.5 Check for package.json to update Stack
+        const packageJsonFile = processedFiles.find(f => f.path.toLowerCase().endsWith('package.json'));
+        if (packageJsonFile) {
+            try {
+                const json = JSON.parse(packageJsonFile.content);
+                const stackItems: any[] = [];
+
+                // Helper to classify
+                const getType = (name: string): string => {
+                    const n = name.toLowerCase();
+                    if (['react', 'next', 'vue', 'svelte', 'angular', 'tailwindcss', 'framer-motion', 'lucide-react', 'clsx'].some(k => n.includes(k))) return 'frontend';
+                    if (['node', 'express', 'nestjs', 'fastify', 'prisma', 'drizzle', 'mongoose', 'zod'].some(k => n.includes(k))) return 'backend';
+                    if (['openai', 'langchain', 'tensorflow', 'pytorch', 'anthropic'].some(k => n.includes(k))) return 'ai';
+                    if (['supabase', 'firebase', 'postgres', 'mysql', 'mongodb', 'redis'].some(k => n.includes(k))) return 'database';
+                    if (['docker', 'kubernetes', 'vercel', 'aws', 'terraform', 'eslint', 'typescript', 'prettier'].some(k => n.includes(k))) return 'devops';
+                    return 'other';
+                };
+
+                const allDeps = { ...json.dependencies, ...json.devDependencies };
+
+                Object.entries(allDeps).forEach(([name, version]: [string, any]) => {
+                    stackItems.push({
+                        name,
+                        version: typeof version === 'string' ? version.replace(/[\^~]/g, '') : '',
+                        type: getType(name)
+                    });
+                });
+
+                if (stackItems.length > 0) {
+                    const cookieStore = await cookies();
+                    const supabase = createClient(cookieStore);
+
+                    // We need to fetch the existing project to merge or overwrite? 
+                    // Requirement implies "refresh", so overwrite is mostly correct for the *code* stack.
+                    // However, existing UI might have manual notes. 
+                    // For V1, we'll overwrite the 'stack' column to ensure it reflects reality.
+                    // Ideally we would merge, but that's complex. Overwriting ensures 'v16.1.0' appears.
+
+                    const { error: updateError } = await supabase
+                        .from('projects')
+                        .update({
+                            stack: stackItems,
+                            lastUpdated: new Date().toISOString()
+                        })
+                        .eq('id', projectId);
+
+                    if (updateError) {
+                        console.error("Failed to update stack in DB:", updateError);
+                    }
+                }
+            } catch (e) {
+                console.error("Failed to parse package.json for stack update", e);
+            }
+        }
+
         // 4. Return Summary
         return NextResponse.json({
             success: true,
