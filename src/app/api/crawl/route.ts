@@ -37,8 +37,10 @@ export async function POST(req: Request) {
         const totalChunks = await storeEmbeddings(projectId, processedFiles);
 
         // 3.5 Check for package.json to update Stack
+        let stackUpdateStatus = { found: false, count: 0, updated: false, error: null as string | null };
         const packageJsonFile = processedFiles.find(f => f.path.toLowerCase().endsWith('package.json'));
         if (packageJsonFile) {
+            stackUpdateStatus.found = true;
             try {
                 const json = JSON.parse(packageJsonFile.content);
                 const stackItems: any[] = [];
@@ -64,6 +66,8 @@ export async function POST(req: Request) {
                     });
                 });
 
+                stackUpdateStatus.count = stackItems.length;
+
                 if (stackItems.length > 0) {
                     const cookieStore = await cookies();
                     const supabase = createClient(cookieStore);
@@ -78,16 +82,20 @@ export async function POST(req: Request) {
                         .from('projects')
                         .update({
                             stack: stackItems,
-                            last_updated: new Date().toISOString()
+                            updated_at: new Date().toISOString()
                         })
                         .eq('id', projectId);
 
                     if (updateError) {
                         console.error("Failed to update stack in DB:", updateError);
+                        stackUpdateStatus.error = updateError.message;
+                    } else {
+                        stackUpdateStatus.updated = true;
                     }
                 }
-            } catch (e) {
+            } catch (e: any) {
                 console.error("Failed to parse package.json for stack update", e);
+                stackUpdateStatus.error = e.message;
             }
         }
 
@@ -96,6 +104,7 @@ export async function POST(req: Request) {
             success: true,
             filesFound: processedFiles.length,
             chunksStored: totalChunks,
+            stackUpdate: stackUpdateStatus, // Return debug info
             files: processedFiles.map(f => ({ path: f.path, size: f.size, language: f.language })) // Metadata only
         });
 
