@@ -1,15 +1,16 @@
 "use client";
 
 import { ProjectCard } from "@/components/dashboard/project-card";
-import { Search, Filter, Terminal } from "lucide-react";
+import { Search, Filter, Terminal, Plus } from "lucide-react";
 import { useDashboard } from "@/components/dashboard/dashboard-context";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { CliInstructionsModal } from "@/components/dashboard/cli-instructions-modal";
+import { EmptyState } from "@/components/dashboard/empty-state";
 
 export default function DashboardPage() {
-    const { projects } = useDashboard();
+    const { projects, openImportModal } = useDashboard();
     const [isCliModalOpen, setIsCliModalOpen] = useState(false);
 
     const averageHealth = projects.length > 0
@@ -70,6 +71,15 @@ export default function DashboardPage() {
 
                 {/* Search Bar Floating in Hero */}
                 <div className="absolute top-8 right-8 hidden xl:flex items-center gap-3 z-50">
+                    {/* Add Project Button */}
+                    <button
+                        onClick={openImportModal}
+                        className="flex items-center gap-2 px-4 py-3 rounded-full bg-[#180260] hover:bg-[#2e1065] border border-white/10 text-sm font-medium text-white transition-colors"
+                    >
+                        <Plus className="w-4 h-4" />
+                        New Project
+                    </button>
+
                     <button
                         onClick={() => setIsCliModalOpen(true)}
                         className="flex items-center gap-2 px-4 py-3 rounded-full bg-white/10 hover:bg-white/20 border border-white/10 text-sm font-medium text-white transition-colors"
@@ -91,17 +101,29 @@ export default function DashboardPage() {
             {/* Content Grid */}
             <div className="flex items-center justify-between mb-8">
                 <h2 className="text-2xl font-bold text-foreground">Active Projects</h2>
-                <button className="p-2 rounded-xl bg-card border border-border text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
-                    <Filter className="w-5 h-5" />
-                </button>
+                <div className="flex gap-2">
+                    <button
+                        onClick={openImportModal}
+                        className="md:hidden p-2 rounded-xl bg-[#180260] border border-white/10 text-white hover:bg-[#2e1065] transition-colors"
+                    >
+                        <Plus className="w-5 h-5" />
+                    </button>
+                    <button className="p-2 rounded-xl bg-card border border-border text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+                        <Filter className="w-5 h-5" />
+                    </button>
+                </div>
             </div>
 
-            {/* Project Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {projects.map((project, index) => (
-                    <ProjectCard key={project.id} project={project} delay={index * 0.1} />
-                ))}
-            </div>
+            {/* Project Grid or Empty State */}
+            {projects.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {projects.map((project, index) => (
+                        <ProjectCard key={project.id} project={project} delay={index * 0.1} />
+                    ))}
+                </div>
+            ) : (
+                <EmptyState onCreateProject={openImportModal} />
+            )}
 
             <CliInstructionsModal
                 isOpen={isCliModalOpen}

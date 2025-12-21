@@ -91,12 +91,12 @@
 ## 🚀 Phase 3.5: CLI & Public Launch (MVP Polish)
 
 - **CLI Package**:
-  - [ ] Prepare `package.json` for NPM publication (`bin`, `files`).
-  - [ ] Publish `stackmemory` to NPM Registry.
-  - [ ] Verify `npm install -g stackmemory` works on clean machine.
+  - [x] Prepare `package.json` for NPM publication (`bin`, `files`).
+  - [x] Publish `stackmemory` to NPM Registry.
+  - [x] Verify `npm install -g stackmemory` works on clean machine.
 - **Onboarding Experience**:
   - [x] "Connect CLI" Modal with instructions.
-  - [ ] "Empty State" for new users (Quick Start Guide).
+  - [x] "Empty State" for new users (Quick Start Guide).
   - [ ] Verify End-to-End flow (SignUp -> Install -> Sync).
 - **Compliance**:
   - [ ] Add Privacy Policy Page (Required for Google Auth).
