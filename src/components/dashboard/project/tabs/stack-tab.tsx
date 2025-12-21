@@ -262,8 +262,7 @@ export function StackTab({ project }: { project: Project }) {
                         {(updates[item.name.toLowerCase()]?.latest || (updates[item.name.toLowerCase()]?.vulnerabilities && updates[item.name.toLowerCase()]!.vulnerabilities!.length > 0)) && (
                             <div className={`mt-3 p-3 rounded-xl border space-y-3 ${updates[item.name.toLowerCase()]?.vulnerabilities?.length
                                 ? 'bg-red-500/5 border-red-500/10'
-                                    ? 'bg-red-500/5 border-red-500/10'
-                                    : 'bg-yellow-500/5 border-yellow-500/10'
+                                : 'bg-yellow-500/5 border-yellow-500/10'
                                 }`}>
                                 {updates[item.name.toLowerCase()]?.latest && (
                                     <div className={`flex items-start gap-2 text-xs ${updates[item.name.toLowerCase()]?.vulnerabilities?.length ? 'text-red-300' : 'text-yellow-600 dark:text-yellow-500'
