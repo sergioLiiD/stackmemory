@@ -41,7 +41,7 @@ export default function PrivacyPage() {
                     </p>
                 </section>
 
-                <section className="space-y-4">
+                <section id="gdpr" className="space-y-4">
                     <h2 className="text-2xl font-bold">5. GDPR Data Protection Rights</h2>
                     <p className="text-neutral-300 leading-relaxed">
                         We would like to make sure you are fully aware of all of your data protection rights. Every user is entitled to the following:

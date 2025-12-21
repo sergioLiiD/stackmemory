@@ -3,7 +3,7 @@
 import { useAuth } from "@/components/auth/auth-context";
 
 import { Footer } from "@/components/layout/footer";
-import { CookieConsent } from "@/components/layout/cookie-consent";
+// import { CookieConsent } from "@/components/layout/cookie-consent";
 import { Hero } from "@/components/landing/hero";
 import { TrustBar } from "@/components/landing/trust-bar";
 import { FeatureGrid } from "@/components/landing/feature-grid";
@@ -52,7 +52,7 @@ function LandingContent() {
       <WorkflowSection />
 
       <Footer />
-      <CookieConsent />
+      {/* <CookieConsent /> */}
     </main >
   );
 }
