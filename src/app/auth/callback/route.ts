@@ -3,6 +3,7 @@ import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 
 export async function GET(request: Request) {
+    console.log("Auth callback triggered");
     const { searchParams } = new URL(request.url)
     const code = searchParams.get('code')
 
@@ -24,35 +25,43 @@ export async function GET(request: Request) {
     }
     // Remove trailing slash if present to avoid double slashes
     origin = origin.replace(/\/$/, '');
+    console.log("Auth callback origin:", origin);
+
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+        console.error("Missing Supabase environment variables");
+        return NextResponse.redirect(`${origin}/auth/auth-code-error?error=Missing_Env_Vars`);
+    }
 
     if (code) {
-        const cookieStore = await cookies()
-        const supabase = createServerClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL!,
-            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-            {
-                cookies: {
-                    getAll() {
-                        return cookieStore.getAll()
-                    },
-                    setAll(cookiesToSet) {
-                        try {
-                            cookiesToSet.forEach(({ name, value, options }) => {
-                                cookieStore.set(name, value, options)
-                            })
-                        } catch (error) {
-                            // Ignore if called from server component, but this is a Route Handler so it works.
-                            console.error("Cookie setting failed:", error)
-                        }
-                    },
-                },
-            }
-        )
-
         try {
+            const cookieStore = await cookies()
+            const supabase = createServerClient(
+                process.env.NEXT_PUBLIC_SUPABASE_URL!,
+                process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+                {
+                    cookies: {
+                        getAll() {
+                            return cookieStore.getAll()
+                        },
+                        setAll(cookiesToSet) {
+                            try {
+                                cookiesToSet.forEach(({ name, value, options }) => {
+                                    cookieStore.set(name, value, options)
+                                })
+                            } catch (error) {
+                                // Ignore if called from server component, but this is a Route Handler so it works.
+                                console.error("Cookie setting failed:", error)
+                            }
+                        },
+                    },
+                }
+            )
+
+            console.log("Exchanging code for session...");
             const { error } = await supabase.auth.exchangeCodeForSession(code)
 
             if (!error) {
+                console.log("Auth exchange successful, redirecting to:", `${origin}${next}`);
                 return NextResponse.redirect(`${origin}${next}`)
             } else {
                 console.error("Auth Exchange Error:", error);
@@ -64,5 +73,6 @@ export async function GET(request: Request) {
         }
     }
 
+    console.warn("No code provided in auth callback");
     return NextResponse.redirect(`${origin}/auth/auth-code-error?error=No_Code_Provided`)
 }
