@@ -10,7 +10,6 @@
     "cli:watch": "node packages/cli/bin/stackmemory.js"
   },
   "dependencies": {
-    "@stripe/stripe-js": "^8.5.3",
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.86.2",
     "clsx": "^2.1.1",
@@ -22,7 +21,6 @@
     "react": "19.2.0",
     "react-dom": "19.2.0",
     "react-markdown": "^10.1.0",
-    "stripe": "^20.0.0",
     "tailwind-merge": "^3.4.0"
   },
   "devDependencies": {

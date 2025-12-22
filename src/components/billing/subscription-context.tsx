@@ -4,7 +4,7 @@ import { createContext, useContext, useEffect, useState, ReactNode } from "react
 import { useAuth } from "@/components/auth/auth-context";
 import { supabase } from "@/lib/supabase";
 
-type Tier = 'free' | 'pro';
+type Tier = 'free' | 'pro' | 'founder';
 
 interface SubscriptionContextType {
     tier: Tier;
@@ -60,26 +60,30 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
         fetchSubscription();
     }, [user]);
 
-    const isPro = tier === 'pro';
+    const isPro = tier === 'pro' || tier === 'founder';
 
     const checkAccess = (feature: 'projects' | 'services' | 'search') => {
-        if (isPro) return true;
-
         switch (feature) {
             case 'projects':
-                return projectCount < 3;
+                if (tier === 'founder') return projectCount < 100;
+                if (tier === 'pro') return projectCount < 50;
+                return projectCount < 5; // Free limit increased to 5
             case 'services':
-                // We'll need to fetch service count if we want strict enforcement, 
-                // for now we assume UI handles it or we'll add it later.
                 return true;
             case 'search':
-                return false; // Free tier has no global search
+                return isPro; // Only Pro/Founder has global/semantic search
             default:
                 return false;
         }
     };
 
-    const remainingProjects = isPro ? 'unlimited' : Math.max(0, 3 - projectCount);
+    const getMaxProjects = () => {
+        if (tier === 'founder') return 100;
+        if (tier === 'pro') return 50;
+        return 5;
+    };
+
+    const remainingProjects = Math.max(0, getMaxProjects() - projectCount);
 
     return (
         <SubscriptionContext.Provider value={{

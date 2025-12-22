@@ -3,7 +3,6 @@ import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 
 export async function GET(request: Request) {
-    console.log("Auth callback triggered");
     const { searchParams } = new URL(request.url)
     const code = searchParams.get('code')
 
@@ -25,12 +24,6 @@ export async function GET(request: Request) {
     }
     // Remove trailing slash if present to avoid double slashes
     origin = origin.replace(/\/$/, '');
-    console.log("Auth callback origin:", origin);
-
-    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-        console.error("Missing Supabase environment variables");
-        return NextResponse.redirect(`${origin}/auth/auth-code-error?error=Missing_Env_Vars`);
-    }
 
     if (code) {
         try {
@@ -57,11 +50,9 @@ export async function GET(request: Request) {
                 }
             )
 
-            console.log("Exchanging code for session...");
             const { error } = await supabase.auth.exchangeCodeForSession(code)
 
             if (!error) {
-                console.log("Auth exchange successful, redirecting to:", `${origin}${next}`);
                 return NextResponse.redirect(`${origin}${next}`)
             } else {
                 console.error("Auth Exchange Error:", error);
@@ -73,6 +64,5 @@ export async function GET(request: Request) {
         }
     }
 
-    console.warn("No code provided in auth callback");
     return NextResponse.redirect(`${origin}/auth/auth-code-error?error=No_Code_Provided`)
 }
