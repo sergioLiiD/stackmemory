@@ -3,7 +3,7 @@ import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 
 export async function GET(request: Request) {
-    const { searchParams, origin } = new URL(request.url)
+    const { searchParams } = new URL(request.url)
     const code = searchParams.get('code')
 
     // Enforce dashboard redirect
@@ -11,6 +11,19 @@ export async function GET(request: Request) {
     if (!next || next === '/' || next === '') {
         next = '/dashboard'
     }
+
+    // Determine the base URL (origin) robustly
+    let origin = process.env.NEXT_PUBLIC_SITE_URL;
+    if (!origin) {
+        // Fallback to request origin, but force https in production if needed
+        const urlObj = new URL(request.url);
+        origin = urlObj.origin;
+        if (origin.includes('stackmemory.app') && origin.startsWith('http://')) {
+            origin = origin.replace('http://', 'https://');
+        }
+    }
+    // Remove trailing slash if present to avoid double slashes
+    origin = origin.replace(/\/$/, '');
 
     if (code) {
         const cookieStore = await cookies()
@@ -36,13 +49,18 @@ export async function GET(request: Request) {
             }
         )
 
-        const { error } = await supabase.auth.exchangeCodeForSession(code)
+        try {
+            const { error } = await supabase.auth.exchangeCodeForSession(code)
 
-        if (!error) {
-            return NextResponse.redirect(`${origin}${next}`)
-        } else {
-            console.error("Auth Exchange Error:", error);
-            return NextResponse.redirect(`${origin}/auth/auth-code-error?error=${encodeURIComponent(error.message)}`)
+            if (!error) {
+                return NextResponse.redirect(`${origin}${next}`)
+            } else {
+                console.error("Auth Exchange Error:", error);
+                return NextResponse.redirect(`${origin}/auth/auth-code-error?error=${encodeURIComponent(error.message)}`)
+            }
+        } catch (err: any) {
+            console.error("Auth Exchange Crash:", err);
+            return NextResponse.redirect(`${origin}/auth/auth-code-error?error=${encodeURIComponent(err.message || "Unknown error")}`)
         }
     }
 
