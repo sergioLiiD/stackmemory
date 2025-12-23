@@ -76,7 +76,7 @@ export default function DashboardPage() {
                         <input
                             type="text"
                             placeholder="Type to search..."
-                            className="bg-background/50 backdrop-blur-xl border border-white/10 rounded-full pl-11 pr-6 py-3 text-sm text-foreground focus:outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/10 w-56 transition-all"
+                            className="bg-white dark:bg-background/50 backdrop-blur-xl border border-neutral-950 dark:border-white/10 rounded-full pl-11 pr-6 py-3 text-sm text-black dark:text-foreground focus:outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/10 w-56 transition-all shadow-sm placeholder:text-neutral-500"
                         />
                     </div>
 

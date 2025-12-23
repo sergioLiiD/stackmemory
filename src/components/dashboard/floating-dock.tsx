@@ -42,10 +42,10 @@ export function FloatingDock() {
                 drag
                 dragMomentum={false}
                 style={{ x: "-50%" }}
-                className="flex items-center gap-2 p-2 pl-3 rounded-full bg-card/40 backdrop-blur-xl border border-white/10 shadow-2xl shadow-black/20 pointer-events-auto cursor-grab active:cursor-grabbing"
+                className="flex items-center gap-2 p-2 pl-3 rounded-full bg-white/80 dark:bg-card/40 backdrop-blur-xl border border-neutral-200 dark:border-white/10 shadow-2xl shadow-black/10 dark:shadow-black/20 pointer-events-auto cursor-grab active:cursor-grabbing"
             >
                 {/* Drag Handle */}
-                <div className="text-muted-foreground/50 hover:text-foreground cursor-grab active:cursor-grabbing">
+                <div className="text-neutral-400 dark:text-muted-foreground/50 hover:text-neutral-900 dark:hover:text-foreground cursor-grab active:cursor-grabbing">
                     <GripVertical className="w-4 h-4" />
                 </div>
 
@@ -60,7 +60,7 @@ export function FloatingDock() {
                                 "relative flex items-center justify-center w-12 h-12 rounded-full transition-all duration-300 group",
                                 isActive
                                     ? "bg-primary text-primary-foreground shadow-glow"
-                                    : "text-muted-foreground hover:bg-white/10 hover:text-foreground"
+                                    : "text-neutral-500 dark:text-muted-foreground hover:bg-neutral-100 dark:hover:bg-white/10 hover:text-neutral-900 dark:hover:text-foreground"
                             )}
                             title={item.label}
                         >
@@ -68,28 +68,28 @@ export function FloatingDock() {
                             {isActive && (
                                 <motion.span
                                     layoutId="dock-active"
-                                    className="absolute inset-0 rounded-full bg-white/5"
+                                    className="absolute inset-0 rounded-full bg-white/20 dark:bg-white/5"
                                     transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                                 />
                             )}
-                            <span className="absolute -top-10 scale-0 group-hover:scale-100 transition-transform bg-black/80 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap">
+                            <span className="absolute -top-10 scale-0 group-hover:scale-100 transition-transform bg-white dark:bg-black/80 text-neutral-900 dark:text-white border border-neutral-200 dark:border-transparent text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap shadow-sm">
                                 {item.label}
                             </span>
                         </Link>
                     );
                 })}
 
-                <div className="w-px h-8 bg-white/10 mx-1" />
+                <div className="w-px h-8 bg-neutral-200 dark:bg-white/10 mx-1" />
 
                 {/* Context Weaver Action - Only visible if active project */}
                 {activeProject && (
                     <Link
                         href={`/dashboard/projects/${activeProject.id}?tab=prompts`}
-                        className="flex items-center justify-center w-12 h-12 rounded-full bg-[#180260]/80 text-[#A78BFA] border border-[#A78BFA]/30 hover:bg-[#A78BFA] hover:text-[#180260] transition-all group relative"
+                        className="flex items-center justify-center w-12 h-12 rounded-full bg-violet-100 dark:bg-[#180260]/80 text-violet-600 dark:text-[#A78BFA] border border-violet-200 dark:border-[#A78BFA]/30 hover:bg-violet-200 dark:hover:bg-[#A78BFA] hover:text-violet-900 dark:hover:text-[#180260] transition-all group relative"
                         title={`Weave Context: ${activeProject.name}`}
                     >
                         <BrainCircuit className="w-5 h-5" />
-                        <span className="absolute -top-10 scale-0 group-hover:scale-100 transition-transform bg-[#A78BFA] text-[#180260] font-bold text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap">
+                        <span className="absolute -top-10 scale-0 group-hover:scale-100 transition-transform bg-violet-100 dark:bg-[#A78BFA] text-violet-900 dark:text-[#180260] font-bold text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap shadow-sm">
                             Weave Context
                         </span>
                     </Link>
@@ -102,12 +102,12 @@ export function FloatingDock() {
                     title="New Project"
                 >
                     <PlusCircle className="w-6 h-6" />
-                    <span className="absolute -top-10 scale-0 group-hover:scale-100 transition-transform bg-black/80 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap">
+                    <span className="absolute -top-10 scale-0 group-hover:scale-100 transition-transform bg-white dark:bg-black/80 text-neutral-900 dark:text-white border border-neutral-200 dark:border-transparent text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap shadow-sm">
                         New Project
                     </span>
                 </button>
 
-                <div className="w-px h-8 bg-white/10 mx-1" />
+                <div className="w-px h-8 bg-neutral-200 dark:bg-white/10 mx-1" />
 
                 {/* Logout Button */}
                 <button
@@ -117,20 +117,20 @@ export function FloatingDock() {
                         await supabase.auth.signOut();
                         window.location.href = "/login";
                     }}
-                    className="flex items-center justify-center w-12 h-12 rounded-full text-muted-foreground hover:bg-red-500/10 hover:text-red-500 transition-all group relative"
+                    className="flex items-center justify-center w-12 h-12 rounded-full text-neutral-500 dark:text-muted-foreground hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-500 transition-all group relative"
                     title="Log Out"
                 >
                     <LogOut className="w-5 h-5" />
-                    <span className="absolute -top-10 scale-0 group-hover:scale-100 transition-transform bg-black/80 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap">
+                    <span className="absolute -top-10 scale-0 group-hover:scale-100 transition-transform bg-white dark:bg-black/80 text-neutral-900 dark:text-white border border-neutral-200 dark:border-transparent text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap shadow-sm">
                         Log Out
                     </span>
                 </button>
 
-                <div className="w-px h-8 bg-white/10 mx-1" />
+                <div className="w-px h-8 bg-neutral-200 dark:bg-white/10 mx-1" />
 
                 {/* Theme Toggle */}
                 <div className="flex items-center justify-center w-12 h-12">
-                    <ThemeToggle className="rounded-full w-10 h-10 border-0 bg-transparent hover:bg-white/10" />
+                    <ThemeToggle className="rounded-full w-10 h-10 border-0 bg-transparent hover:bg-neutral-100 dark:hover:bg-white/10" />
                 </div>
             </motion.div>
 
