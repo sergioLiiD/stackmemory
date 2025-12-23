@@ -19,6 +19,7 @@ const SubscriptionContext = createContext<SubscriptionContextType | undefined>(u
 export function SubscriptionProvider({ children }: { children: ReactNode }) {
     const { user } = useAuth();
     const [tier, setTier] = useState<Tier>('free');
+    const [customLimit, setCustomLimit] = useState<number | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [projectCount, setProjectCount] = useState(0);
 
@@ -34,12 +35,13 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
                 // Fetch Profile
                 const { data: profile } = await supabase
                     .from('profiles')
-                    .select('tier')
+                    .select('tier, custom_project_limit')
                     .eq('id', user.id)
                     .single();
 
                 if (profile) {
                     setTier(profile.tier as Tier);
+                    setCustomLimit(profile.custom_project_limit);
                 }
 
                 // Fetch Usage (e.g., project count)
@@ -68,6 +70,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
         if (isAdmin) return true;
         switch (feature) {
             case 'projects':
+                if (customLimit !== null) return projectCount < customLimit;
                 if (tier === 'founder') return projectCount < 100;
                 if (tier === 'pro') return projectCount < 50;
                 return projectCount < 5; // Free limit increased to 5
@@ -82,6 +85,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
 
     const getMaxProjects = () => {
         if (isAdmin) return 9999;
+        if (customLimit !== null) return customLimit;
         if (tier === 'founder') return 100;
         if (tier === 'pro') return 50;
         return 5;
