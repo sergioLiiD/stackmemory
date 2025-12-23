@@ -98,6 +98,7 @@ export interface Project {
     journal?: JournalEntry[];
     snippets?: Snippet[];
     design?: DesignSystem;
+    hasVulnerabilities?: boolean;
 }
 
 export const mockProjects: Project[] = [

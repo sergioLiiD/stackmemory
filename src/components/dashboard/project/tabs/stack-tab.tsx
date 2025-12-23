@@ -97,12 +97,21 @@ export function StackTab({ project }: { project: Project }) {
                         };
                     });
 
-                    const hasNewUpdates = data.updates.some((u: any) => u.latest || (u.vulnerabilities && u.vulnerabilities.length > 0));
+                    const hasNewUpdates = data.updates.some((u: any) => u.latest && (!u.vulnerabilities || u.vulnerabilities.length === 0));
+                    const hasVulnerabilities = data.updates.some((u: any) => u.vulnerabilities && u.vulnerabilities.length > 0);
 
-                    if (hasNewUpdates !== project.hasUpdates) {
-                        updateProject(project.id, { hasUpdates: hasNewUpdates });
+                    if (hasNewUpdates !== project.hasUpdates || hasVulnerabilities !== project.hasVulnerabilities) {
+                        updateProject(project.id, {
+                            hasUpdates: hasNewUpdates,
+                            hasVulnerabilities: hasVulnerabilities
+                        });
                         if (supabase) {
-                            supabase.from('projects').update({ has_updates: hasNewUpdates }).eq('id', project.id).then();
+                            supabase.from('projects')
+                                .update({
+                                    has_updates: hasNewUpdates,
+                                    has_vulnerabilities: hasVulnerabilities
+                                })
+                                .eq('id', project.id).then();
                         }
                     }
 

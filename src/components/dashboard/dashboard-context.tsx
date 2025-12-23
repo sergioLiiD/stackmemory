@@ -77,7 +77,8 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
                         snippets: p.snippets || [],
                         tasks: p.tasks || [],
                         firebaseConfig: p.firebase_config || undefined,
-                        hasUpdates: p.has_updates || false
+                        hasUpdates: p.has_updates || false,
+                        hasVulnerabilities: p.has_vulnerabilities || false
                     }));
                     setProjects(mappedProjects);
                 }
@@ -142,6 +143,7 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
                 if (updates.status) dbUpdates.status = updates.status;
                 if (updates.stack) dbUpdates.stack = updates.stack;
                 if (updates.hasUpdates !== undefined) dbUpdates.has_updates = updates.hasUpdates;
+                if (updates.hasVulnerabilities !== undefined) dbUpdates.has_vulnerabilities = updates.hasVulnerabilities;
 
                 if (Object.keys(dbUpdates).length > 0) {
                     const { error } = await supabase

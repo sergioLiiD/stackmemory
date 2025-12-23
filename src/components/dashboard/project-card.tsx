@@ -37,11 +37,18 @@ export function ProjectCard({ project, delay = 0 }: { project: Project; delay?: 
                             <h3 className="text-lg font-bold text-foreground group-hover:text-primary transition-colors">
                                 {project.name}
                             </h3>
-                            {project.hasUpdates && (
+                            {project.hasVulnerabilities ? (
                                 <div className="relative group/tooltip">
                                     <ShieldAlert className="w-4 h-4 text-red-500 animate-pulse" />
                                     <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-2 py-1 bg-red-500/10 border border-red-500/20 text-red-400 text-[10px] rounded whitespace-nowrap opacity-0 group-hover/tooltip:opacity-100 transition-opacity">
-                                        Stack Updates Available
+                                        Security Risks Found
+                                    </div>
+                                </div>
+                            ) : project.hasUpdates && (
+                                <div className="relative group/tooltip">
+                                    <ArrowUpRight className="w-4 h-4 text-amber-500 animate-bounce" />
+                                    <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-2 py-1 bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[10px] rounded whitespace-nowrap opacity-0 group-hover/tooltip:opacity-100 transition-opacity">
+                                        Updates Available
                                     </div>
                                 </div>
                             )}
