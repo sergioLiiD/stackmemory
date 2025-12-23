@@ -60,9 +60,12 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
         fetchSubscription();
     }, [user]);
 
-    const isPro = tier === 'pro' || tier === 'founder';
+    const isAdmin = user?.email && ['sergio@ideapunkt.de', 'sergio@liid.mx'].includes(user.email);
+
+    const isPro = isAdmin || tier === 'pro' || tier === 'founder';
 
     const checkAccess = (feature: 'projects' | 'services' | 'search') => {
+        if (isAdmin) return true;
         switch (feature) {
             case 'projects':
                 if (tier === 'founder') return projectCount < 100;
@@ -78,12 +81,13 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     };
 
     const getMaxProjects = () => {
+        if (isAdmin) return 9999;
         if (tier === 'founder') return 100;
         if (tier === 'pro') return 50;
         return 5;
     };
 
-    const remainingProjects = Math.max(0, getMaxProjects() - projectCount);
+    const remainingProjects = isAdmin ? 'unlimited' : Math.max(0, getMaxProjects() - projectCount);
 
     return (
         <SubscriptionContext.Provider value={{

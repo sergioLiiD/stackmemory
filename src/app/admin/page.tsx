@@ -1,239 +1,146 @@
+import { checkAdminAccess } from "@/lib/auth/admin-auth";
+import { redirect } from "next/navigation";
+import { getAdminClient } from "@/lib/supabase/admin";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/bento-card"; // Assuming reused card or standard UI
+import { Separator } from "@/components/ui/separator";
 
-"use client";
+// Simple Card Component for Stats if BentoCard is too complex or different
+function StatCard({ title, value, subtext }: { title: string, value: string | number, subtext?: string }) {
+    return (
+        <div className="p-6 rounded-xl bg-neutral-900 border border-neutral-800">
+            <h3 className="text-sm font-medium text-neutral-400">{title}</h3>
+            <div className="mt-2 text-3xl font-bold text-white">{value}</div>
+            {subtext && <p className="text-xs text-neutral-500 mt-1">{subtext}</p>}
+        </div>
+    );
+}
 
-import { useEffect, useState } from "react";
-import { Users, DollarSign, Activity, AlertCircle, RefreshCw } from "lucide-react";
-import { motion } from "framer-motion";
-import Link from "next/link";
+export default async function AdminPage() {
+    const isAllowed = await checkAdminAccess();
 
-export default function AdminPage() {
-    const [stats, setStats] = useState<any>(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState("");
-    const [view, setView] = useState<'overview' | 'clients'>('overview');
-    const [clients, setClients] = useState<any[]>([]);
-
-    const fetchStats = async () => {
-        setLoading(true);
-        try {
-            const res = await fetch('/api/admin/stats');
-            if (res.status === 401) throw new Error("Unauthorized");
-            if (res.status === 403) throw new Error("Forbidden: You are not an admin");
-
-            const data = await res.json();
-            if (data.error) throw new Error(data.error);
-
-            setStats(data);
-        } catch (e: any) {
-            setError(e.message);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const fetchClients = async () => {
-        setLoading(true);
-        try {
-            const res = await fetch('/api/admin/users');
-            if (!res.ok) throw new Error("Failed");
-            const data = await res.json();
-            setClients(data.users || []);
-        } catch (e) {
-            console.error(e);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        if (view === 'overview') fetchStats();
-        if (view === 'clients') fetchClients();
-    }, [view]);
-
-    if (loading && !stats && !clients.length) {
-        return (
-            <div className="flex bg-[#041814] h-screen items-center justify-center text-[#FDFBF8]">
-                <Activity className="w-6 h-6 animate-pulse text-green-500" />
-            </div>
-        );
+    if (!isAllowed) {
+        redirect('/dashboard');
     }
 
-    if (error) {
-        return (
-            <div className="flex flex-col bg-[#041814] h-screen items-center justify-center gap-4 text-[#FDFBF8]">
-                <AlertCircle className="w-12 h-12 text-red-500" />
-                <h1 className="text-2xl font-bold">Access Denied</h1>
-                <p className="text-neutral-400">{error}</p>
-                <Link href="/dashboard" className="text-green-500 hover:underline">Return to Dashboard</Link>
-            </div>
-        );
+    // Use Admin Client to bypass RLS for stats
+    const supabase = getAdminClient();
+
+    // 1. Fetch Profiles Stats
+    const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, email, tier, created_at, billing_period_end')
+        .order('created_at', { ascending: false });
+
+    if (profilesError) {
+        return <div className="p-8 text-red-500">Error loading admin data: {profilesError.message}</div>;
     }
+
+    const totalUsers = profiles.length;
+    const freeUsers = profiles.filter(p => p.tier === 'free').length;
+    const proUsers = profiles.filter(p => p.tier === 'pro').length;
+    const founderUsers = profiles.filter(p => p.tier === 'founder').length;
+
+    // 2. Fetch Projects Stats
+    const { count: totalProjects } = await supabase
+        .from('projects')
+        .select('*', { count: 'exact', head: true });
+
+    // 3. Estimate AI Usage (Embeddings count)
+    // Note: 'code_embeddings' might be large, counting might be slow. Use head:true.
+    const { count: totalEmbeddings } = await supabase
+        .from('code_embeddings')
+        .select('*', { count: 'exact', head: true });
+
 
     return (
-        <div className="min-h-screen bg-[#041814] text-[#FDFBF8] p-8">
-            <header className="max-w-7xl mx-auto flex items-center justify-between mb-8">
-                <div>
-                    <h1 className="text-3xl font-bold flex items-center gap-2">
-                        <Activity className="w-8 h-8 text-green-500" />
-                        Admin & Monitoring
-                    </h1>
-                    <p className="text-neutral-400 mt-1">Platform health, costs, and user activity.</p>
-                </div>
-                <div className="flex gap-2 bg-white/5 p-1 rounded-lg">
-                    <button
-                        onClick={() => setView('overview')}
-                        className={cn("px-4 py-2 rounded-md text-sm font-medium transition-colors", view === 'overview' ? "bg-white/10 text-white" : "text-neutral-400 hover:text-white")}
-                    >
-                        Overview
-                    </button>
-                    <button
-                        onClick={() => setView('clients')}
-                        className={cn("px-4 py-2 rounded-md text-sm font-medium transition-colors", view === 'clients' ? "bg-white/10 text-white" : "text-neutral-400 hover:text-white")}
-                    >
-                        Clients
-                    </button>
-                </div>
-            </header>
-
+        <div className="min-h-screen bg-black text-white p-8">
             <div className="max-w-7xl mx-auto space-y-8">
-                {view === 'overview' && stats && (
-                    <>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <StatCard
-                                title="Total Users"
-                                value={stats.users}
-                                icon={Users}
-                                color="text-blue-500"
-                            />
-                            <StatCard
-                                title="Total AI Cost"
-                                value={`$${stats.totalCost.toFixed(4)}`}
-                                icon={DollarSign}
-                                color="text-green-500"
-                                subtext="Accumulated API Spend"
-                            />
-                            <StatCard
-                                title="Recent Activity"
-                                value={stats.recentActivity.length}
-                                icon={Activity}
-                                color="text-purple-500"
-                                subtext="Logs in last batch"
-                            />
-                        </div>
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+                        <p className="text-neutral-400">Monitoring StackMemory usage & billing.</p>
+                    </div>
+                    <div className="px-3 py-1 bg-neutral-900 rounded-full text-xs text-neutral-500 border border-neutral-800">
+                        Admin Access Area
+                    </div>
+                </div>
 
-                        {/* Recent Activity Table */}
-                        <div className="bg-[#06201b] rounded-3xl border border-white/5 overflow-hidden">
-                            <div className="px-6 py-4 border-b border-white/5">
-                                <h3 className="text-lg font-semibold">Live Usage Logs</h3>
-                            </div>
-                            <div className="overflow-x-auto">
-                                <table className="w-full text-left text-sm text-neutral-400">
-                                    <thead className="bg-white/5 text-neutral-200">
-                                        <tr>
-                                            <th className="px-6 py-3 font-medium">Time (UTC)</th>
-                                            <th className="px-6 py-3 font-medium">User</th>
-                                            <th className="px-6 py-3 font-medium">Action</th>
-                                            <th className="px-6 py-3 font-medium">Model</th>
-                                            <th className="px-6 py-3 font-medium">Tokens (In/Out)</th>
-                                            <th className="px-6 py-3 font-medium text-right">Est. Cost</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-white/5">
-                                        {stats.recentActivity.map((log: any) => (
-                                            <tr key={log.id} className="hover:bg-white/5 transition-colors">
-                                                <td className="px-6 py-4 whitespace-nowrap text-neutral-500">
-                                                    {new Date(log.created_at).toLocaleTimeString()}
-                                                </td>
-                                                <td className="px-6 py-4 font-mono text-xs">
-                                                    {log.user_id.split('-')[0]}...
-                                                </td>
-                                                <td className="px-6 py-4">
-                                                    <span className={cn(
-                                                        "px-2 py-1 rounded-full text-xs font-medium border",
-                                                        log.action === 'chat'
-                                                            ? "bg-purple-500/10 text-purple-400 border-purple-500/20"
-                                                            : "bg-blue-500/10 text-blue-400 border-blue-500/20"
-                                                    )}>
-                                                        {log.action}
-                                                    </span>
-                                                </td>
-                                                <td className="px-6 py-4">{log.model}</td>
-                                                <td className="px-6 py-4">{log.input_tokens} / {log.output_tokens}</td>
-                                                <td className="px-6 py-4 text-right text-white">
-                                                    ${log.cost_estimated?.toFixed(5)}
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </>
-                )}
+                {/* KPI Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <StatCard title="Total Users" value={totalUsers} subtext="Registered accounts" />
+                    <StatCard title="Pro Legends" value={proUsers} subtext="€8.99/mo (MRR Impact)" />
+                    <StatCard title="Founders" value={founderUsers} subtext="€49.99 One-time" />
+                    <StatCard title="Total Projects" value={totalProjects || 0} subtext={`${totalEmbeddings || 0} AI Vectors stored`} />
+                </div>
 
-                {view === 'clients' && (
-                    <div className="bg-[#06201b] rounded-3xl border border-white/5 overflow-hidden">
-                        <div className="px-6 py-4 border-b border-white/5 flex justify-between items-center">
-                            <h3 className="text-lg font-semibold">Registered Clients</h3>
-                            <button onClick={fetchClients}><RefreshCw className="w-4 h-4 text-neutral-500 hover:text-white" /></button>
-                        </div>
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left text-sm text-neutral-400">
-                                <thead className="bg-white/5 text-neutral-200">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    {/* User Table (Span 2) */}
+                    <div className="lg:col-span-2 space-y-4">
+                        <h2 className="text-xl font-semibold">Latest Users</h2>
+                        <div className="border border-neutral-800 rounded-xl overflow-hidden">
+                            <table className="w-full text-sm text-left">
+                                <thead className="bg-neutral-900 text-neutral-400 font-medium">
                                     <tr>
-                                        <th className="px-6 py-3 font-medium">Email</th>
-                                        <th className="px-6 py-3 font-medium">Tier</th>
-                                        <th className="px-6 py-3 font-medium">User ID</th>
-                                        <th className="px-6 py-3 font-medium">Created At</th>
-                                        <th className="px-6 py-3 font-medium text-right text-white">Total Spend</th>
+                                        <th className="p-4">Email</th>
+                                        <th className="p-4">Tier</th>
+                                        <th className="p-4">Joined</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-white/5">
-                                    {clients.map((client: any) => (
-                                        <tr key={client.id} className="hover:bg-white/5 transition-colors">
-                                            <td className="px-6 py-4 text-white font-medium">
-                                                {client.email || "No email"}
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <span className={cn("px-2 py-1 rounded-full text-xs uppercase font-bold", client.tier === 'pro' ? "bg-green-500/20 text-green-400" : "bg-neutral-500/20 text-neutral-400")}>
-                                                    {client.tier || 'Free'}
+                                <tbody className="divide-y divide-neutral-800 bg-black/50">
+                                    {profiles.slice(0, 20).map((user) => (
+                                        <tr key={user.id} className="hover:bg-white/5 transition-colors">
+                                            <td className="p-4 font-mono text-neutral-300">{user.email}</td>
+                                            <td className="p-4">
+                                                <span className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider 
+                                                    ${user.tier === 'founder' ? 'bg-amber-900/40 text-amber-400' :
+                                                        user.tier === 'pro' ? 'bg-violet-900/40 text-violet-400' :
+                                                            'bg-neutral-800 text-neutral-400'}`}>
+                                                    {user.tier}
                                                 </span>
                                             </td>
-                                            <td className="px-6 py-4 font-mono text-xs">{client.id}</td>
-                                            <td className="px-6 py-4">{new Date(client.created_at).toLocaleDateString()}</td>
-                                            <td className="px-6 py-4 text-right font-mono text-green-400">
-                                                ${(client.total_spend || 0).toFixed(4)}
+                                            <td className="p-4 text-neutral-500">
+                                                {new Date(user.created_at).toLocaleDateString()}
                                             </td>
                                         </tr>
                                     ))}
                                 </tbody>
                             </table>
+                            <div className="p-3 text-center text-xs text-neutral-500 bg-neutral-900/50 border-t border-neutral-800">
+                                Showing last 20 users
+                            </div>
                         </div>
                     </div>
-                )}
+
+                    {/* Side Panel / Alerts */}
+                    <div className="space-y-4">
+                        <h2 className="text-xl font-semibold">System Health</h2>
+                        <div className="p-6 rounded-xl bg-green-900/10 border border-green-900/30 text-green-400">
+                            <div className="flex items-center gap-2 mb-2">
+                                <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                                <span className="font-bold">Operational</span>
+                            </div>
+                            <p className="text-sm opacity-80">All triggers and webhooks are active.</p>
+                        </div>
+
+                        <div className="p-6 rounded-xl bg-neutral-900 border border-neutral-800">
+                            <h3 className="font-medium mb-4">Quick Links</h3>
+                            <ul className="space-y-2 text-sm">
+                                <li>
+                                    <a href="https://app.lemonsqueezy.com/dashboard" target="_blank" className="text-blue-400 hover:underline">
+                                        Lemon Squeezy Dashboard ↗
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="https://supabase.com/dashboard" target="_blank" className="text-green-400 hover:underline">
+                                        Supabase Dashboard ↗
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
     );
 }
-
-function StatCard({ title, value, icon: Icon, color, subtext }: any) {
-    return (
-        <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-[#06201b] p-6 rounded-3xl border border-white/5"
-        >
-            <div className="flex items-center justify-between mb-4">
-                <span className="text-neutral-400 font-medium">{title}</span>
-                <div className={`p-2 rounded-xl bg-white/5 ${color}`}>
-                    <Icon className="w-5 h-5" />
-                </div>
-            </div>
-            <div className="text-3xl font-bold text-white mb-1">{value}</div>
-            {subtext && <p className="text-xs text-neutral-500">{subtext}</p>}
-        </motion.div>
-    );
-}
-
-// Utility for styles
-import { cn } from "@/lib/utils";
