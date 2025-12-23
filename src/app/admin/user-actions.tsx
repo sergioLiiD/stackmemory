@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { updateUserTier, updateUserLimit } from "./actions";
+import { updateUserTier, updateUserLimit, grantProMonths } from "./actions";
 import { Settings, Check, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -25,6 +25,20 @@ export function AdminUserActions({ userId, initialTier, initialLimit }: Props) {
             setIsOpen(false);
         } catch (error) {
             alert("Failed to update user");
+            console.error(error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleGrantMonths = async (months: number) => {
+        if (!confirm(`Grant ${months} months of Free Pro access to this user?`)) return;
+        setIsLoading(true);
+        try {
+            await grantProMonths(userId, months);
+            setIsOpen(false);
+        } catch (error) {
+            alert("Failed to grant months");
             console.error(error);
         } finally {
             setIsLoading(false);
@@ -78,6 +92,26 @@ export function AdminUserActions({ userId, initialTier, initialLimit }: Props) {
                         />
                         <p className="text-[10px] text-neutral-500 mt-1">
                             Leave empty to use the tier's default limit.
+                        </p>
+                    </div>
+
+                    {/* Free Pro Access */}
+                    <div>
+                        <label className="block text-xs font-medium text-neutral-400 mb-2">Grant Free Pro Access</label>
+                        <div className="grid grid-cols-4 gap-2">
+                            {[1, 3, 6, 12].map((m) => (
+                                <button
+                                    key={m}
+                                    onClick={() => handleGrantMonths(m)}
+                                    disabled={isLoading}
+                                    className="px-2 py-1.5 rounded bg-white/5 border border-white/10 text-xs text-neutral-300 hover:bg-white/10 hover:text-white transition-colors"
+                                >
+                                    +{m} Mo
+                                </button>
+                            ))}
+                        </div>
+                        <p className="text-[10px] text-neutral-500 mt-1">
+                            Adds months to current trial or starts new trial.
                         </p>
                     </div>
 

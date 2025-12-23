@@ -3,9 +3,10 @@
 import { PricingTable } from "@/components/billing/pricing-table";
 import { useSubscription } from "@/components/billing/subscription-context";
 import { Separator } from "@/components/ui/separator";
+import { Mail, Gift } from "lucide-react";
 
 export default function BillingPage() {
-    const { tier } = useSubscription();
+    const { tier, trialEndsAt } = useSubscription();
 
     return (
         <div className="flex flex-col h-full bg-[#0a0a0a]">
@@ -27,6 +28,22 @@ export default function BillingPage() {
                 <div className="max-w-4xl mx-auto space-y-8">
                     <section>
                         <h2 className="text-lg font-medium text-white mb-6">Available Plans</h2>
+
+                        {/* Trial Banner */}
+                        {trialEndsAt && new Date(trialEndsAt) > new Date() && (
+                            <div className="mb-6 bg-gradient-to-r from-violet-900/40 to-fuchsia-900/40 border border-violet-500/30 p-4 rounded-xl flex items-center gap-3">
+                                <div className="p-2 bg-violet-500/20 rounded-lg">
+                                    <Gift className="w-5 h-5 text-violet-300" />
+                                </div>
+                                <div>
+                                    <h3 className="font-semibold text-white text-sm">Free Pro Trial Active</h3>
+                                    <p className="text-xs text-neutral-300">
+                                        Your complimentary Pro access ends on <span className="text-white font-medium">{new Date(trialEndsAt).toLocaleDateString()}</span>.
+                                    </p>
+                                </div>
+                            </div>
+                        )}
+
                         <PricingTable currentTier={tier} />
                     </section>
 

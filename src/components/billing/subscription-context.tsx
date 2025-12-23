@@ -12,6 +12,7 @@ interface SubscriptionContextType {
     isPro: boolean;
     checkAccess: (feature: 'projects' | 'services' | 'search') => boolean;
     remainingProjects: number | 'unlimited';
+    trialEndsAt: string | null;
 }
 
 const SubscriptionContext = createContext<SubscriptionContextType | undefined>(undefined);
@@ -20,6 +21,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     const { user } = useAuth();
     const [tier, setTier] = useState<Tier>('free');
     const [customLimit, setCustomLimit] = useState<number | null>(null);
+    const [trialEndsAt, setTrialEndsAt] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [projectCount, setProjectCount] = useState(0);
 
@@ -35,13 +37,14 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
                 // Fetch Profile
                 const { data: profile } = await supabase
                     .from('profiles')
-                    .select('tier, custom_project_limit')
+                    .select('tier, custom_project_limit, pro_trial_ends_at')
                     .eq('id', user.id)
                     .single();
 
                 if (profile) {
                     setTier(profile.tier as Tier);
                     setCustomLimit(profile.custom_project_limit);
+                    setTrialEndsAt(profile.pro_trial_ends_at);
                 }
 
                 // Fetch Usage (e.g., project count)
@@ -63,8 +66,9 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     }, [user]);
 
     const isAdmin = user?.email && ['sergio@ideapunkt.de', 'sergio@liid.mx'].includes(user.email);
+    const isTrialActive = trialEndsAt && new Date(trialEndsAt) > new Date();
 
-    const isPro = isAdmin || tier === 'pro' || tier === 'founder';
+    const isPro = isAdmin || isTrialActive || tier === 'pro' || tier === 'founder';
 
     const checkAccess = (feature: 'projects' | 'services' | 'search') => {
         if (isAdmin) return true;
@@ -72,7 +76,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
             case 'projects':
                 if (customLimit !== null) return projectCount < customLimit;
                 if (tier === 'founder') return projectCount < 100;
-                if (tier === 'pro') return projectCount < 50;
+                if (tier === 'pro' || isTrialActive) return projectCount < 50;
                 return projectCount < 5; // Free limit increased to 5
             case 'services':
                 return true;
@@ -99,7 +103,8 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
             isLoading,
             isPro,
             checkAccess,
-            remainingProjects
+            remainingProjects,
+            trialEndsAt
         }}>
             {children}
         </SubscriptionContext.Provider>
