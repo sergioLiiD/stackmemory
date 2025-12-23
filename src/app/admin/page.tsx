@@ -2,8 +2,9 @@ import { checkAdminAccess } from "@/lib/auth/admin-auth";
 import { redirect } from "next/navigation";
 import { getAdminClient } from "@/lib/supabase/admin";
 import { Separator } from "@/components/ui/separator";
+import { AdminUserActions } from "./user-actions";
 
-// Simple Card Component for Stats if BentoCard is too complex or different
+// Simple Card Component for Stats
 function StatCard({ title, value, subtext }: { title: string, value: string | number, subtext?: string }) {
     return (
         <div className="p-6 rounded-xl bg-neutral-900 border border-neutral-800">
@@ -24,73 +25,115 @@ export default async function AdminPage() {
     // Use Admin Client to bypass RLS for stats
     const supabase = getAdminClient();
 
-    import { AdminUserActions } from "./user-actions";
-
-    // ... existing imports
-
     // 1. Fetch Profiles Stats
     const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('id, email, tier, created_at, billing_period_end, custom_project_limit')
         .order('created_at', { ascending: false });
 
-    // ... existing code
+    if (profilesError) {
+        return <div className="p-8 text-red-500">Error loading admin data: {profilesError.message}</div>;
+    }
 
-    <tr>
-        <th className="p-4">Email</th>
-        <th className="p-4">Tier</th>
-        <th className="p-4">Limits</th>
-        <th className="p-4">Joined</th>
-        <th className="p-4">Actions</th>
-    </tr>
-                                </thead >
-        <tbody className="divide-y divide-neutral-800 bg-black/50">
-            {profiles.slice(0, 50).map((user) => {
-                const isAdmin = ['sergio@ideapunkt.de', 'sergio@liid.mx'].includes(user.email);
-                return (
-                    <tr key={user.id} className="hover:bg-white/5 transition-colors">
-                        <td className="p-4 font-mono text-neutral-300">
-                            {user.email}
-                            {isAdmin && <span className="ml-2 px-1.5 py-0.5 rounded bg-red-900/40 text-red-400 text-[10px] font-bold border border-red-800/50">ADMIN</span>}
-                        </td>
-                        <td className="p-4">
-                            <span className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider 
-                                                    ${user.tier === 'founder' ? 'bg-amber-900/40 text-amber-400' :
-                                    user.tier === 'pro' ? 'bg-violet-900/40 text-violet-400' :
-                                        'bg-neutral-800 text-neutral-400'}`}>
-                                {user.tier}
-                            </span>
-                        </td>
-                        <td className="p-4 text-xs text-neutral-500">
-                            {user.custom_project_limit ? (
-                                <span className="text-cyan-400 font-bold">{user.custom_project_limit} (Custom)</span>
-                            ) : (
-                                <span>Default</span>
-                            )}
-                        </td>
-                        <td className="p-4 text-neutral-500">
-                            {new Date(user.created_at).toLocaleDateString()}
-                        </td>
-                        <td className="p-4">
-                            <AdminUserActions
-                                userId={user.id}
-                                initialTier={user.tier}
-                                initialLimit={user.custom_project_limit}
-                            />
-                        </td>
-                    </tr>
-                )
-            })}
-        </tbody>
-                            </table >
-        <div className="p-3 text-center text-xs text-neutral-500 bg-neutral-900/50 border-t border-neutral-800">
-            Showing last 20 users
-        </div>
-                        </div >
-                    </div >
+    const totalUsers = profiles.length;
+    const freeUsers = profiles.filter(p => p.tier === 'free').length;
+    const proUsers = profiles.filter(p => p.tier === 'pro').length;
+    const founderUsers = profiles.filter(p => p.tier === 'founder').length;
 
-        {/* Side Panel / Alerts */ }
-        < div className = "space-y-4" >
+    // 2. Fetch Projects Stats
+    const { count: totalProjects } = await supabase
+        .from('projects')
+        .select('*', { count: 'exact', head: true });
+
+    // 3. Estimate AI Usage (Embeddings count)
+    const { count: totalEmbeddings } = await supabase
+        .from('code_embeddings')
+        .select('*', { count: 'exact', head: true });
+
+
+    return (
+        <div className="min-h-screen bg-black text-white p-8">
+            <div className="max-w-7xl mx-auto space-y-8">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+                        <p className="text-neutral-400">Monitoring StackMemory usage & billing.</p>
+                    </div>
+                    <div className="px-3 py-1 bg-neutral-900 rounded-full text-xs text-neutral-500 border border-neutral-800">
+                        Admin Access Area
+                    </div>
+                </div>
+
+                {/* KPI Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <StatCard title="Total Users" value={totalUsers} subtext="Registered accounts" />
+                    <StatCard title="Pro Legends" value={proUsers} subtext="€8.99/mo (MRR Impact)" />
+                    <StatCard title="Founders" value={founderUsers} subtext="€49.99 One-time" />
+                    <StatCard title="Total Projects" value={totalProjects || 0} subtext={`${totalEmbeddings || 0} AI Vectors stored`} />
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    {/* User Table (Span 2) */}
+                    <div className="lg:col-span-2 space-y-4">
+                        <h2 className="text-xl font-semibold">Latest Users</h2>
+                        <div className="border border-neutral-800 rounded-xl overflow-hidden">
+                            <table className="w-full text-sm text-left">
+                                <thead className="bg-neutral-900 text-neutral-400 font-medium">
+                                    <tr>
+                                        <th className="p-4">Email</th>
+                                        <th className="p-4">Tier</th>
+                                        <th className="p-4">Limits</th>
+                                        <th className="p-4">Joined</th>
+                                        <th className="p-4">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-neutral-800 bg-black/50">
+                                    {profiles.slice(0, 50).map((user) => {
+                                        const isAdmin = ['sergio@ideapunkt.de', 'sergio@liid.mx'].includes(user.email);
+                                        return (
+                                            <tr key={user.id} className="hover:bg-white/5 transition-colors">
+                                                <td className="p-4 font-mono text-neutral-300">
+                                                    {user.email}
+                                                    {isAdmin && <span className="ml-2 px-1.5 py-0.5 rounded bg-red-900/40 text-red-400 text-[10px] font-bold border border-red-800/50">ADMIN</span>}
+                                                </td>
+                                                <td className="p-4">
+                                                    <span className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider 
+                                                        ${user.tier === 'founder' ? 'bg-amber-900/40 text-amber-400' :
+                                                            user.tier === 'pro' ? 'bg-violet-900/40 text-violet-400' :
+                                                                'bg-neutral-800 text-neutral-400'}`}>
+                                                        {user.tier}
+                                                    </span>
+                                                </td>
+                                                <td className="p-4 text-xs text-neutral-500">
+                                                    {user.custom_project_limit ? (
+                                                        <span className="text-cyan-400 font-bold">{user.custom_project_limit} (Custom)</span>
+                                                    ) : (
+                                                        <span>Default</span>
+                                                    )}
+                                                </td>
+                                                <td className="p-4 text-neutral-500">
+                                                    {new Date(user.created_at).toLocaleDateString()}
+                                                </td>
+                                                <td className="p-4">
+                                                    <AdminUserActions
+                                                        userId={user.id}
+                                                        initialTier={user.tier}
+                                                        initialLimit={user.custom_project_limit}
+                                                    />
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                            <div className="p-3 text-center text-xs text-neutral-500 bg-neutral-900/50 border-t border-neutral-800">
+                                Showing last 50 users
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Side Panel / Alerts */}
+                    <div className="space-y-4">
                         <h2 className="text-xl font-semibold">System Health</h2>
                         <div className="p-6 rounded-xl bg-green-900/10 border border-green-900/30 text-green-400">
                             <div className="flex items-center gap-2 mb-2">
@@ -115,10 +158,9 @@ export default async function AdminPage() {
                                 </li>
                             </ul>
                         </div>
-                    </div >
-                </div >
-
-            </div >
-        </div >
+                    </div>
+                </div>
+            </div>
+        </div>
     );
 }
