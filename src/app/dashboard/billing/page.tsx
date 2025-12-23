@@ -9,7 +9,7 @@ export default function BillingPage() {
     const { tier, trialEndsAt } = useSubscription();
 
     return (
-        <div className="flex flex-col h-full bg-neutral-50 dark:bg-[#0a0a0a]">
+        <div className="flex flex-col h-full bg-neutral-50 dark:bg-[#0a0a0a] rounded-3xl shadow-sm border border-neutral-200 dark:border-white/5 overflow-hidden">
             {/* Header */}
             <div className="px-8 py-6 border-b border-neutral-200 dark:border-white/5 bg-white/50 dark:bg-[#0a0a0a]/50 backdrop-blur-xl sticky top-0 z-10">
                 <div className="flex items-center justify-between max-w-7xl mx-auto">
@@ -31,8 +31,8 @@ export default function BillingPage() {
 
                         {/* Trial Banner */}
                         {trialEndsAt && new Date(trialEndsAt) > new Date() && (
-                            <div className="mb-6 bg-gradient-to-r from-violet-100 to-fuchsia-100 dark:from-violet-900/40 dark:to-fuchsia-900/40 border border-violet-200 dark:border-violet-500/30 p-4 rounded-xl flex items-center gap-3">
-                                <div className="p-2 bg-violet-500/10 dark:bg-violet-500/20 rounded-lg">
+                            <div className="mb-6 bg-gradient-to-r from-violet-100 to-fuchsia-100 dark:from-violet-900/40 dark:to-fuchsia-900/40 border border-violet-200 dark:border-violet-500/30 p-4 rounded-3xl flex items-center gap-3">
+                                <div className="p-2 bg-violet-500/10 dark:bg-violet-500/20 rounded-xl">
                                     <Gift className="w-5 h-5 text-violet-600 dark:text-violet-300" />
                                 </div>
                                 <div>
@@ -49,7 +49,7 @@ export default function BillingPage() {
 
                     <Separator className="bg-neutral-200 dark:bg-white/5" />
 
-                    <section className="bg-neutral-100 dark:bg-[#180260]/10 border border-neutral-200 dark:border-[#180260]/30 rounded-xl p-6">
+                    <section className="bg-neutral-100 dark:bg-[#180260]/10 border border-neutral-200 dark:border-[#180260]/30 rounded-3xl p-6">
                         <h3 className="text-base font-medium text-neutral-900 dark:text-white mb-2">Need help with billing?</h3>
                         <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-4">
                             If you need to change your payment method, download invoices, or cancel your subscription,

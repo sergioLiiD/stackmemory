@@ -27,13 +27,15 @@ export function PricingTable({ currentTier = 'free' }: PricingProps) {
     return (
         <div className="max-w-4xl mx-auto">
             {/* Plan Toggle */}
+            {/* Plan Toggle */}
+            {/* Plan Toggle */}
             <div className="flex justify-center mb-10">
-                <div className="bg-white/5 p-1 rounded-xl flex items-center gap-1 border border-white/10">
+                <div className="bg-neutral-100 dark:bg-white/5 p-1 rounded-full flex items-center gap-1 border border-neutral-200 dark:border-white/10">
                     <button
                         onClick={() => setPlanType('monthly')}
                         className={cn(
-                            "px-4 py-2 rounded-lg text-sm font-medium transition-all",
-                            planType === 'monthly' ? "bg-[#a78bfa] text-[#1e1b4b]" : "text-neutral-400 hover:text-white"
+                            "px-4 py-2 rounded-full text-sm font-medium transition-all",
+                            planType === 'monthly' ? "bg-[#a78bfa] text-[#1e1b4b]" : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"
                         )}
                     >
                         Monthly
@@ -41,8 +43,8 @@ export function PricingTable({ currentTier = 'free' }: PricingProps) {
                     <button
                         onClick={() => setPlanType('founder')}
                         className={cn(
-                            "px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2",
-                            planType === 'founder' ? "bg-amber-400 text-amber-950" : "text-neutral-400 hover:text-white"
+                            "px-4 py-2 rounded-full text-sm font-medium transition-all flex items-center gap-2",
+                            planType === 'founder' ? "bg-amber-400 text-amber-950" : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"
                         )}
                     >
                         Founder Deal <Sparkles className="w-3 h-3" />
@@ -52,24 +54,24 @@ export function PricingTable({ currentTier = 'free' }: PricingProps) {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative">
                 {/* Free Tier */}
-                <div className="p-8 rounded-3xl border border-white/10 bg-[#0a0a0a]/50 backdrop-blur-sm relative overflow-hidden flex flex-col">
+                <div className="p-8 rounded-3xl border border-neutral-200 dark:border-white/10 bg-white dark:bg-[#0a0a0a]/50 backdrop-blur-sm relative overflow-hidden flex flex-col">
                     <div className="relative z-10 flex-1">
-                        <h3 className="text-lg font-medium text-neutral-400 mb-2">Architect (Free)</h3>
+                        <h3 className="text-lg font-medium text-neutral-500 dark:text-neutral-400 mb-2">Architect (Free)</h3>
                         <div className="flex items-baseline gap-1 mb-6">
-                            <span className="text-3xl font-bold text-white">$0</span>
+                            <span className="text-3xl font-bold text-neutral-900 dark:text-white">$0</span>
                             <span className="text-sm text-neutral-500">/forever</span>
                         </div>
 
                         <ul className="space-y-4 mb-8">
-                            <li className="flex items-center gap-3 text-sm text-neutral-300">
+                            <li className="flex items-center gap-3 text-sm text-neutral-600 dark:text-neutral-300">
                                 <Check className="w-4 h-4 text-green-500" />
                                 <span>Up to 5 Projects</span>
                             </li>
-                            <li className="flex items-center gap-3 text-sm text-neutral-300">
+                            <li className="flex items-center gap-3 text-sm text-neutral-600 dark:text-neutral-300">
                                 <Check className="w-4 h-4 text-green-500" />
                                 <span>Manual Deployment Import</span>
                             </li>
-                            <li className="flex items-center gap-3 text-sm text-neutral-300">
+                            <li className="flex items-center gap-3 text-sm text-neutral-600 dark:text-neutral-300">
                                 <Check className="w-4 h-4 text-green-500" />
                                 <span>Basic Search (No AI)</span>
                             </li>
@@ -78,7 +80,7 @@ export function PricingTable({ currentTier = 'free' }: PricingProps) {
 
                     <div className="mt-auto">
                         {currentTier === 'free' ? (
-                            <div className="w-full py-3 rounded-xl bg-white/5 border border-white/5 text-center text-sm font-medium text-neutral-500">
+                            <div className="w-full py-3 rounded-xl bg-neutral-100 dark:bg-white/5 border border-neutral-200 dark:border-white/5 text-center text-sm font-medium text-neutral-500">
                                 Current Plan
                             </div>
                         ) : (
@@ -89,19 +91,18 @@ export function PricingTable({ currentTier = 'free' }: PricingProps) {
                     </div>
                 </div>
 
-                {/* Pro / Founder Tier */}
                 <div
                     className={cn(
                         "p-8 rounded-3xl border transition-all duration-500 relative overflow-hidden group flex flex-col",
                         planType === 'founder'
-                            ? "border-amber-500/30 bg-gradient-to-b from-amber-900/20 to-[#0a0a0a] hover:border-amber-500/50"
-                            : "border-[#a78bfa]/30 bg-gradient-to-b from-[#180260]/20 to-[#0a0a0a] hover:border-[#a78bfa]/50"
+                            ? "border-amber-200 dark:border-amber-500/30 bg-white dark:bg-gradient-to-b dark:from-amber-900/20 dark:to-[#0a0a0a] hover:border-amber-300 dark:hover:border-amber-500/50"
+                            : "border-violet-200 dark:border-[#a78bfa]/30 bg-white dark:bg-gradient-to-b dark:from-[#180260]/20 dark:to-[#0a0a0a] hover:border-violet-300 dark:hover:border-[#a78bfa]/50"
                     )}
                 >
                     <div
                         className={cn(
                             "absolute inset-0 transition-colors duration-500",
-                            planType === 'founder' ? "bg-amber-500/5 group-hover:bg-amber-500/10" : "bg-[#a78bfa]/5 group-hover:bg-[#a78bfa]/10"
+                            planType === 'founder' ? "bg-amber-50/50 dark:bg-amber-500/5 group-hover:bg-amber-100/50 dark:group-hover:bg-amber-500/10" : "bg-violet-50/50 dark:bg-[#a78bfa]/5 group-hover:bg-violet-100/50 dark:group-hover:bg-[#a78bfa]/10"
                         )}
                     />
 
@@ -110,7 +111,7 @@ export function PricingTable({ currentTier = 'free' }: PricingProps) {
                             <h3
                                 className={cn(
                                     "text-lg font-medium transition-colors duration-300",
-                                    planType === 'founder' ? "text-amber-400" : "text-[#a78bfa]"
+                                    planType === 'founder' ? "text-amber-600 dark:text-amber-400" : "text-violet-600 dark:text-[#a78bfa]"
                                 )}
                             >
                                 {planType === 'founder' ? 'Founder Edition' : 'Legend (Pro)'}
@@ -118,7 +119,7 @@ export function PricingTable({ currentTier = 'free' }: PricingProps) {
                             <span
                                 className={cn(
                                     "px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-colors duration-300",
-                                    planType === 'founder' ? "bg-amber-400 text-amber-950" : "bg-[#a78bfa] text-[#1e1b4b]"
+                                    planType === 'founder' ? "bg-amber-100 dark:bg-amber-400 text-amber-800 dark:text-amber-950" : "bg-violet-100 dark:bg-[#a78bfa] text-violet-800 dark:text-[#1e1b4b]"
                                 )}
                             >
                                 {planType === 'founder' ? 'Limited Time' : 'Recommended'}
@@ -128,43 +129,43 @@ export function PricingTable({ currentTier = 'free' }: PricingProps) {
                         <div className="flex items-baseline gap-1 mb-6 h-10">
                             {planType === 'founder' ? (
                                 <>
-                                    <span className="text-3xl font-bold text-white">€49.99</span>
+                                    <span className="text-3xl font-bold text-neutral-900 dark:text-white">€49.99</span>
                                     <span className="text-sm text-neutral-500">/5 years</span>
                                 </>
                             ) : (
                                 <>
-                                    <span className="text-3xl font-bold text-white">€8.99</span>
+                                    <span className="text-3xl font-bold text-neutral-900 dark:text-white">€8.99</span>
                                     <span className="text-sm text-neutral-500">/month</span>
                                 </>
                             )}
                         </div>
 
                         <ul className="space-y-4 mb-8">
-                            <li className="flex items-center gap-3 text-sm text-white font-medium">
+                            <li className="flex items-center gap-3 text-sm text-neutral-700 dark:text-white font-medium">
                                 <Globe
-                                    className={cn("w-4 h-4 transition-colors", planType === 'founder' ? "text-amber-400" : "text-[#a78bfa]")}
+                                    className={cn("w-4 h-4 transition-colors", planType === 'founder' ? "text-amber-600 dark:text-amber-400" : "text-violet-600 dark:text-[#a78bfa]")}
                                 />
                                 <span>
                                     {planType === 'founder' ? '100 Active Projects' : '50 Active Projects'}
                                 </span>
                             </li>
-                            <li className="flex items-center gap-3 text-sm text-white font-medium">
+                            <li className="flex items-center gap-3 text-sm text-neutral-700 dark:text-white font-medium">
                                 <Github
-                                    className={cn("w-4 h-4 transition-colors", planType === 'founder' ? "text-amber-400" : "text-[#a78bfa]")}
+                                    className={cn("w-4 h-4 transition-colors", planType === 'founder' ? "text-amber-600 dark:text-amber-400" : "text-violet-600 dark:text-[#a78bfa]")}
                                 />
                                 <span>Auto-Sync with GitHub</span>
                             </li>
-                            <li className="flex items-center gap-3 text-sm text-white font-medium">
+                            <li className="flex items-center gap-3 text-sm text-neutral-700 dark:text-white font-medium">
                                 <Zap
-                                    className={cn("w-4 h-4 transition-colors", planType === 'founder' ? "text-amber-400" : "text-[#a78bfa]")}
+                                    className={cn("w-4 h-4 transition-colors", planType === 'founder' ? "text-amber-600 dark:text-amber-400" : "text-violet-600 dark:text-[#a78bfa]")}
                                 />
                                 <span>AI Semantic Search</span>
                             </li>
-                            <li className="flex items-center gap-3 text-sm text-white font-medium">
+                            <li className="flex items-center gap-3 text-sm text-neutral-700 dark:text-white font-medium">
                                 {planType === 'founder' ? (
-                                    <Gem className="w-4 h-4 text-amber-400" />
+                                    <Gem className="w-4 h-4 text-amber-500 dark:text-amber-400" />
                                 ) : (
-                                    <Shield className="w-4 h-4 text-[#a78bfa]" />
+                                    <Shield className="w-4 h-4 text-violet-600 dark:text-[#a78bfa]" />
                                 )}
                                 <span>
                                     {planType === 'founder' ? 'Exclusive Founder Badge' : 'Priority Support'}

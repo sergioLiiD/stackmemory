@@ -19,7 +19,9 @@ export function PricingSection() {
                     </p>
                 </div>
 
-                <PricingTable currentTier="free" />
+                <div className="dark">
+                    <PricingTable currentTier="free" />
+                </div>
             </div>
         </section>
     );
