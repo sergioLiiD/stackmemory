@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { mockGlobalPrompts, mockGlobalSnippets } from "@/data/mock";
 import { PromptList } from "@/components/dashboard/vault/prompt-list";
 import { SnippetList } from "@/components/dashboard/vault/snippet-list";
+import { Tooltip } from "@/components/ui/tooltip";
 
 type VaultTab = 'prompts' | 'snippets';
 
@@ -61,9 +62,11 @@ export default function VaultPage() {
                     <div className="space-y-6">
                         <div className="flex justify-between items-center">
                             <h2 className="text-xl font-bold text-neutral-900 dark:text-white">System Prompts Library</h2>
-                            <button className="text-xs bg-[#180260] text-white px-3 py-1.5 rounded-full hover:bg-[#2a04a3] transition-colors shadow-lg shadow-[#180260]/20 font-medium">
-                                + New Global Prompt
-                            </button>
+                            <Tooltip content="Save a system prompt to reuse in any project.">
+                                <button className="text-xs bg-[#180260] text-white px-3 py-1.5 rounded-full hover:bg-[#2a04a3] transition-colors shadow-lg shadow-[#180260]/20 font-medium">
+                                    + New Global Prompt
+                                </button>
+                            </Tooltip>
                         </div>
                         <PromptList prompts={mockGlobalPrompts} />
                     </div>
@@ -73,9 +76,11 @@ export default function VaultPage() {
                     <div className="space-y-6">
                         <div className="flex justify-between items-center">
                             <h2 className="text-xl font-bold text-neutral-900 dark:text-white">Code Snippet Library</h2>
-                            <button className="text-xs bg-[#180260] text-white px-3 py-1.5 rounded-full hover:bg-[#2a04a3] transition-colors shadow-lg shadow-[#180260]/20 font-medium">
-                                + New Global Snippet
-                            </button>
+                            <Tooltip content="Save reusable code blocks accessible across your dashboard.">
+                                <button className="text-xs bg-[#180260] text-white px-3 py-1.5 rounded-full hover:bg-[#2a04a3] transition-colors shadow-lg shadow-[#180260]/20 font-medium">
+                                    + New Global Snippet
+                                </button>
+                            </Tooltip>
                         </div>
                         <SnippetList snippets={mockGlobalSnippets} />
                     </div>

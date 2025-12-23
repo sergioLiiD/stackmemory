@@ -10,6 +10,7 @@ import { Project, StackItem } from "@/data/mock";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/components/auth/auth-context";
 import { getUserRepos, GitHubRepo } from "@/lib/github/client";
+import { Tooltip } from "@/components/ui/tooltip";
 
 interface ImportModalProps {
     isOpen: boolean;
@@ -434,20 +435,22 @@ export function ImportModal({ isOpen, onClose, onSave }: ImportModalProps) {
                                 Manual Entry
                                 {activeTab === 'manual' && <motion.div layoutId="tab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#a78bfa]" />}
                             </button>
-                            <button
-                                onClick={() => {
-                                    setActiveTab('github');
-                                    if (session?.provider_token) loadRepos();
-                                }}
-                                className={cn(
-                                    "pb-3 text-sm font-medium transition-colors relative flex items-center gap-2",
-                                    activeTab === 'github' ? "text-white" : "text-neutral-500 hover:text-neutral-300"
-                                )}
-                            >
-                                <Github className="w-4 h-4" />
-                                From GitHub
-                                {activeTab === 'github' && <motion.div layoutId="tab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#a78bfa]" />}
-                            </button>
+                            <Tooltip content="Sync automatically with your GitHub repositories. (Pro Feature)">
+                                <button
+                                    onClick={() => {
+                                        setActiveTab('github');
+                                        if (session?.provider_token) loadRepos();
+                                    }}
+                                    className={cn(
+                                        "pb-3 text-sm font-medium transition-colors relative flex items-center gap-2",
+                                        activeTab === 'github' ? "text-white" : "text-neutral-500 hover:text-neutral-300"
+                                    )}
+                                >
+                                    <Github className="w-4 h-4" />
+                                    From GitHub
+                                    {activeTab === 'github' && <motion.div layoutId="tab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#a78bfa]" />}
+                                </button>
+                            </Tooltip>
                         </div>
 
                         <div className="p-6 overflow-y-auto custom-scrollbar">

@@ -11,6 +11,7 @@ import { FeatureGrid } from "@/components/landing/feature-grid";
 import { ProblemSection } from "@/components/landing/problem-section";
 import { WorkflowSection } from "@/components/landing/workflow-section";
 import { PricingSection } from "@/components/landing/pricing-section";
+import { FeatureComparison } from "@/components/landing/feature-comparison";
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";

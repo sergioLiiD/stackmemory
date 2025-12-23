@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutGrid, Layers, Settings, PlusCircle, LogOut, GripVertical, BrainCircuit, CreditCard } from "lucide-react";
+import { LayoutGrid, Layers, Settings, PlusCircle, LogOut, GripVertical, BrainCircuit, CreditCard, BookOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { ThemeToggle } from "../theme-toggle";
@@ -11,6 +11,7 @@ import { Project } from "@/data/mock";
 const navItems = [
     { icon: LayoutGrid, label: "Overview", href: "/dashboard" },
     { icon: Layers, label: "Vault", href: "/dashboard/vault" },
+    { icon: BookOpen, label: "Guide", href: "/dashboard/guide" },
     { icon: CreditCard, label: "Billing", href: "/dashboard/billing" },
 ];
 
