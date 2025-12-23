@@ -1,6 +1,7 @@
 "use client";
 
 import { useAuth } from "@/components/auth/auth-context";
+import Script from "next/script";
 
 import { Footer } from "@/components/layout/footer";
 // import { CookieConsent } from "@/components/layout/cookie-consent";
@@ -9,6 +10,7 @@ import { TrustBar } from "@/components/landing/trust-bar";
 import { FeatureGrid } from "@/components/landing/feature-grid";
 import { ProblemSection } from "@/components/landing/problem-section";
 import { WorkflowSection } from "@/components/landing/workflow-section";
+import { PricingSection } from "@/components/landing/pricing-section";
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -45,11 +47,15 @@ function LandingContent() {
       {/* Ambient background glow */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-[#180260] opacity-30 blur-[120px] rounded-full pointer-events-none" />
 
+      {/* Lemon Squeezy Overlay Script */}
+      <Script src="https://app.lemonsqueezy.com/js/lemon.js" strategy="lazyOnload" />
+
       <Hero />
       <TrustBar />
       <ProblemSection />
       <FeatureGrid />
       <WorkflowSection />
+      <PricingSection />
 
       <Footer />
       {/* <CookieConsent /> */}

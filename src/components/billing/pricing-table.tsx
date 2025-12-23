@@ -187,15 +187,20 @@ export function PricingTable({ currentTier = 'free' }: PricingProps) {
                             </div>
                         ) : (
                             <a
-                                href={getCheckoutLink(planType)}
+                                href={user ? getCheckoutLink(planType) : '/login'}
                                 className={cn(
-                                    "w-full py-3 rounded-xl text-[#1e1b4b] transition-all font-bold shadow-lg block text-center lemonsqueezy-button",
+                                    "w-full py-3 rounded-xl text-[#1e1b4b] transition-all font-bold shadow-lg block text-center",
+                                    // Only add lemonsqueezy-button class if user is logged in to trigger overlay
+                                    user ? "lemonsqueezy-button" : "",
                                     planType === 'founder'
                                         ? "bg-amber-400 hover:bg-amber-300 shadow-amber-400/20"
                                         : "bg-[#a78bfa] hover:bg-[#c4b5fd] shadow-[#a78bfa]/20"
                                 )}
                             >
-                                {planType === 'founder' ? 'Become a Founder' : 'Upgrade to Pro'}
+                                {user
+                                    ? (planType === 'founder' ? 'Become a Founder' : 'Upgrade to Pro')
+                                    : 'Sign in to Upgrade'
+                                }
                             </a>
                         )}
                     </div>

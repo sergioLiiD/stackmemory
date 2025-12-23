@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
-import { supabaseAdmin } from "@/lib/supabase/admin";
+import { getAdminClient } from "@/lib/supabase/admin";
 
 export async function POST(request: NextRequest) {
     try {
@@ -49,7 +49,9 @@ export async function POST(request: NextRequest) {
 
             console.log(`Granting ${newTier} access to user ${userId}`);
 
-            // Update Database
+            // Update Database using the helper
+            const supabaseAdmin = getAdminClient();
+
             const { error } = await supabaseAdmin
                 .from('profiles')
                 .update({ tier: newTier })
