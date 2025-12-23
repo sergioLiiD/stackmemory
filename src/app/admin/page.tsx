@@ -1,7 +1,6 @@
 import { checkAdminAccess } from "@/lib/auth/admin-auth";
 import { redirect } from "next/navigation";
 import { getAdminClient } from "@/lib/supabase/admin";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/bento-card"; // Assuming reused card or standard UI
 import { Separator } from "@/components/ui/separator";
 
 // Simple Card Component for Stats if BentoCard is too complex or different
