@@ -28,7 +28,7 @@ export default async function AdminPage() {
     // 1. Fetch Profiles Stats
     const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
-        .select('id, email, tier, created_at, billing_period_end, custom_project_limit')
+        .select('id, email, tier, created_at, billing_period_end, custom_project_limit, last_sign_in_at')
         .order('created_at', { ascending: false });
 
     if (profilesError) {
@@ -41,9 +41,15 @@ export default async function AdminPage() {
     const founderUsers = profiles.filter(p => p.tier === 'founder').length;
 
     // 2. Fetch Projects Stats
-    const { count: totalProjects } = await supabase
+    const { count: totalProjects, data: allProjects } = await supabase
         .from('projects')
-        .select('*', { count: 'exact', head: true });
+        .select('user_id', { count: 'exact' });
+
+    // count projects per user
+    const projectCounts: Record<string, number> = {};
+    allProjects?.forEach(p => {
+        projectCounts[p.user_id] = (projectCounts[p.user_id] || 0) + 1;
+    });
 
     // 3. Estimate AI Usage (Embeddings count)
     const { count: totalEmbeddings } = await supabase
@@ -82,7 +88,8 @@ export default async function AdminPage() {
                                     <tr>
                                         <th className="p-4">Email</th>
                                         <th className="p-4">Tier</th>
-                                        <th className="p-4">Limits</th>
+                                        <th className="p-4">Projects</th>
+                                        <th className="p-4">Last Active</th>
                                         <th className="p-4">Joined</th>
                                         <th className="p-4">Actions</th>
                                     </tr>
@@ -104,14 +111,13 @@ export default async function AdminPage() {
                                                         {user.tier}
                                                     </span>
                                                 </td>
-                                                <td className="p-4 text-xs text-neutral-500">
-                                                    {user.custom_project_limit ? (
-                                                        <span className="text-cyan-400 font-bold">{user.custom_project_limit} (Custom)</span>
-                                                    ) : (
-                                                        <span>Default</span>
-                                                    )}
+                                                <td className="p-4 text-neutral-300 font-mono">
+                                                    {projectCounts[user.id] || 0}
                                                 </td>
-                                                <td className="p-4 text-neutral-500">
+                                                <td className="p-4 text-xs text-neutral-500">
+                                                    {user.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleDateString() : 'Never'}
+                                                </td>
+                                                <td className="p-4 text-neutral-500 text-xs">
                                                     {new Date(user.created_at).toLocaleDateString()}
                                                 </td>
                                                 <td className="p-4">
