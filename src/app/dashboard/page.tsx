@@ -70,30 +70,33 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Search Bar Floating in Hero */}
-                <div className="absolute top-8 right-8 hidden xl:flex items-center gap-3 z-50">
-                    {/* Add Project Button */}
-                    <button
-                        onClick={openImportModal}
-                        className="flex items-center gap-2 px-4 py-3 rounded-full bg-[#180260] hover:bg-[#2e1065] border border-white/10 text-sm font-medium text-white transition-colors"
-                    >
-                        <Plus className="w-4 h-4" />
-                        New Project
-                    </button>
-
-                    <button
-                        onClick={() => setIsCliModalOpen(true)}
-                        className="flex items-center gap-2 px-4 py-3 rounded-full bg-white/10 hover:bg-white/20 border border-white/10 text-sm font-medium text-white transition-colors"
-                    >
-                        <Terminal className="w-4 h-4" />
-                        Connect CLI
-                    </button>
-                    <div className="relative group/search">
+                <div className="absolute top-8 right-8 hidden xl:flex items-start gap-4 z-50">
+                    <div className="relative group/search mt-1">
                         <Search className="w-4 h-4 absolute left-4 top-3.5 text-muted-foreground group-focus-within/search:text-primary transition-colors" />
                         <input
                             type="text"
                             placeholder="Type to search..."
-                            className="bg-background/50 backdrop-blur-xl border border-white/10 rounded-full pl-11 pr-6 py-3 text-sm text-foreground focus:outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/10 w-64 transition-all"
+                            className="bg-background/50 backdrop-blur-xl border border-white/10 rounded-full pl-11 pr-6 py-3 text-sm text-foreground focus:outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/10 w-56 transition-all"
                         />
+                    </div>
+
+                    <div className="flex flex-col gap-3">
+                        {/* Add Project Button */}
+                        <button
+                            onClick={openImportModal}
+                            className="flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-[#180260] hover:bg-[#2e1065] border border-white/10 text-sm font-medium text-white transition-colors shadow-lg hover:shadow-xl hover:-translate-y-0.5 transform duration-200"
+                        >
+                            <Plus className="w-4 h-4" />
+                            New Project
+                        </button>
+
+                        <button
+                            onClick={() => setIsCliModalOpen(true)}
+                            className="flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-md border border-white/10 text-sm font-medium text-white transition-colors"
+                        >
+                            <Terminal className="w-4 h-4" />
+                            Connect CLI
+                        </button>
                     </div>
                 </div>
             </div>
