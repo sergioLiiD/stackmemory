@@ -70,7 +70,7 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Search Bar Floating in Hero */}
-                <div className="absolute top-8 right-8 hidden xl:flex items-start gap-4 z-50">
+                <div className="absolute top-4 right-8 hidden xl:flex items-start gap-4 z-50">
                     <div className="relative group/search mt-1">
                         <Search className="w-4 h-4 absolute left-4 top-3.5 text-muted-foreground group-focus-within/search:text-primary transition-colors" />
                         <input
