@@ -9,7 +9,8 @@ import {
     Share2,
     Laptop,
     Gift,
-    BookOpen
+    BookOpen,
+    Terminal
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -62,6 +63,27 @@ export default function GuidePage() {
             tips: [
                 "Connect your GitHub account to enable auto-sync on push.",
                 "For monorepos, you can select specific sub-directories to import separate projects."
+            ]
+        },
+        {
+            id: "cli-tool",
+            title: "StackMemory CLI",
+            description: "Sync your local projects directly from your terminal. Seamless integration for developers.",
+            longDescription: "The CLI is the developer's bridge to StackMemory. It allows you to synchronize your local project stacks, detect dependencies, and update your dashboard without leaving your terminal.",
+            icon: Terminal,
+            badge: "FREE",
+            color: "text-slate-500",
+            bg: "bg-slate-500/10",
+            btnColor: "bg-slate-800 hover:bg-slate-900",
+            actionLink: "/dashboard",
+            benefits: [
+                "Instant sync from local environment",
+                "Integrates with your existing workflow",
+                "Supports CI/CD pipelines for automated docs"
+            ],
+            tips: [
+                "Run `npx stackmemory init` in your project root to get started.",
+                "Add `stackmemory sync` to your build script."
             ]
         },
         {
