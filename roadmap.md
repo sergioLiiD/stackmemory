@@ -23,6 +23,23 @@
   - [x] **Firebase Configuration**: Store and manage API keys securely.
   - [x] **Project To-Do List**: Simple task tracking within the dashboard.
 
+## 🏆 Special Phase: Operation Gemini (Hackathon Pivot)
+
+**Goal**: Refactor the core AI engine to use Google Gemini 1.5 Pro/Flash to win the Gemini Hackathon.
+
+- **Core Brain Transplant (OpenAI -> Gemini)**:
+  - [ ] **Model Switch**: Replace `gpt-4o-mini` with `gemini-1.5-flash` (Speed/Cost) and `gemini-1.5-pro` (Reasoning).
+  - [ ] **SDK Migration**: Implement `@google/generative-ai` SDK.
+  - [ ] **Embeddings**: Switch `text-embedding-ada-002` to Google's `text-embedding-004`.
+
+- **Leveraging Gemini's Superpowers**:
+  - [ ] **Massive Context (1M+ Tokens)**:
+    - [ ] **"Whole Repo" Understanding**: Refactor Vibe Coder to ingest full file structures/content instead of just chunks.
+    - [ ] Eliminate/Reduce RAG complexity by passing full context text.
+  - [ ] **Multimodal Native**:
+    - [ ] **Visual Debugging**: Allow users to paste screenshots of UI errors in chat.
+    - [ ] **Video Analysis**: Analyze short screencasts to offer UX improvements.
+
 ## ✅ Phase 2: Semantic Intelligence (The "Vibe Coder" Core)
 
 - **Foundation: Secure Access**
@@ -89,6 +106,26 @@
 - **Deep Cost Analysis**: Break down costs per project.
 - **AI Insights**: Analyze journal entries for decision patterns.
 - **Team Collaboration**: Shared projects and comments.
+
+### 🧠 New Product Concepts
+
+- **VibeOnboard (The Human Layer)**:
+  - *Concept*: A "brain" for the team, not just the code.
+  - *Problem*: New devs take weeks to understand project conventions and logic.
+  - *Solution*: Interactive onboarding courses generated from StackMemory's indexed data. "Here is layout.tsx, try making a small change...".
+  - *Hook*: "Reduce onboarding time from 2 weeks to 2 days".
+
+- **TechDiligence (B2B Audit)**:
+  - Automated "Health Score" for investors/agencies buying codebases.
+  - Detects technical debt, zombie dependencies, and code complexity instantly.
+
+- **VibeFlow (The Action Layer)**:
+  - Integration with n8n to **act** on the stack.
+  - "I see you added a database table, want me to create the Stripe webhook?"
+
+- **StackMarket**:
+  - Community marketplace for "Blueprints" (e.g., "The Perfect Next.js SaaS Starter").
+  - "Buy & Hydrate": Clones repo + Configures Env Vars + Sets up DB/Services.
 
 ## 🚀 Phase 3.5: CLI & Public Launch (MVP Polish)
 
