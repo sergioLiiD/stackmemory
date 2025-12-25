@@ -53,7 +53,7 @@ export default async function AdminPage() {
 
     // 3. Estimate AI Usage (Embeddings count)
     const { count: totalEmbeddings } = await supabase
-        .from('code_embeddings')
+        .from('embeddings')
         .select('*', { count: 'exact', head: true });
 
 
