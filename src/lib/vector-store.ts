@@ -6,9 +6,16 @@ import { ProcessedFile } from './crawler/github-crawler';
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || '');
 
 export async function generateEmbedding(text: string): Promise<number[]> {
-    const model = genAI.getGenerativeModel({ model: "text-embedding-004" });
-    const result = await model.embedContent(text);
-    return result.embedding.values;
+    console.log(`[DEBUG] generateEmbedding called for text length: ${text.length}`);
+    try {
+        const model = genAI.getGenerativeModel({ model: "text-embedding-004" });
+        const result = await model.embedContent(text);
+        console.log(`[DEBUG] Gemini response received. Embedding length: ${result.embedding.values.length}`);
+        return result.embedding.values;
+    } catch (e: any) {
+        console.error("[DEBUG] Gemini generateEmbedding ERROR:", e);
+        throw e;
+    }
 }
 
 export async function storeEmbeddings(projectId: string, files: ProcessedFile[]) {
@@ -39,6 +46,7 @@ export async function storeEmbeddings(projectId: string, files: ProcessedFile[])
 
         for (const chunk of chunks) {
             try {
+                console.log(`[DEBUG] Processing chunk for ${file.path} (Length: ${chunk.length})`);
                 const embedding = await generateEmbedding(chunk);
 
                 const { error } = await supabase.from('embeddings').insert({
@@ -55,8 +63,9 @@ export async function storeEmbeddings(projectId: string, files: ProcessedFile[])
                 });
 
                 if (error) {
-                    console.error(`Failed to store embedding for ${file.path}`, error);
+                    console.error(`[DEBUG] Supabase INSERT ERROR for ${file.path}:`, error);
                 } else {
+                    console.log(`[DEBUG] Supabase INSERT SUCCESS for ${file.path}`);
                     totalChunks++;
                     // Log Usage (Approx: 1 token = 4 chars)
                     const estimatedTokens = Math.ceil(chunk.length / 4);
@@ -68,7 +77,7 @@ export async function storeEmbeddings(projectId: string, files: ProcessedFile[])
                     await logUsage(projectId, 'embedding', 'text-embedding-004', estimatedTokens, 0);
                 }
             } catch (e) {
-                console.error(`Failed to generate embedding for ${file.path}`, e);
+                console.error(`[DEBUG] Failed to generate embedding for ${file.path}`, e);
             }
         }
     }
