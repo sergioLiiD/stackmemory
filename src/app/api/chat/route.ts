@@ -1,11 +1,9 @@
 
 import { NextResponse } from 'next/server';
 import { searchSimilarDocuments } from '@/lib/vector-store';
-import OpenAI from 'openai';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
-const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-});
+const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || '');
 
 export const runtime = 'edge'; // Optional: Use edge runtime for faster streaming if compatible with supabase access (Supabase JS is edge compatible, but pgvector RPC content might be heavy. Let's stick to nodejs default if unsure, but usually edge is fine for this).
 // Actually, 'vector-store.ts' uses 'cookies()' which works in edge, but 'supabase/ssr' or 'supabase-js' might need specific handling. 
@@ -42,23 +40,21 @@ INSTRUCTIONS:
 `;
 
         // 2. Generate Stream
-        const stream = await openai.chat.completions.create({
-            model: 'gpt-4o-mini',
-            messages: [
-                { role: 'system', content: systemPrompt },
-                { role: 'user', content: query }
-            ],
-            stream: true,
+        // 2. Generate Stream with Gemini
+        const model = genAI.getGenerativeModel({
+            model: "gemini-1.5-flash",
+            systemInstruction: systemPrompt
         });
 
+        const result = await model.generateContentStream(query);
+
         // 3. Return Readable Stream
-        // Convert OpenAI stream to Web Standard stream
         const readableStream = new ReadableStream({
             async start(controller) {
                 let fullText = "";
 
-                for await (const chunk of stream) {
-                    const text = chunk.choices[0]?.delta?.content || '';
+                for await (const chunk of result.stream) {
+                    const text = chunk.text();
                     if (text) {
                         fullText += text;
                         controller.enqueue(new TextEncoder().encode(text));
@@ -66,16 +62,15 @@ INSTRUCTIONS:
                 }
 
                 // Log Usage
+                // Estimate roughly tokens (Gemini has its own counters but for MVP we estimate)
                 const inputLength = systemPrompt.length + query.length;
                 const outputLength = fullText.length;
                 const estimatedInputTokens = Math.ceil(inputLength / 4);
                 const estimatedOutputTokens = Math.ceil(outputLength / 4);
 
-                // We use import inside edge wrapper if possible, or just a fetch if Edge. 
-                // But we are using Node runtime (implicit default).
                 try {
                     const { logUsage } = await import('@/lib/usage-logger');
-                    await logUsage(projectId, 'chat', 'gpt-4o-mini', estimatedInputTokens, estimatedOutputTokens);
+                    await logUsage(projectId, 'chat', 'gemini-1.5-flash', estimatedInputTokens, estimatedOutputTokens);
                 } catch (e) {
                     console.error("Failed to log chat usage", e);
                 }

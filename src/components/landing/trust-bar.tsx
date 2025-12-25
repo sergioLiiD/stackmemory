@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 const logos = [
     { name: "Next.js", src: "https://assets.vercel.com/image/upload/v1662130559/nextjs/Icon_light_background.png" },
     { name: "React", src: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/React-icon.svg/1200px-React-icon.svg.png" },
-    { name: "OpenAI", src: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/ChatGPT_logo.svg/1024px-ChatGPT_logo.svg.png" },
+    { name: "Google Gemini", src: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Google_Gemini_logo.svg/2560px-Google_Gemini_logo.svg.png" },
     { name: "Supabase", src: "https://seeklogo.com/images/S/supabase-logo-DCC676FFE2-seeklogo.com.png" },
     { name: "Vercel", src: "https://assets.vercel.com/image/upload/front/favicon/vercel/180x180.png" },
 ];
@@ -37,7 +37,7 @@ export function TrustBar() {
                         <span className="text-green-400">⚡</span> Supabase
                     </span>
                     <span className="text-xl font-bold text-white flex items-center gap-2">
-                        <span className="text-emerald-400">🤖</span> OpenAI
+                        <span className="text-blue-400">⚡</span> Google Gemini
                     </span>
                 </div>
             </div>

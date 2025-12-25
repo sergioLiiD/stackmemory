@@ -8,7 +8,7 @@ create table if not exists embeddings (
   content text, -- The actual text content of the code chunk
   file_path text, -- e.g. "src/lib/utils.ts"
   metadata jsonb, -- e.g. { "language": "typescript", "lines": [10, 50] }
-  embedding vector(1536), -- 1536 dimensions for text-embedding-ada-002 (OpenAI)
+  embedding vector(768), -- 768 dimensions for text-embedding-004 (Gemini)
   created_at timestamptz default now()
 );
 

@@ -28,7 +28,7 @@ export function FeatureGrid() {
                         <p className="pl-4">"dependencies": {"{"}</p>
                         <p className="pl-8">"next": "^14.0.0",</p>
                         <p className="pl-8">"react": "^18.2.0"</p>
-                        <p className="pl-8">"openai": "^4.0.0"</p>
+                        <p className="pl-8">"@google/generative-ai": "^0.2.0"</p>
                         <p className="pl-4">{"}"}</p>
                         <p>{"}"}</p>
 

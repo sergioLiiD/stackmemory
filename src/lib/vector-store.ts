@@ -1,19 +1,14 @@
-
 import { createClient } from '@/lib/supabase/server';
 import { cookies } from 'next/headers';
-import OpenAI from 'openai';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import { ProcessedFile } from './crawler/github-crawler';
 
-const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-});
+const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || '');
 
 export async function generateEmbedding(text: string): Promise<number[]> {
-    const response = await openai.embeddings.create({
-        model: 'text-embedding-ada-002',
-        input: text.replace(/\n/g, ' '),
-    });
-    return response.data[0].embedding;
+    const model = genAI.getGenerativeModel({ model: "text-embedding-004" });
+    const result = await model.embedContent(text);
+    return result.embedding.values;
 }
 
 export async function storeEmbeddings(projectId: string, files: ProcessedFile[]) {
@@ -70,7 +65,7 @@ export async function storeEmbeddings(projectId: string, files: ProcessedFile[])
                     // To be safe in Server Components/Actions, preferably await or use `waitUntil`.
                     // Here we await to ensure it fires.
                     const { logUsage } = await import('./usage-logger');
-                    await logUsage(projectId, 'embedding', 'text-embedding-ada-002', estimatedTokens, 0);
+                    await logUsage(projectId, 'embedding', 'text-embedding-004', estimatedTokens, 0);
                 }
             } catch (e) {
                 console.error(`Failed to generate embedding for ${file.path}`, e);
