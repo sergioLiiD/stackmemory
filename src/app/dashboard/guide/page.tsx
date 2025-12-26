@@ -166,100 +166,123 @@ export default function GuidePage() {
                 "Discover new tools that work well with your stack",
                 "Plan upgrades with confidence"
             ],
-            tips: [
-                "Run an analysis before adding a major new library to your project.",
-                "Use the 'Alternatives' suggestions to modernize legacy codebases."
-            ]
-        }
+            ],
+        tips: [
+            "Run an analysis before adding a major new library to your project.",
+            "Use the 'Alternatives' suggestions to modernize legacy codebases."
+        ]
+},
+{
+    id: "project-insight",
+        title: "Project Insight",
+            description: "Generate a comprehensive 'Deep Dive' report (The Bible) for your project using Gemini 2.0.",
+                longDescription: "Project Insight is the ultimate documentation tool. It reads your entire file tree and critical documents to write a Senior Architect-level report including Executive Summary, Architecture Map, and Improvement Opportunities.",
+                    icon: Sparkles,
+                        badge: "PRO",
+                            color: "text-indigo-500",
+                                bg: "bg-indigo-500/10",
+                                    btnColor: "bg-indigo-600 hover:bg-indigo-700",
+                                        actionLink: "/dashboard/projects",
+                                            actionLabel: "Generate Insight",
+                                                benefits: [
+                                                    "Instant \"ReadMe\" on steroids for new developers",
+                                                    "Uncover architectural flaws and technical debt",
+                                                    "Shareable report for stakeholders/investors"
+                                                ],
+                                                    tips: [
+                                                        "Insights are perfect for summarizing a project before a big refactor.",
+                                                        "Reports are persisted, so you can look back at how your project evolved."
+                                                    ]
+}
     ];
 
-    return (
-        <>
-            <div className="max-w-6xl mx-auto pb-20">
-                {/* Header */}
-                <div className="mb-12">
-                    <div className="flex items-center gap-3 mb-4">
-                        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-violet-500 to-fuchsia-600 flex items-center justify-center text-white shadow-xl shadow-violet-500/20">
-                            <BookOpen className="w-6 h-6" />
+return (
+    <>
+        <div className="max-w-6xl mx-auto pb-20">
+            {/* Header */}
+            <div className="mb-12">
+                <div className="flex items-center gap-3 mb-4">
+                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-violet-500 to-fuchsia-600 flex items-center justify-center text-white shadow-xl shadow-violet-500/20">
+                        <BookOpen className="w-6 h-6" />
+                    </div>
+                    <div>
+                        <h1 className="text-3xl font-bold text-neutral-900 dark:text-white">Knowledge Base</h1>
+                        <p className="text-neutral-500 dark:text-neutral-400 mt-1">
+                            Discover everything you can do with StackMemory.
+                        </p>
+                    </div>
+                </div>
+
+                {/* Pro Upsell Banner */}
+                <div className="p-6 rounded-3xl bg-neutral-100 dark:bg-white/5 border border-neutral-200 dark:border-white/10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                    <div className="flex items-center gap-4">
+                        <div className="p-3 bg-amber-500/10 rounded-full">
+                            <Gift className="w-6 h-6 text-amber-500" />
                         </div>
                         <div>
-                            <h1 className="text-3xl font-bold text-neutral-900 dark:text-white">Knowledge Base</h1>
-                            <p className="text-neutral-500 dark:text-neutral-400 mt-1">
-                                Discover everything you can do with StackMemory.
+                            <h3 className="font-semibold text-neutral-900 dark:text-white">Unlock Full Potential</h3>
+                            <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                                Pro users get access to GitHub Sync, the Global Vault, and advanced exports.
                             </p>
                         </div>
                     </div>
-
-                    {/* Pro Upsell Banner */}
-                    <div className="p-6 rounded-3xl bg-neutral-100 dark:bg-white/5 border border-neutral-200 dark:border-white/10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                        <div className="flex items-center gap-4">
-                            <div className="p-3 bg-amber-500/10 rounded-full">
-                                <Gift className="w-6 h-6 text-amber-500" />
-                            </div>
-                            <div>
-                                <h3 className="font-semibold text-neutral-900 dark:text-white">Unlock Full Potential</h3>
-                                <p className="text-sm text-neutral-500 dark:text-neutral-400">
-                                    Pro users get access to GitHub Sync, the Global Vault, and advanced exports.
-                                </p>
-                            </div>
-                        </div>
-                        <Link
-                            href="/dashboard/billing"
-                            className="px-6 py-2.5 rounded-full bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 font-medium text-sm hover:opacity-90 transition-opacity whitespace-nowrap"
-                        >
-                            View Plans
-                        </Link>
-                    </div>
-                </div>
-
-                {/* Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {guides.map((guide) => (
-                        <button
-                            key={guide.id}
-                            onClick={() => setSelectedArticle(guide)}
-                            className="group relative p-6 rounded-[2rem] bg-white dark:bg-[#121212] border border-neutral-200 dark:border-white/5 hover:border-neutral-300 dark:hover:border-white/10 transition-all shadow-sm hover:shadow-md text-left"
-                        >
-                            <motion.div layoutId={`card-${guide.id}`} className="h-full flex flex-col">
-                                <div className="flex justify-between items-start mb-4">
-                                    <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center transition-colors", guide.bg)}>
-                                        <guide.icon className={cn("w-6 h-6", guide.color)} />
-                                    </div>
-                                    <span className={cn(
-                                        "px-3 py-1 rounded-full text-[10px] font-bold tracking-wider border",
-                                        guide.badge === 'PRO'
-                                            ? "bg-violet-100 dark:bg-violet-500/10 text-violet-600 dark:text-violet-300 border-violet-200 dark:border-violet-500/20"
-                                            : "bg-green-100 dark:bg-green-500/10 text-green-600 dark:text-green-300 border-green-200 dark:border-green-500/20"
-                                    )}>
-                                        {guide.badge}
-                                    </span>
-                                </div>
-
-                                <h3 className="text-lg font-bold text-neutral-900 dark:text-white mb-2 group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors">
-                                    {guide.title}
-                                </h3>
-                                <p className="text-sm text-neutral-500 dark:text-neutral-400 leading-relaxed mb-6 flex-grow">
-                                    {guide.description}
-                                </p>
-
-                                <span className="inline-flex items-center text-sm font-medium text-neutral-900 dark:text-white hover:underline decoration-neutral-400 underline-offset-4 mt-auto">
-                                    Read Guide →
-                                </span>
-                            </motion.div>
-                        </button>
-                    ))}
+                    <Link
+                        href="/dashboard/billing"
+                        className="px-6 py-2.5 rounded-full bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 font-medium text-sm hover:opacity-90 transition-opacity whitespace-nowrap"
+                    >
+                        View Plans
+                    </Link>
                 </div>
             </div>
 
-            {/* Article Modal */}
-            <AnimatePresence>
-                {selectedArticle && (
-                    <GuideArticleView
-                        article={selectedArticle}
-                        onClose={() => setSelectedArticle(null)}
-                    />
-                )}
-            </AnimatePresence>
-        </>
-    );
+            {/* Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {guides.map((guide) => (
+                    <button
+                        key={guide.id}
+                        onClick={() => setSelectedArticle(guide)}
+                        className="group relative p-6 rounded-[2rem] bg-white dark:bg-[#121212] border border-neutral-200 dark:border-white/5 hover:border-neutral-300 dark:hover:border-white/10 transition-all shadow-sm hover:shadow-md text-left"
+                    >
+                        <motion.div layoutId={`card-${guide.id}`} className="h-full flex flex-col">
+                            <div className="flex justify-between items-start mb-4">
+                                <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center transition-colors", guide.bg)}>
+                                    <guide.icon className={cn("w-6 h-6", guide.color)} />
+                                </div>
+                                <span className={cn(
+                                    "px-3 py-1 rounded-full text-[10px] font-bold tracking-wider border",
+                                    guide.badge === 'PRO'
+                                        ? "bg-violet-100 dark:bg-violet-500/10 text-violet-600 dark:text-violet-300 border-violet-200 dark:border-violet-500/20"
+                                        : "bg-green-100 dark:bg-green-500/10 text-green-600 dark:text-green-300 border-green-200 dark:border-green-500/20"
+                                )}>
+                                    {guide.badge}
+                                </span>
+                            </div>
+
+                            <h3 className="text-lg font-bold text-neutral-900 dark:text-white mb-2 group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors">
+                                {guide.title}
+                            </h3>
+                            <p className="text-sm text-neutral-500 dark:text-neutral-400 leading-relaxed mb-6 flex-grow">
+                                {guide.description}
+                            </p>
+
+                            <span className="inline-flex items-center text-sm font-medium text-neutral-900 dark:text-white hover:underline decoration-neutral-400 underline-offset-4 mt-auto">
+                                Read Guide →
+                            </span>
+                        </motion.div>
+                    </button>
+                ))}
+            </div>
+        </div>
+
+        {/* Article Modal */}
+        <AnimatePresence>
+            {selectedArticle && (
+                <GuideArticleView
+                    article={selectedArticle}
+                    onClose={() => setSelectedArticle(null)}
+                />
+            )}
+        </AnimatePresence>
+    </>
+);
 }

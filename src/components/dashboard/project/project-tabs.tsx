@@ -1,10 +1,10 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { Layout, Box, Terminal, Book, Code2, Sparkles, Waves, BookOpen } from "lucide-react";
+import { Layout, Box, Terminal, Book, Code2, Sparkles, Waves, BookOpen, Map } from "lucide-react";
 import { motion } from "framer-motion";
 
-export type TabId = 'overview' | 'stack' | 'prompts' | 'journal' | 'snippets' | 'assistant' | 'guide' | 'insight';
+export type TabId = 'overview' | 'stack' | 'prompts' | 'journal' | 'snippets' | 'assistant' | 'guide' | 'insight' | 'onboard';
 
 interface ProjectTabsProps {
     activeTab: TabId;
@@ -17,10 +17,10 @@ export function ProjectTabs({ activeTab, onTabChange }: ProjectTabsProps) {
         { id: 'stack', label: 'Stack', icon: Box },
         { id: 'prompts', label: 'Context Weaver', icon: Waves }, // Renamed from Prompt Vault
         { id: 'insight', label: 'Insight', icon: BookOpen },
+        { id: 'onboard', label: 'Onboarding', icon: Map },
         { id: 'journal', label: 'Journal', icon: Book },
         { id: 'snippets', label: 'Snippets', icon: Code2 },
         { id: 'assistant', label: 'Vibe Coder', icon: Sparkles },
-        { id: 'guide', label: 'Guide', icon: Book },
     ];
 
     return (

@@ -38,27 +38,30 @@ export function FeatureGrid() {
                     </div>
                 </BentoCard>
 
-                {/* 2. CONTEXT WEAVER (Large) */}
-                <BentoCard className="md:col-span-2 md:row-span-2 bg-gradient-to-br from-neutral-900 to-black" delay={0.2}>
+                {/* 2. PROJECT INSIGHT (Deep Dive) */}
+                <BentoCard className="md:col-span-2 md:row-span-2 bg-gradient-to-br from-indigo-900/40 to-black/80" delay={0.2}>
                     <div className="h-full flex flex-col justify-between">
                         <div>
-                            <BrainCircuit className="w-8 h-8 text-purple-400 mb-4" />
-                            <BentoHeader title="Active Recall" subtitle="Don't search. Just ask." />
+                            <Sparkles className="w-8 h-8 text-indigo-400 mb-4" />
+                            <BentoHeader title="Project Insight" subtitle="The 'Architect's Bible' for your repo." />
                             <p className="text-sm text-neutral-400 mt-4 leading-relaxed">
-                                "Where did I define the `useAuth` hook?"<br />
-                                "Show me the prisma schema for the User model."<br />
-                                It talks back, referencing your exact files.
+                                Gemini 2.0 reads every file in your project to generate a comprehensive <strong>"Deep Dive Report"</strong>:
+                                Executive Summary, Tech Stack Analysis, and Architecture Map.
                             </p>
                         </div>
 
-                        <div className="mt-8 p-4 rounded-xl bg-white/5 border border-white/5">
-                            <div className="flex items-center gap-2 text-xs text-neutral-400 mb-2">
-                                <Sparkles className="w-3 h-3 text-yellow-400" /> AI Payload Preview
+                        <div className="mt-8 p-4 rounded-xl bg-white/5 border border-white/5 relative overflow-hidden group">
+                            <div className="absolute top-0 right-0 p-2 opacity-50">
+                                <div className="w-20 h-20 bg-indigo-500 blur-3xl rounded-full" />
                             </div>
-                            <div className="space-y-2">
-                                <div className="h-2 w-3/4 bg-white/10 rounded" />
-                                <div className="h-2 w-full bg-white/10 rounded" />
-                                <div className="h-2 w-5/6 bg-white/10 rounded" />
+                            <h4 className="text-white font-bold mb-2 flex items-center gap-2">
+                                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                                Report Generated
+                            </h4>
+                            <div className="space-y-2 text-xs font-mono text-indigo-200 opacity-80">
+                                <p>&gt; Analyzing 143 files...</p>
+                                <p>&gt; Detected Next.js 14 App Router</p>
+                                <p>&gt; Found potential N+1 query in /api/users</p>
                             </div>
                         </div>
                     </div>

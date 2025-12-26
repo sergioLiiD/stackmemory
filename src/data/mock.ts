@@ -101,6 +101,8 @@ export interface Project {
     hasVulnerabilities?: boolean;
     insight_report?: string;
     insight_generated_at?: string;
+    onboarding_guide?: string;
+    onboarding_generated_at?: string;
 }
 
 export const mockProjects: Project[] = [
