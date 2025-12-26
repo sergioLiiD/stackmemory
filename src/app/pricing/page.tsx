@@ -9,6 +9,9 @@ import Script from "next/script";
 export default function PricingPage() {
     const { tier } = useSubscription();
 
+    const proVariantId = process.env.LEMONSQUEEZY_VARIANT_ID_PRO;
+    const ltdVariantId = process.env.LEMONSQUEEZY_VARIANT_ID_LTD;
+
     return (
         <div className="min-h-screen bg-[#020202] text-white p-6 relative overflow-hidden flex flex-col items-center">
             <Script src="https://app.lemonsqueezy.com/js/lemon.js" strategy="lazyOnload" />
@@ -16,7 +19,7 @@ export default function PricingPage() {
             {/* Background Gradients */}
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-[#180260]/20 rounded-full blur-[120px] pointer-events-none" />
 
-            <div className="w-full max-w-4xl relative z-10">
+            <div className="w-full max-w-6xl relative z-10">
                 <Link href="/dashboard" className="inline-flex items-center gap-2 text-neutral-500 hover:text-white mb-8 transition-colors">
                     <ArrowLeft className="w-4 h-4" /> Back to Dashboard
                 </Link>
@@ -31,7 +34,11 @@ export default function PricingPage() {
                 </div>
 
                 <div>
-                    <PricingTable currentTier={tier} />
+                    <PricingTable
+                        currentPlan={tier === 'free' ? null : tier}
+                        proVariantId={proVariantId}
+                        ltdVariantId={ltdVariantId}
+                    />
                 </div>
             </div>
         </div>

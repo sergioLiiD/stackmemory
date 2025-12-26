@@ -94,10 +94,10 @@
 ## 💎 Monetization & Growth (Beta Launch)
 
 - **Commercial Infrastructure (LemonSqueezy)**:
-  - [ ] **Setup**: Create Store, Products (LTD/Monthly), and Webhooks.
-  - [ ] **Checkout Integration**: Generate magic links or overlay checkout.
-  - [ ] **Webhook Handler**: `api/webhooks/lemonsqueezy` to provision access (update DB).
-  - [ ] **Billing Portal**: Link for users to manage subscription/invoices.
+  - [x] **Setup**: Create Store, Products (LTD/Monthly), and Webhooks.
+  - [x] **Checkout Integration**: Generate magic links or overlay checkout.
+  - [x] **Webhook Handler**: `api/webhooks/lemonsqueezy` to provision access (update DB).
+  - [x] **Billing Portal**: Link for users to manage subscription/invoices.
 - **Beta Program (500 Users)**:
   - [ ] **Lifetime Deal (LTD) Strategy**:
     - [ ] Define limits (Projects, Storage, AI Tokens).

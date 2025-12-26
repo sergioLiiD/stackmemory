@@ -1,53 +1,15 @@
-"use client";
+import { TourWizard } from "@/components/onboarding/tour-wizard";
+import { Sparkles } from "lucide-react";
 
-import { use, useEffect, useState } from "react";
-import { useDashboard } from "@/components/dashboard/dashboard-context";
-import { Project } from "@/data/mock";
-import { ArrowLeft, Pencil, Check, X as XIcon } from "lucide-react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { cn } from "@/lib/utils";
-import { ProjectTabs, TabId } from "@/components/dashboard/project/project-tabs";
-import { OverviewTab } from "@/components/dashboard/project/tabs/overview-tab";
-import { StackTab } from "@/components/dashboard/project/tabs/stack-tab";
-import { PromptVaultTab } from "@/components/dashboard/project/tabs/prompt-vault-tab";
-import { JournalTab, SnippetsTab } from "@/components/dashboard/project/tabs/journal-tab";
-import { AssistantTab } from "@/components/dashboard/project/tabs/assistant-tab";
-import { GuideTab } from "@/components/dashboard/project/tabs/guide-tab";
-
-import { BrainCircuit, Copy } from "lucide-react";
+// ... existing imports
 
 export default function ProjectDetailsPage({ params }: { params: Promise<{ id: string }> }) {
-    const unwrappedParams = use(params);
-    const { projects, updateProject } = useDashboard();
-    const router = useRouter();
-    const [project, setProject] = useState<Project | null>(null);
-    const [activeTab, setActiveTab] = useState<TabId>('overview');
+    // ... existing hooks
+    const [showTour, setShowTour] = useState(false);
 
-    // Edit State
-    const [isEditing, setIsEditing] = useState(false);
-    const [editName, setEditName] = useState("");
-    const [editDesc, setEditDesc] = useState("");
+    // ... existing useEffect
 
-    useEffect(() => {
-        const found = projects.find(p => p.id === unwrappedParams.id);
-        if (found) {
-            if (found) {
-                setProject(found);
-                setEditName(found.name);
-                setEditDesc(found.description);
-            }
-        }
-    }, [unwrappedParams.id, projects]);
-
-    if (!project) {
-        return (
-            <div className="p-10 flex flex-col items-center justify-center min-h-[50vh] text-neutral-500">
-                <p>Project not found or loading...</p>
-                <Link href="/dashboard" className="text-[#a78bfa] hover:underline mt-4">Return to Dashboard</Link>
-            </div>
-        );
-    }
+    // ... existing if (!project) check
 
     return (
         <div className="max-w-5xl mx-auto pb-20">
@@ -58,10 +20,12 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
             {/* Header */}
             <div className="flex items-start justify-between mb-8">
                 <div className="flex-1 mr-8">
+                    {/* ... Title Logic (unchanged) ... */}
                     {!isEditing ? (
                         <>
                             <div className="flex items-center gap-3 mb-2 group">
                                 <h1 className="text-4xl font-bold text-neutral-900 dark:text-white">{project.name}</h1>
+                                {/* ... Edit Button ... */}
                                 <button
                                     onClick={() => setIsEditing(true)}
                                     className="p-2 rounded-full hover:bg-white/5 text-neutral-500 hover:text-white opacity-0 group-hover:opacity-100 transition-all"
@@ -72,6 +36,7 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
                             <p className="text-xl text-neutral-600 dark:text-neutral-400 mb-3">{project.description}</p>
                         </>
                     ) : (
+                        /* ... Edit Form (unchanged) ... */
                         <div className="space-y-3 mb-4 max-w-xl">
                             <input
                                 value={editName}
@@ -115,7 +80,6 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
                         <button
                             onClick={() => {
                                 navigator.clipboard.writeText(project.id);
-                                // Optional: You might want to add a toast toast here if you have a toast system
                             }}
                             className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-white/5 border border-white/10 hover:bg-white/10 transition-colors group"
                             title="Click to copy"
@@ -126,6 +90,14 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
                     </div>
                 </div>
                 <div className="flex items-center gap-3">
+                    <button
+                        onClick={() => setShowTour(true)}
+                        className="flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-pink-500 to-rose-500 text-white font-medium hover:opacity-90 transition-all shadow-lg shadow-pink-500/20"
+                    >
+                        <Sparkles className="w-4 h-4" />
+                        Start Tour
+                    </button>
+
                     <button
                         onClick={() => setActiveTab('prompts')}
                         className="flex items-center gap-2 px-4 py-2 rounded-full bg-[#180260] border border-[#a78bfa]/30 text-[#a78bfa] font-medium hover:bg-[#a78bfa] hover:text-[#180260] transition-all shadow-lg shadow-[#180260]/20"
@@ -153,6 +125,11 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
                 {activeTab === 'assistant' && <AssistantTab project={project} />}
                 {activeTab === 'guide' && <GuideTab />}
             </div>
+
+            {/* ONBOARDING WIZARD */}
+            {showTour && (
+                <TourWizard projectId={project.id} onClose={() => setShowTour(false)} />
+            )}
 
         </div>
     );
