@@ -56,17 +56,28 @@ export default async function AdminPage() {
         .from('embeddings')
         .select('*', { count: 'exact', head: true });
 
-    // 4. Fetch Usage Costs
+    // 4. Fetch Usage Costs & Logs
     const { data: usageLogs } = await supabase
         .from('usage_logs')
-        .select('cost_estimated');
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(100);
 
+    // Aggregation
     const totalCost = usageLogs?.reduce((acc, log) => acc + (log.cost_estimated || 0), 0) || 0;
 
+    const costByModel: Record<string, number> = {};
+    const costByAction: Record<string, number> = {};
+
+    usageLogs?.forEach(log => {
+        costByModel[log.model || 'unknown'] = (costByModel[log.model || 'unknown'] || 0) + (log.cost_estimated || 0);
+        costByAction[log.action || 'unknown'] = (costByAction[log.action || 'unknown'] || 0) + (log.cost_estimated || 0);
+    });
 
     return (
         <div className="min-h-screen bg-black text-white p-8">
             <div className="max-w-7xl mx-auto space-y-8">
+                {/* Header */}
                 <div className="flex items-center justify-between">
                     <div>
                         <h1 className="text-3xl font-bold">Admin Dashboard</h1>
@@ -81,73 +92,143 @@ export default async function AdminPage() {
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <StatCard title="Total Users" value={totalUsers} subtext="Registered accounts" />
                     <StatCard title="Pro Legends" value={proUsers} subtext="€8.99/mo (MRR Impact)" />
-                    <StatCard title="AI Costs (Est.)" value={`$${totalCost.toFixed(4)}`} subtext="Gemini API Spend" />
+                    <StatCard title="AI Costs (Est.)" value={`$${totalCost.toFixed(4)}`} subtext="Gemini API Spend (Last 100)" />
                     <StatCard title="Total Projects" value={totalProjects || 0} subtext={`${totalEmbeddings || 0} AI Vectors stored`} />
+                </div>
+
+                {/* Cost Breakdown */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="p-6 rounded-xl bg-neutral-900 border border-neutral-800">
+                        <h3 className="text-lg font-semibold mb-4">Cost by Model</h3>
+                        <div className="space-y-3">
+                            {Object.entries(costByModel).map(([model, cost]) => (
+                                <div key={model} className="flex justify-between items-center text-sm">
+                                    <span className="text-neutral-400">{model}</span>
+                                    <span className="font-mono text-white">${cost.toFixed(5)}</span>
+                                </div>
+                            ))}
+                            {Object.keys(costByModel).length === 0 && <p className="text-neutral-500 text-sm">No usage logged yet.</p>}
+                        </div>
+                    </div>
+                    <div className="p-6 rounded-xl bg-neutral-900 border border-neutral-800">
+                        <h3 className="text-lg font-semibold mb-4">Cost by Feature</h3>
+                        <div className="space-y-3">
+                            {Object.entries(costByAction).map(([action, cost]) => (
+                                <div key={action} className="flex justify-between items-center text-sm capitalize">
+                                    <span className="text-neutral-400">{action}</span>
+                                    <span className="font-mono text-white">${cost.toFixed(5)}</span>
+                                </div>
+                            ))}
+                            {Object.keys(costByAction).length === 0 && <p className="text-neutral-500 text-sm">No usage logged yet.</p>}
+                        </div>
+                    </div>
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     {/* User Table (Span 2) */}
-                    <div className="lg:col-span-2 space-y-4">
-                        <h2 className="text-xl font-semibold">Latest Users</h2>
-                        <div className="border border-neutral-800 rounded-xl overflow-hidden">
-                            <table className="w-full text-sm text-left">
-                                <thead className="bg-neutral-900 text-neutral-400 font-medium">
-                                    <tr>
-                                        <th className="p-4">Email</th>
-                                        <th className="p-4">Tier</th>
-                                        <th className="p-4">Values</th>
-                                        <th className="p-4">Usage (Mos.)</th>
-                                        <th className="p-4">Last Active</th>
-                                        <th className="p-4">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-neutral-800 bg-black/50">
-                                    {profiles.slice(0, 50).map((user) => {
-                                        const isAdmin = ['sergio@ideapunkt.de', 'sergio@liid.mx'].includes(user.email);
-                                        return (
-                                            <tr key={user.id} className="hover:bg-white/5 transition-colors">
-                                                <td className="p-4 font-mono text-neutral-300">
-                                                    {user.email}
-                                                    {isAdmin && <span className="ml-2 px-1.5 py-0.5 rounded bg-red-900/40 text-red-400 text-[10px] font-bold border border-red-800/50">ADMIN</span>}
-                                                </td>
-                                                <td className="p-4">
-                                                    <span className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider 
-                                                        ${user.tier === 'founder' ? 'bg-amber-900/40 text-amber-400' :
-                                                            user.tier === 'pro' ? 'bg-violet-900/40 text-violet-400' :
-                                                                'bg-neutral-800 text-neutral-400'}`}>
-                                                        {user.tier}
-                                                    </span>
-                                                </td>
-                                                <td className="p-4 text-neutral-300 font-mono">
-                                                    {projectCounts[user.id] || 0} Proj
-                                                </td>
-                                                <td className="p-4 font-mono text-xs">
-                                                    <div className="flex flex-col gap-1">
-                                                        <span className={user.usage_count_chat >= (user.usage_limit_chat || 20) ? "text-red-400" : "text-neutral-400"}>
-                                                            Chat: {user.usage_count_chat}/{user.usage_limit_chat || 20}
+                    <div className="lg:col-span-2 space-y-8">
+                        {/* Users Section */}
+                        <div className="space-y-4">
+                            <h2 className="text-xl font-semibold">Latest Users</h2>
+                            <div className="border border-neutral-800 rounded-xl overflow-hidden">
+                                <table className="w-full text-sm text-left">
+                                    <thead className="bg-neutral-900 text-neutral-400 font-medium">
+                                        <tr>
+                                            <th className="p-4">Email</th>
+                                            <th className="p-4">Tier</th>
+                                            <th className="p-4">Values</th>
+                                            <th className="p-4">Usage (Mos.)</th>
+                                            <th className="p-4">Last Active</th>
+                                            <th className="p-4">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-neutral-800 bg-black/50">
+                                        {profiles.slice(0, 50).map((user) => {
+                                            const isAdmin = ['sergio@ideapunkt.de', 'sergio@liid.mx'].includes(user.email);
+                                            return (
+                                                <tr key={user.id} className="hover:bg-white/5 transition-colors">
+                                                    <td className="p-4 font-mono text-neutral-300">
+                                                        {user.email}
+                                                        {isAdmin && <span className="ml-2 px-1.5 py-0.5 rounded bg-red-900/40 text-red-400 text-[10px] font-bold border border-red-800/50">ADMIN</span>}
+                                                    </td>
+                                                    <td className="p-4">
+                                                        <span className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider 
+                                                            ${user.tier === 'founder' ? 'bg-amber-900/40 text-amber-400' :
+                                                                user.tier === 'pro' ? 'bg-violet-900/40 text-violet-400' :
+                                                                    'bg-neutral-800 text-neutral-400'}`}>
+                                                            {user.tier}
                                                         </span>
-                                                        <span className={user.usage_count_insight >= (user.usage_limit_insight || 1) ? "text-red-400" : "text-neutral-400"}>
-                                                            Insight: {user.usage_count_insight}/{user.usage_limit_insight || 3}
-                                                        </span>
-                                                    </div>
+                                                    </td>
+                                                    <td className="p-4 text-neutral-300 font-mono">
+                                                        {projectCounts[user.id] || 0} Proj
+                                                    </td>
+                                                    <td className="p-4 font-mono text-xs">
+                                                        <div className="flex flex-col gap-1">
+                                                            <span className={user.usage_count_chat >= (user.usage_limit_chat || 20) ? "text-red-400" : "text-neutral-400"}>
+                                                                Chat: {user.usage_count_chat}/{user.usage_limit_chat || 20}
+                                                            </span>
+                                                            <span className={user.usage_count_insight >= (user.usage_limit_insight || 1) ? "text-red-400" : "text-neutral-400"}>
+                                                                Insight: {user.usage_count_insight}/{user.usage_limit_insight || 3}
+                                                            </span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="p-4 text-xs text-neutral-500">
+                                                        {user.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleDateString() : 'Never'}
+                                                    </td>
+                                                    <td className="p-4">
+                                                        <AdminUserActions
+                                                            userId={user.id}
+                                                            initialTier={user.tier}
+                                                            initialLimit={user.custom_project_limit}
+                                                        />
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                                <div className="p-3 text-center text-xs text-neutral-500 bg-neutral-900/50 border-t border-neutral-800">
+                                    Showing last 50 users
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Usage Logs Section */}
+                        <div className="space-y-4">
+                            <h2 className="text-xl font-semibold">Reference API Usage (Last 100 calls)</h2>
+                            <div className="border border-neutral-800 rounded-xl overflow-hidden">
+                                <table className="w-full text-sm text-left">
+                                    <thead className="bg-neutral-900 text-neutral-400 font-medium">
+                                        <tr>
+                                            <th className="p-3">Time</th>
+                                            <th className="p-3">Feature</th>
+                                            <th className="p-3">Model</th>
+                                            <th className="p-3">Tokens (In/Out)</th>
+                                            <th className="p-3 text-right">Cost</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-neutral-800 bg-black/50">
+                                        {usageLogs?.map((log) => (
+                                            <tr key={log.id} className="hover:bg-white/5 transition-colors">
+                                                <td className="p-3 text-xs text-neutral-500">
+                                                    {new Date(log.created_at).toLocaleTimeString()}
                                                 </td>
-                                                <td className="p-4 text-xs text-neutral-500">
-                                                    {user.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleDateString() : 'Never'}
+                                                <td className="p-3 capitalize text-neutral-300">
+                                                    {log.action}
                                                 </td>
-                                                <td className="p-4">
-                                                    <AdminUserActions
-                                                        userId={user.id}
-                                                        initialTier={user.tier}
-                                                        initialLimit={user.custom_project_limit}
-                                                    />
+                                                <td className="p-3 font-mono text-xs text-indigo-400">
+                                                    {log.model}
+                                                </td>
+                                                <td className="p-3 font-mono text-xs text-neutral-400">
+                                                    {log.input_tokens} / {log.output_tokens}
+                                                </td>
+                                                <td className="p-3 font-mono text-xs text-right text-emerald-400">
+                                                    ${log.cost_estimated?.toFixed(5)}
                                                 </td>
                                             </tr>
-                                        );
-                                    })}
-                                </tbody>
-                            </table>
-                            <div className="p-3 text-center text-xs text-neutral-500 bg-neutral-900/50 border-t border-neutral-800">
-                                Showing last 50 users
+                                        ))}
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>
