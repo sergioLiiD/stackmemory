@@ -35,6 +35,16 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
+        // 0.5. Check Feature Gating (Video/Media is PRO ONLY)
+        // Fetch profile to check tier
+        const { data: profile } = await supabase.from('profiles').select('tier').eq('id', user.id).single();
+
+        const isPro = ['pro', 'founder'].includes(profile?.tier || 'free');
+
+        if ((media || mediaUrl) && !isPro) {
+            return NextResponse.json({ error: 'Multimedia/Video analysis is a Pro feature.' }, { status: 403 });
+        }
+
         // 1. Retrieve Context
         // Note: For image-only queries, we might still want RAG if there's text, 
         // OR we might want to just let Gemini analyze the image. 

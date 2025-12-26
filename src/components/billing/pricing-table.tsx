@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Check, Sparkles, Zap } from "lucide-react";
+import { ComparisonMatrix } from "@/components/landing/comparison-matrix";
 
 export function PricingTable({
     currentPlan,
@@ -142,6 +143,10 @@ export function PricingTable({
                         {loading === 'ltd' ? 'Redirecting...' : 'Get Lifetime Access'}
                     </button>
                 )}
+            </div>
+
+            <div className="lg:col-span-3">
+                <ComparisonMatrix />
             </div>
         </div>
     );
