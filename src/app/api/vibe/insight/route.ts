@@ -55,25 +55,24 @@ ${f.content}
 Your goal is to write a "Project Insight Report" (The Bible) for a new CTO or Investor.
 
 OUTPUT FORMAT:
-- **HTML ONLY**. Do not use Markdown.
-- **Tailwind CSS**: Use extensive Tailwind classes for styling.
-- **Design System**:
-  - Use a dark/tech theme (bg-transparent, text-white, border-white/10).
-  - Use **Grid Layouts** (grid-cols-2) for metrics or comparisons.
-  - Use **Glassmorphism** cards (bg-white/5 backdrop-blur-md border border-white/10 rounded-xl p-6).
-  - Use **Gradients** for headers (bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent).
-  - Use **Badges** for tech stack items.
+- **Markdown ONLY**.
+- **Do NOT** use code blocks (\`\`\`). Return raw markdown text.
+- **Styling Hooks**:
+  - Use **# Headers** for main sections.
+  - Use **> Blockquotes** for summaries/impact statements.
+  - Use **- Bullet points** for lists.
+  - Use **bold** for emphasis.
 
 STRUCTURE:
-1. **Executive Container** (One main div wrapping everything).
-2. **Hero Section**: Title, Project Name, and a 1-sentence impact summary.
-3. **Key Features Grid**: A 2-column or 3-column grid of feature cards.
-4. **Tech Stack Pills**: A flex-wrap section of badges.
-5. **Architectural Map**: A descriptive section using borders/arrows if possible, or just clear steps.
-6. **Critical Files**: A list of file cards.
-7. **Improvement Opportunities**: Alert boxes (yellow/red borders).
+1. **# [Project Name]** (Hero Title)
+2. **> Impact Summary** (One sentence summary in a blockquote)
+3. **## Executive Summary**
+4. **## Key Features** (Bulleted list)
+5. **## Tech Stack Analysis** (Why use this?)
+6. **## Architectural Map** (Data flow)
+7. **## Improvement Opportunities** (Refactoring)
 
-Make it look like a high-end SaaS dashboard, not a document.
+Make it comprehensive but structured.
 `;
 
         const userMessage = `
@@ -92,14 +91,14 @@ Please generate the Project Insight Report.
         });
 
         const result = await model.generateContent([
-            "OUTPUT RULES: Return RAW HTML only. DO NOT wrap in ```html code blocks. DO NOT use Markdown.",
+            "OUTPUT RULES: Return RAW Markdown. DO NOT wrap in ```markdown code blocks.",
             userMessage
         ]);
 
         let report = result.response.text();
 
         // CLEANUP: Remove markdown code blocks if Gemini ignores instructions
-        report = report.replace(/```html/g, '').replace(/```/g, '');
+        report = report.replace(/```markdown/g, '').replace(/```/g, '');
 
         // 4. Save to Database
         const { error: updateError } = await supabase
