@@ -44,10 +44,15 @@
     - [x] **Visual Debugging**: Allow users to paste screenshots of UI errors in chat.
     - [ ] **Video Analysis**: Analyze short screencasts to offer UX improvements.
 
+- **Phase 7: Video Multimodal Analysis (In Progress)**:
+  - [ ] **UI**: Add Video Upload to Vibe Coder Chat.
+  - [ ] **Backend**: Gemini 2.0 Video Understanding.
+  - [ ] **Experience**: "Here is a video of the bug" -> "I found the line causing it".
+
 - **Phase 6: Project Insight (Deep Dive)**:
-  - [ ] **Data Ingestion**: Process massive context (docs + code structure).
-  - [ ] **Insight Report**: "Project Bible" generation with Gemini 2.0.
-  - [ ] **UI**: Dedicated Insight Tab with persistent report.
+  - [x] **Data Ingestion**: Process massive context (docs + code structure).
+  - [x] **Insight Report**: "Project Bible" generation with Gemini 2.0.
+  - [x] **UI**: Dedicated Insight Tab with persistent report.
 
 ## ✅ Phase 2: Semantic Intelligence (The "Vibe Coder" Core)
 

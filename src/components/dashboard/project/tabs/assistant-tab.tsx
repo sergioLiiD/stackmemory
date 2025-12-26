@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Send, Sparkles, FileCode, ExternalLink, Bot, User, RefreshCcw, Image as ImageIcon, X } from "lucide-react";
+import { Send, Sparkles, FileCode, ExternalLink, Bot, User, RefreshCcw, Image as ImageIcon, X, Info } from "lucide-react";
 import { Project } from "@/data/mock";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -38,6 +38,11 @@ export function AssistantTab({ project }: AssistantTabProps) {
     const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
+            // Check size (limit to 10MB for inline base64 to avoid crashing brower/server)
+            if (file.size > 10 * 1024 * 1024) {
+                alert("File too large. Please upload < 10MB for now.");
+                return;
+            }
             const reader = new FileReader();
             reader.onloadend = () => {
                 setSelectedImage(reader.result as string);
@@ -54,7 +59,7 @@ export function AssistantTab({ project }: AssistantTabProps) {
         const userMsg: Message = {
             id: Date.now().toString(),
             role: 'user',
-            content: input + (selectedImage ? " [Image Uploaded]" : "")
+            content: input + (selectedImage ? " [Media Uploaded]" : "")
         };
         setMessages(prev => [...prev, userMsg]);
 
@@ -78,7 +83,7 @@ export function AssistantTab({ project }: AssistantTabProps) {
                 body: JSON.stringify({
                     query: currentInput,
                     projectId: project.id,
-                    image: currentImage // Send base64 image
+                    media: currentImage // Send base64 media (video or image)
                 })
             });
 
@@ -236,10 +241,14 @@ export function AssistantTab({ project }: AssistantTabProps) {
                 {selectedImage && (
                     <div className="mb-2 max-w-3xl mx-auto flex items-start">
                         <div className="relative group">
-                            <img src={selectedImage} alt="Preview" className="h-16 w-auto rounded-lg border border-neutral-200 dark:border-white/10 object-cover" />
+                            {selectedImage.startsWith('data:video') ? (
+                                <video src={selectedImage} controls className="h-32 w-auto rounded-lg border border-neutral-200 dark:border-white/10" />
+                            ) : (
+                                <img src={selectedImage} alt="Preview" className="h-16 w-auto rounded-lg border border-neutral-200 dark:border-white/10 object-cover" />
+                            )}
                             <button
                                 onClick={() => setSelectedImage(null)}
-                                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity z-10"
                             >
                                 <X className="w-3 h-3" />
                             </button>
@@ -251,7 +260,7 @@ export function AssistantTab({ project }: AssistantTabProps) {
                     <input
                         type="file"
                         ref={fileInputRef}
-                        accept="image/*"
+                        accept="image/*,video/mp4,video/webm,video/quicktime"
                         className="hidden"
                         onChange={handleImageSelect}
                     />
@@ -274,7 +283,7 @@ export function AssistantTab({ project }: AssistantTabProps) {
                         <input
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
-                            placeholder="Ask Vibe Coder (or paste screenshot)..."
+                            placeholder="Ask Vibe Coder (or paste screenshot / video)..."
                             className="w-full bg-neutral-100 dark:bg-white/5 border border-neutral-200 dark:border-white/5 rounded-2xl pl-4 pr-12 py-3 text-sm focus:outline-none focus:border-purple-500 transition-colors dark:text-white"
                             autoFocus
                         />
@@ -287,6 +296,10 @@ export function AssistantTab({ project }: AssistantTabProps) {
                         </button>
                     </div>
                 </form>
+                <div className="flex items-center justify-center gap-1.5 mt-3 text-[10px] text-neutral-400/80">
+                    <Info className="w-3 h-3" />
+                    <span>Supports Images & Video (Limit: 10MB)</span>
+                </div>
             </div>
         </div>
     );

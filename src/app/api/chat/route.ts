@@ -11,10 +11,10 @@ export const runtime = 'edge'; // Optional: Use edge runtime for faster streamin
 
 export async function POST(req: Request) {
     try {
-        const { query, projectId, image } = await req.json();
+        const { query, projectId, media } = await req.json();
 
-        if ((!query && !image) || !projectId) {
-            return NextResponse.json({ error: 'Query/Image and Project ID are required' }, { status: 400 });
+        if ((!query && !media) || !projectId) {
+            return NextResponse.json({ error: 'Query/Media and Project ID are required' }, { status: 400 });
         }
 
         // 1. Retrieve Context
@@ -39,7 +39,8 @@ ${contextText}
 
 INSTRUCTIONS:
 - Answer the user's question based PRIMARILY on the provided context.
-- If the user provides an IMAGE, analyze it carefully (it might be a UI error, a design, or code screenshot).
+- If the user provides an IMAGE or VIDEO, analyze it carefully (it might be a UI error, a design, or code screenshot).
+- For VIDEOS, pay attention to temporal changes, animations, or bugs that occur over time.
 - If the context answers the question, cite the specific files.
 - If the context is missing information, say so, but try to answer based on general knowledge if appropriate (while noting it's not in the visible context).
 - Be concise, professional, and helpful.
@@ -59,13 +60,13 @@ INSTRUCTIONS:
             promptParts.push(query);
         }
 
-        if (image) {
-            // content type: 'image/jpeg' or 'image/png'. 
-            // The frontend sends raw base64 dataUrl: "data:image/png;base64,....."
+        if (media) {
+            // content type: 'image/jpeg', 'image/png', 'video/mp4', etc.
+            // The frontend sends raw base64 dataUrl: "data:mime;base64,....."
             // We need to strip the prefix.
-            const base64Data = image.split(',')[1];
+            const base64Data = media.split(',')[1];
             // Detect mime type
-            const mimeType = image.split(';')[0].split(':')[1];
+            const mimeType = media.split(';')[0].split(':')[1];
 
             promptParts.push({
                 inlineData: {
