@@ -11,7 +11,8 @@ import {
     Gift,
     BookOpen,
     Terminal,
-    Sparkles
+    Sparkles,
+    Map as MapIcon
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -193,6 +194,28 @@ export default function GuidePage() {
             tips: [
                 "Insights are perfect for summarizing a project before a big refactor.",
                 "Reports are persisted, so you can look back at how your project evolved."
+            ]
+        },
+        {
+            id: "onboarding",
+            title: "Onboarding Protocols",
+            description: "Automatically generate a 'Getting Started' guide (README) for any project.",
+            longDescription: "New to a codebase? Forgot how to start your own project? VibeOnboard analyzes your package.json, environment variables, and structure to write a perfect setup guide.",
+            icon: MapIcon,
+            badge: "PRO",
+            color: "text-emerald-500",
+            bg: "bg-emerald-500/10",
+            btnColor: "bg-emerald-600 hover:bg-emerald-700",
+            actionLink: "/dashboard/projects",
+            actionLabel: "Create Protocol",
+            benefits: [
+                " Instant setup instructions for new team members",
+                "Detects required API keys and env vars",
+                "Standardizes documentation across projects"
+            ],
+            tips: [
+                "Use this when handing off a project to a client.",
+                "Great for refreshing your memory on old archived projects."
             ]
         }
     ];

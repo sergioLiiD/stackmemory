@@ -1,7 +1,7 @@
 "use client";
 
 import { BentoCard, BentoHeader } from "@/components/ui/bento-card";
-import { Terminal, BrainCircuit, MessageSquareText, History, Database, Code2, Box, Sparkles } from "lucide-react";
+import { Terminal, BrainCircuit, MessageSquareText, History, Database, Code2, Box, Sparkles, Map as MapIcon } from "lucide-react";
 import Image from "next/image";
 
 export function FeatureGrid() {
@@ -89,21 +89,21 @@ export function FeatureGrid() {
                     </div>
                 </BentoCard>
 
-                {/* 4. SERVICE LEDGER */}
-                <BentoCard className="md:col-span-1 md:row-span-2" delay={0.4}>
+                {/* 4. VIBE ONBOARD (New) */}
+                <BentoCard className="md:col-span-1 md:row-span-2 bg-gradient-to-br from-emerald-900/40 to-black" delay={0.4}>
                     <div className="h-full flex flex-col">
-                        <Database className="w-8 h-8 text-blue-400 mb-4" />
-                        <BentoHeader title="Service Ledger" />
+                        <MapIcon className="w-8 h-8 text-emerald-400 mb-4" />
+                        <BentoHeader title="Vibe Onboard" subtitle="Auto-generated docs." />
                         <p className="text-sm text-neutral-500 mt-2">
-                            Track AWS, Vercel, and DB accounts by project.
+                            It writes the "Getting Started" guide so you don't have to.
                         </p>
 
-                        <div className="mt-6 flex flex-wrap gap-2 content-start h-full">
-                            {['AWS', 'Vercel', 'Mongo', 'Supabase', 'Stripe', 'Resend'].map((tag) => (
-                                <span key={tag} className="px-2 py-1 rounded-md bg-white/10 text-xs text-white/70 border border-white/5">
-                                    {tag}
-                                </span>
-                            ))}
+                        <div className="mt-6 p-3 rounded-lg bg-neutral-900 border border-white/10 text-[10px] font-mono text-emerald-300 opacity-80">
+                            <p># Getting Started</p>
+                            <p className="text-neutral-500">1. Install Deps</p>
+                            <p className="pl-2">$ npm install</p>
+                            <p className="text-neutral-500 mt-1">2. Env Vars</p>
+                            <p className="pl-2">cp .env.example .env</p>
                         </div>
                     </div>
                 </BentoCard>
