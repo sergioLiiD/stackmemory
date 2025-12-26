@@ -45,9 +45,9 @@
     - [ ] **Video Analysis**: Analyze short screencasts to offer UX improvements.
 
 - **Phase 7: Video Multimodal Analysis (In Progress)**:
-  - [ ] **UI**: Add Video Upload to Vibe Coder Chat.
-  - [ ] **Backend**: Gemini 2.0 Video Understanding.
-  - [ ] **Experience**: "Here is a video of the bug" -> "I found the line causing it".
+  - [x] **UI**: Add Video Upload to Vibe Coder Chat.
+  - [x] **Backend**: Gemini 2.0 Video Understanding.
+  - [x] **Experience**: "Here is a video of the bug" -> "I found the line causing it".
 
 - **Phase 6: Project Insight (Deep Dive)**:
   - [x] **Data Ingestion**: Process massive context (docs + code structure).

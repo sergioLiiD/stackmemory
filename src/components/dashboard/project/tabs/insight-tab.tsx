@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Sparkles, FileText, RefreshCw, BookOpen, Layers, Lightbulb } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import ReactMarkdown from "react-markdown";
+import { useDashboard } from "../../dashboard-context";
 
 interface InsightTabProps {
     project: any;
@@ -13,6 +14,7 @@ export function InsightTab({ project }: InsightTabProps) {
     const [report, setReport] = useState<string | null>(project.insight_report);
     const [loading, setLoading] = useState(false);
     const [lastGenerated, setLastGenerated] = useState<string | null>(project.insight_generated_at);
+    const { updateProject } = useDashboard();
     const supabase = createClient();
 
     const generateInsight = async () => {
@@ -27,11 +29,15 @@ export function InsightTab({ project }: InsightTabProps) {
             if (!response.ok) throw new Error("Failed to generate insight");
 
             const data = await response.json();
+
+            // Update Context
+            updateProject(project.id, {
+                insight_report: data.report,
+                insight_generated_at: new Date().toISOString()
+            });
+
             setReport(data.report);
             setLastGenerated(new Date().toISOString());
-
-            // Optimistic update if needed, but the API should save to DB usually.
-            // But let's assume the component re-fetches or we just update local state.
         } catch (error) {
             console.error("Error generating insight:", error);
             // Show error toast

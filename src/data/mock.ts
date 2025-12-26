@@ -99,6 +99,8 @@ export interface Project {
     snippets?: Snippet[];
     design?: DesignSystem;
     hasVulnerabilities?: boolean;
+    insight_report?: string;
+    insight_generated_at?: string;
 }
 
 export const mockProjects: Project[] = [
