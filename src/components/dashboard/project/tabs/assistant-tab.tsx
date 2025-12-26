@@ -35,31 +35,72 @@ export function AssistantTab({ project }: AssistantTabProps) {
         }
     }, [messages]);
 
-    const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const [uploading, setUploading] = useState(false);
+
+    // ... scroll effect ...
+
+    const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
-        if (file) {
-            // Check size (limit to 10MB for inline base64 to avoid crashing brower/server)
-            if (file.size > 10 * 1024 * 1024) {
-                alert("File too large. Please upload < 10MB for now.");
-                return;
-            }
+        if (!file) return;
+
+        // If generic small image (< 1MB), keep using Base64 for speed
+        if (file.size < 1 * 1024 * 1024 && file.type.startsWith('image/')) {
             const reader = new FileReader();
             reader.onloadend = () => {
                 setSelectedImage(reader.result as string);
             };
             reader.readAsDataURL(file);
+            return;
+        }
+
+        // For Videos OR Large Images (> 1MB), Upload to Supabase Storage
+        try {
+            setUploading(true);
+            const { createClient } = await import("@/lib/supabase/client");
+            const supabase = createClient();
+
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${project.id}/${Date.now()}.${fileExt}`;
+
+            const { data, error } = await supabase.storage
+                .from('chat-attachments')
+                .upload(fileName, file);
+
+            if (error) throw error;
+
+            // Get Public URL
+            const { data: { publicUrl } } = supabase.storage
+                .from('chat-attachments')
+                .getPublicUrl(fileName);
+
+            // We use a prefix to distinguish URL from Base64
+            // "STORAGE_URL:https://..."
+            setSelectedImage(`STORAGE_URL:${publicUrl}`);
+
+        } catch (error: any) {
+            console.error(error);
+            alert("Upload failed: " + error.message);
+        } finally {
+            setUploading(false);
         }
     };
 
     const handleSubmit = async (e?: React.FormEvent) => {
         e?.preventDefault();
-        if ((!input.trim() && !selectedImage) || isLoading) return;
+        if ((!input.trim() && !selectedImage) || isLoading || uploading) return;
 
         // Optimistically add user message
+        let displayContent = input;
+        if (selectedImage) {
+            displayContent += selectedImage.startsWith('STORAGE_URL:')
+                ? " [High-Res Media Uploaded]"
+                : " [Media Uploaded]";
+        }
+
         const userMsg: Message = {
             id: Date.now().toString(),
             role: 'user',
-            content: input + (selectedImage ? " [Media Uploaded]" : "")
+            content: displayContent
         };
         setMessages(prev => [...prev, userMsg]);
 
@@ -67,24 +108,33 @@ export function AssistantTab({ project }: AssistantTabProps) {
         const currentInput = input;
         const currentImage = selectedImage;
 
-        // Clear input state immediately
+        // Clear input state
         setInput("");
         setSelectedImage(null);
         setIsLoading(true);
 
         const aiMsgId = (Date.now() + 1).toString();
-        // Add placeholder AI message
         setMessages(prev => [...prev, { id: aiMsgId, role: 'assistant', content: "" }]);
 
         try {
+            // Determine payload type
+            let payload: any = {
+                query: currentInput,
+                projectId: project.id
+            };
+
+            if (currentImage) {
+                if (currentImage.startsWith('STORAGE_URL:')) {
+                    payload.mediaUrl = currentImage.replace('STORAGE_URL:', '');
+                } else {
+                    payload.media = currentImage; // Base64
+                }
+            }
+
             const res = await fetch('/api/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    query: currentInput,
-                    projectId: project.id,
-                    media: currentImage // Send base64 media (video or image)
-                })
+                body: JSON.stringify(payload)
             });
 
             if (!res.ok) throw new Error("Chat failed");
@@ -99,8 +149,7 @@ export function AssistantTab({ project }: AssistantTabProps) {
             while (!done) {
                 const { value, done: DONE } = await reader.read();
                 done = DONE;
-                const chunkValue = new TextDecoder().decode(value);
-
+                const chunkValue = decoder.decode(value);
                 fullText += chunkValue;
 
                 // Check for Sources Magic Separator
@@ -112,12 +161,10 @@ export function AssistantTab({ project }: AssistantTabProps) {
                     if (sourcesJson) {
                         try {
                             sources = JSON.parse(sourcesJson);
-                        } catch (e) {
-                            // incomplete json, ignore until full
-                        }
+                        } catch (e) { }
                     }
 
-                    // Update UI with content only (hide sources raw text)
+                    // Update UI
                     setMessages(prev => prev.map(m =>
                         m.id === aiMsgId ? { ...m, content: mainContent, sources: sources.length ? sources : undefined } : m
                     ));
@@ -241,10 +288,10 @@ export function AssistantTab({ project }: AssistantTabProps) {
                 {selectedImage && (
                     <div className="mb-2 max-w-3xl mx-auto flex items-start">
                         <div className="relative group">
-                            {selectedImage.startsWith('data:video') ? (
-                                <video src={selectedImage} controls className="h-32 w-auto rounded-lg border border-neutral-200 dark:border-white/10" />
+                            {selectedImage.startsWith('data:video') || selectedImage.includes('.mp4') || selectedImage.includes('.mov') || selectedImage.includes('.webm') ? (
+                                <video src={selectedImage.replace('STORAGE_URL:', '')} controls className="h-32 w-auto rounded-lg border border-neutral-200 dark:border-white/10" />
                             ) : (
-                                <img src={selectedImage} alt="Preview" className="h-16 w-auto rounded-lg border border-neutral-200 dark:border-white/10 object-cover" />
+                                <img src={selectedImage.replace('STORAGE_URL:', '')} alt="Preview" className="h-16 w-auto rounded-lg border border-neutral-200 dark:border-white/10 object-cover" />
                             )}
                             <button
                                 onClick={() => setSelectedImage(null)}
@@ -283,13 +330,14 @@ export function AssistantTab({ project }: AssistantTabProps) {
                         <input
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
-                            placeholder="Ask Vibe Coder (or paste screenshot / video)..."
+                            placeholder={uploading ? "Uploading media..." : "Ask Vibe Coder (or paste screenshot / video)..."}
                             className="w-full bg-neutral-100 dark:bg-white/5 border border-neutral-200 dark:border-white/5 rounded-2xl pl-4 pr-12 py-3 text-sm focus:outline-none focus:border-purple-500 transition-colors dark:text-white"
                             autoFocus
+                            disabled={uploading}
                         />
                         <button
                             type="submit"
-                            disabled={(!input.trim() && !selectedImage) || isLoading}
+                            disabled={(!input.trim() && !selectedImage) || isLoading || uploading}
                             className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-purple-600 text-white rounded-xl hover:bg-purple-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                         >
                             <Send className="w-4 h-4" />
@@ -298,7 +346,7 @@ export function AssistantTab({ project }: AssistantTabProps) {
                 </form>
                 <div className="flex items-center justify-center gap-1.5 mt-3 text-[10px] text-neutral-400/80">
                     <Info className="w-3 h-3" />
-                    <span>Supports Images & Video (Limit: 10MB)</span>
+                    <span>Supports Images & Video (Drag & Drop or Paste)</span>
                 </div>
             </div>
         </div>

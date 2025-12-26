@@ -7,15 +7,17 @@ import { cookies } from 'next/headers';
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || '');
 
-export const runtime = 'edge'; // Optional: Use edge runtime for faster streaming if compatible with supabase access (Supabase JS is edge compatible, but pgvector RPC content might be heavy. Let's stick to nodejs default if unsure, but usually edge is fine for this).
+export const runtime = 'nodejs'; // REQUIRED for fs and GoogleAIFileManager uploadFile
 // Actually, 'vector-store.ts' uses 'cookies()' which works in edge, but 'supabase/ssr' or 'supabase-js' might need specific handling. 
 // Safest to stick to Node.js runtime for now to avoid specific Edge warnings unless requested.
 
+// Ensure you have `npm install @google/generative-ai` which includes server capability or separate package if needed.
+// We are using dynamic import for `GoogleAIFileManager` to avoid build issues on Edge (though we forced Node runtime).
 export async function POST(req: Request) {
     try {
-        const { query, projectId, media } = await req.json();
+        const { query, projectId, media, mediaUrl } = await req.json();
 
-        if ((!query && !media) || !projectId) {
+        if ((!query && !media && !mediaUrl) || !projectId) {
             return NextResponse.json({ error: 'Query/Media and Project ID are required' }, { status: 400 });
         }
 
@@ -69,21 +71,67 @@ INSTRUCTIONS:
             systemInstruction: systemPrompt
         });
 
-        // Construct Content Parts
+        // 2. Prepare Content (Text + Media)
         let promptParts: any[] = [];
+        let fileUri: string | null = null;
 
-        if (query) {
-            promptParts.push(query);
-        }
+        if (query) promptParts.push(query);
 
-        if (media) {
-            // content type: 'image/jpeg', 'image/png', 'video/mp4', etc.
-            // The frontend sends raw base64 dataUrl: "data:mime;base64,....."
-            // We need to strip the prefix.
+        // Handle Media (Base64 OR URL)
+        if (mediaUrl) {
+            // Server-to-Server Upload to Gemini (Bypassing Vercel Body Limits)
+            // 1. Download from Supabase (Public URL)
+            const fileRes = await fetch(mediaUrl);
+            const arrayBuffer = await fileRes.arrayBuffer();
+            const buffer = Buffer.from(arrayBuffer);
+
+            // 2. Temp File for Upload (Google FileManager needs a path usually, OR we can use specific stream methods?)
+            // The Node SDK `uploadFile` requires a path. We need to write to /tmp.
+            // Edge runtime does NOT support filesystem. We MUST use Node runtime (already set).
+            const fs = await import('fs');
+            const path = await import('path');
+            const os = await import('os');
+            const { GoogleAIFileManager } = await import('@google/generative-ai/server');
+
+            const fileManager = new GoogleAIFileManager(process.env.GOOGLE_API_KEY || '');
+
+            const tempFilePath = path.join(os.tmpdir(), `gemini_upload_${Date.now()}`);
+            fs.writeFileSync(tempFilePath, buffer);
+
+            // 3. Upload to Google
+            const uploadResponse = await fileManager.uploadFile(tempFilePath, {
+                mimeType: fileRes.headers.get('content-type') || 'video/mp4',
+                displayName: "User Upload"
+            });
+
+            fileUri = uploadResponse.file.uri;
+
+            // 4. Wait for processing (for Video)
+            if (uploadResponse.file.state === 'PROCESSING') {
+                // Simple poll
+                let state = 'PROCESSING';
+                while (state === 'PROCESSING') {
+                    await new Promise(r => setTimeout(r, 1000));
+                    const check = await fileManager.getFile(uploadResponse.file.name);
+                    state = check.state;
+                    if (state === 'FAILED') throw new Error("Video processing failed.");
+                }
+            }
+
+            promptParts.push({
+                fileData: {
+                    mimeType: uploadResponse.file.mimeType,
+                    fileUri: fileUri
+                }
+            });
+
+            // Cleanup Temp
+            fs.unlinkSync(tempFilePath);
+
+        } else if (media) {
+            // Standard Base64 (Legacy/Small Images)
             const base64Data = media.split(',')[1];
-            // Detect mime type
             const mimeType = media.split(';')[0].split(':')[1];
-
             promptParts.push({
                 inlineData: {
                     data: base64Data,

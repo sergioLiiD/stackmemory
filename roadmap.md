@@ -67,6 +67,22 @@
   - [x] **Insight Report**: "Project Bible" generation with Gemini 2.0.
   - [x] **UI**: Dedicated Insight Tab with persistent report.
 
+- **Phase 9: VibeOnboard (The Human Layer)**:
+  - [x] **Backend**: Gemini 2.0 "Senior DevRel" Agent (`/api/vibe/onboard`).
+  - [x] **Frontend**: Onboarding Tab with "Generate Guide" button.
+  - [x] **Feature**: Auto-generated `GETTING_STARTED.md` (Prerequisites, Install, Architecture).
+  - [x] **Integration**: Added to Landing Page and User Guide.
+
+- **Phase 10: Video Analysis Phase 2 (Screencast Debugging)**:
+  - [x] **Goal**: "I found a bug, here's a video".
+  - [x] **UI**: Dedicated Chat Video upload (Storage > 1MB).
+  - [x] **Backend**: Gemini 2.0 Integration via GoogleAIFileManager (Bypass Vercel Limits).
+
+- **Phase 11: Beta Launch (Business)**:
+  - [ ] Analytics (Google/PostHog).
+  - [ ] Compliance (Cookie Banner).
+  - [ ] Lifetime Deal Signup & Checkout verification.
+
 ## ✅ Phase 2: Semantic Intelligence (The "Vibe Coder" Core)
 
 - **Foundation: Secure Access**
@@ -136,9 +152,6 @@
 
 ## 🧠 Phase 4: Advanced AI Experiences (Post-Monetization)
 
-- **VibeOnboard (The Human Layer)**:
-  - [ ] **Interactive Onboarding**: AI-generated courses to teach new devs the codebase.
-  - [ ] **Contextual Tutorials**: "How to add a route in this specific project".
 - **Video Analysis (Multimodal Phase 2)**:
   - [ ] **Screencast Debugging**: Analyze short videos of bugs to suggest fixes.
   - [ ] **UX Audits**: AI watches user sessions to propose UI improvements.
