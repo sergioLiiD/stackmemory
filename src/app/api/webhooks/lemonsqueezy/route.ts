@@ -62,12 +62,57 @@ export async function POST(req: Request) {
                 ends_at: sub.ends_at,
                 update_payment_url: sub.urls.update_payment_method,
             });
+
+            // SYNC TO PROFILES (Legacy / App-Wide State)
+            const isLTD = sub.variant_name.toLowerCase().includes('lifetime') || sub.variant_name.toLowerCase().includes('ltd');
+            const newTier = isLTD ? 'founder' : 'pro';
+
+            await supabase.from('profiles').update({
+                tier: newTier,
+                updated_at: new Date().toISOString()
+            }).eq('id', userId);
+
         } else if (eventName === 'subscription_cancelled' || eventName === 'subscription_expired') {
             const sub = data.attributes;
             await supabase.from('subscriptions').update({
                 status: sub.status,
                 ends_at: sub.ends_at
             }).eq('id', data.id);
+
+            // Only downgrade if it's expired/cancelled AND not just "cancelling at period end"
+            // Actually, LemonSqueezy status 'cancelled' usually means "will cancel at end".
+            // 'expired' means dead.
+            if (sub.status === 'expired') {
+                await supabase.from('profiles').update({
+                    tier: 'free',
+                    updated_at: new Date().toISOString()
+                }).eq('id', userId);
+            }
+        }
+
+        // Handle "Order Created" (Immediate One-Off for LTDs that might not be subscriptions)
+        if (eventName === 'order_created') {
+            const attributes = data.attributes;
+            // Check if it's LTD
+            // It's safer to check variant_id if we had it mapped, or product name
+            const isLTD = attributes.first_order_item?.variant_name?.toLowerCase().includes('lifetime');
+
+            if (isLTD) {
+                await supabase.from('subscriptions').upsert({
+                    id: `ltd-${data.id}`, // Fake sub ID for consistency
+                    user_id: userId,
+                    status: 'active',
+                    variant_name: 'Lifetime Deal',
+                    renews_at: null, // Never renews
+                    ends_at: null,
+                    update_payment_url: attributes.urls.receipt // Link to receipt
+                });
+
+                await supabase.from('profiles').update({
+                    tier: 'founder',
+                    updated_at: new Date().toISOString()
+                }).eq('id', userId);
+            }
         }
 
         return NextResponse.json({ received: true });
