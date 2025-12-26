@@ -33,6 +33,9 @@ export async function storeEmbeddings(projectId: string, files: ProcessedFile[])
         // Skip empty files
         if (!content.trim()) continue;
 
+        // cleanup: Delete existing embeddings for this file to avoid duplicates
+        await supabase.from('embeddings').delete().match({ project_id: projectId, file_path: file.path });
+
         // Chunking: Increased to 50000 chars (~12k tokens) for Gemini Massive Context
         const chunkSize = 50000;
         const chunks = [];
