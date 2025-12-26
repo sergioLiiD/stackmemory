@@ -1,71 +1,79 @@
-import { NextRequest, NextResponse } from "next/server";
-import crypto from "crypto";
-import { getAdminClient } from "@/lib/supabase/admin";
+import { createClient } from '@/lib/supabase/server';
+import { cookies } from 'next/headers';
+import { NextResponse } from 'next/server';
+import crypto from 'crypto';
 
-export async function POST(request: NextRequest) {
+export async function POST(req: Request) {
     try {
-        const secret = process.env.LEMON_SQUEEZY_WEBHOOK_SECRET;
-        if (!secret) {
-            console.error("LEMON_SQUEEZY_WEBHOOK_SECRET is missing");
-            return NextResponse.json({ error: "Server misconfiguration" }, { status: 500 });
+        const text = await req.text();
+        const hmac = crypto.createHmac('sha256', process.env.LEMONSQUEEZY_WEBHOOK_SECRET || '');
+        const digest = Buffer.from(hmac.update(text).digest('hex'), 'utf8');
+        const signature = Buffer.from(req.headers.get('x-signature') || '', 'utf8');
+
+        if (!crypto.timingSafeEqual(digest, signature)) {
+            return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
         }
 
-        const text = await request.text();
-        const hmac = crypto.createHmac("sha256", secret);
-        const digest = Buffer.from(hmac.update(text).digest("hex"), "utf8");
-        const signatureHeader = request.headers.get("x-signature");
+        const body = JSON.parse(text);
+        const { meta, data } = body;
+        const eventName = meta.event_name;
+        const customData = meta.custom_data || {}; // We will pass user_id here during checkout
 
-        if (!signatureHeader) {
-            return NextResponse.json({ error: "Missing signature" }, { status: 401 });
+        // Init Supabase Admin (Service Role) - strictly needed to write to subscriptions for any user
+        // We use standard createClient but we need SERVICE_ROLE_KEY ideally for robust webhooks
+        // However, standard server client works if RLS allows it or if we use Service Key.
+        // For simplicity in this project structure, we might rely on the fact that we are in a route handler.
+        // BUT, RLS "Users can view their own" blocks inserts for others. 
+        // We really need a Service Role client here.
+        // Let's assume standard client for now, but really we should use a `createAdminClient` helper if available.
+        // Checking existing code, we usually use `createClient(cookieStore)`.
+        // BUT cookies won't exist in a webhook request from LemonSqueezy.
+        // So we MUST use a Service Role client manually constructed here.
+
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+        const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+
+        // We'll import createClient from supabase-js directly for admin access
+        const { createClient: createSupabaseAdmin } = require('@supabase/supabase-js');
+        const supabase = createSupabaseAdmin(supabaseUrl, supabaseServiceKey);
+
+        // Log event
+        await supabase.from('webhook_events').insert({
+            event_type: eventName,
+            payload: body,
+            processed: false
+        });
+
+        const userId = customData.user_id; // CRITICAL: We must pass ?checkout[custom][user_id]=... in the checkout link
+
+        if (!userId) {
+            console.warn("Webhook received without user_id in custom_data");
+            return NextResponse.json({ received: true, warning: "No user_id" });
         }
 
-        const signature = Buffer.from(signatureHeader, "utf8");
-
-        if (digest.length !== signature.length || !crypto.timingSafeEqual(digest, signature)) {
-            return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
-        }
-
-        const payload = JSON.parse(text);
-        const eventName = payload.meta.event_name;
-        const customData = payload.meta.custom_data;
-
-        // Only process order_created (sale success)
-        if (eventName === "order_created") {
-            if (!customData || !customData.user_id) {
-                console.log("No user_id in webhook custom_data. Ignoring.");
-                return NextResponse.json({ message: "Ignored: No user_id" });
-            }
-
-            const userId = customData.user_id;
-            const attributes = payload.data.attributes;
-            const firstOrderItem = attributes.first_order_item;
-            const productName = firstOrderItem?.product_name || "";
-
-            let newTier = 'pro';
-            // Simple string matching is robust enough for now
-            if (productName.toLowerCase().includes("founder")) {
-                newTier = 'founder';
-            }
-
-            console.log(`Granting ${newTier} access to user ${userId}`);
-
-            // Update Database using the helper
-            const supabaseAdmin = getAdminClient();
-
-            const { error } = await supabaseAdmin
-                .from('profiles')
-                .update({ tier: newTier })
-                .eq('id', userId);
-
-            if (error) {
-                console.error("Error updating profile in Supabase:", error);
-                return NextResponse.json({ error: "Database update failed" }, { status: 500 });
-            }
+        if (eventName === 'subscription_created' || eventName === 'subscription_updated' || eventName === 'subscription_resumed') {
+            const sub = data.attributes;
+            await supabase.from('subscriptions').upsert({
+                id: data.id,
+                user_id: userId,
+                status: sub.status,
+                variant_name: sub.variant_name,
+                renews_at: sub.renews_at,
+                ends_at: sub.ends_at,
+                update_payment_url: sub.urls.update_payment_method,
+            });
+        } else if (eventName === 'subscription_cancelled' || eventName === 'subscription_expired') {
+            const sub = data.attributes;
+            await supabase.from('subscriptions').update({
+                status: sub.status,
+                ends_at: sub.ends_at
+            }).eq('id', data.id);
         }
 
         return NextResponse.json({ received: true });
-    } catch (error) {
-        console.error("Webhook error:", error);
-        return NextResponse.json({ error: "Webhook handler failed" }, { status: 500 });
+
+    } catch (e: any) {
+        console.error("Webhook Error:", e);
+        return NextResponse.json({ error: e.message }, { status: 500 });
     }
 }

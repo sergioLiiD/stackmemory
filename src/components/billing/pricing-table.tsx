@@ -1,215 +1,116 @@
 "use client";
 
-import { Check, Zap, Shield, Globe, Github, Sparkles, Gem } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { useState } from "react";
-import { useAuth } from "@/components/auth/auth-context";
+import { Check } from "lucide-react";
 
-interface PricingProps {
-    currentTier?: 'free' | 'pro' | 'founder';
-}
+export function PricingTable({
+    currentPlan,
+    proVariantId
+}: {
+    currentPlan?: string | null;
+    proVariantId?: string; // Passed from env
+}) {
+    const [loading, setLoading] = useState(false);
 
-export function PricingTable({ currentTier = 'free' }: PricingProps) {
-    const { user } = useAuth();
-    const [planType, setPlanType] = useState<'monthly' | 'founder'>('monthly');
-
-    const getCheckoutLink = (type: 'monthly' | 'founder') => {
-        const baseUrl = type === 'monthly'
-            ? "https://store.stackmemory.app/checkout/buy/63f72d1c-1936-42ca-bd94-54c1cb13f836"
-            : "https://store.stackmemory.app/checkout/buy/546bb2de-c49f-421e-9d81-8ac465dbbbbf";
-
-        if (user?.id) {
-            return `${baseUrl}?checkout[custom][user_id]=${user.id}`;
+    const handleCheckout = async (variantId: string) => {
+        setLoading(true);
+        try {
+            const res = await fetch('/api/billing/create-checkout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    variantId,
+                    redirectUrl: window.location.href
+                })
+            });
+            const data = await res.json();
+            if (data.url) {
+                window.location.href = data.url;
+            } else {
+                alert("Error creating checkout: " + data.error);
+            }
+        } catch (e) {
+            console.error(e);
+            alert("Failed to start checkout");
+        } finally {
+            setLoading(false);
         }
-        return baseUrl;
     };
 
+    const isPro = currentPlan === 'Pro Monthly' || currentPlan === 'StackMemory Pro';
+
     return (
-        <div className="max-w-4xl mx-auto">
-            {/* Plan Toggle */}
-            {/* Plan Toggle */}
-            {/* Plan Toggle */}
-            <div className="flex justify-center mb-10">
-                <div className="bg-neutral-100 dark:bg-white/5 p-1 rounded-full flex items-center gap-1 border border-neutral-200 dark:border-white/10">
-                    <button
-                        onClick={() => setPlanType('monthly')}
-                        className={cn(
-                            "px-4 py-2 rounded-full text-sm font-medium transition-all",
-                            planType === 'monthly' ? "bg-[#a78bfa] text-[#1e1b4b]" : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"
-                        )}
-                    >
-                        Monthly
-                    </button>
-                    <button
-                        onClick={() => setPlanType('founder')}
-                        className={cn(
-                            "px-4 py-2 rounded-full text-sm font-medium transition-all flex items-center gap-2",
-                            planType === 'founder' ? "bg-amber-400 text-amber-950" : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"
-                        )}
-                    >
-                        Founder Deal <Sparkles className="w-3 h-3" />
-                    </button>
-                </div>
-            </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            {/* Free Plan */}
+            <div className="p-8 rounded-3xl border border-neutral-200 dark:border-white/10 bg-white dark:bg-[#121212]">
+                <h3 className="text-lg font-bold text-neutral-900 dark:text-white mb-2">Hacker</h3>
+                <div className="text-3xl font-bold mb-6">$0<span className="text-sm font-normal text-neutral-500">/mo</span></div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative">
-                {/* Free Tier */}
-                <div className="p-8 rounded-3xl border border-neutral-200 dark:border-white/10 bg-white dark:bg-[#0a0a0a]/50 backdrop-blur-sm relative overflow-hidden flex flex-col">
-                    <div className="relative z-10 flex-1">
-                        <h3 className="text-lg font-medium text-neutral-500 dark:text-neutral-400 mb-2">Architect (Free)</h3>
-                        <div className="flex items-baseline gap-1 mb-6">
-                            <span className="text-3xl font-bold text-neutral-900 dark:text-white">$0</span>
-                            <span className="text-sm text-neutral-500">/forever</span>
-                        </div>
+                <ul className="space-y-4 mb-8">
+                    <li className="flex items-center gap-3 text-sm text-neutral-600 dark:text-neutral-400">
+                        <Check className="w-4 h-4 text-green-500" /> 1 Project Limit
+                    </li>
+                    <li className="flex items-center gap-3 text-sm text-neutral-600 dark:text-neutral-400">
+                        <Check className="w-4 h-4 text-green-500" /> Basic Vibe Coder (GPT-4o-mini)
+                    </li>
+                    <li className="flex items-center gap-3 text-sm text-neutral-600 dark:text-neutral-400">
+                        <Check className="w-4 h-4 text-green-500" /> Community Support
+                    </li>
+                </ul>
 
-                        <ul className="space-y-4 mb-8">
-                            <li className="flex items-center gap-3 text-sm text-neutral-600 dark:text-neutral-300">
-                                <Check className="w-4 h-4 text-green-500" />
-                                <span>Up to 5 Projects</span>
-                            </li>
-                            <li className="flex items-center gap-3 text-sm text-neutral-600 dark:text-neutral-300">
-                                <Check className="w-4 h-4 text-green-500" />
-                                <span>Manual Deployment Import</span>
-                            </li>
-                            <li className="flex items-center gap-3 text-sm text-neutral-600 dark:text-neutral-300">
-                                <Check className="w-4 h-4 text-green-500" />
-                                <span>Basic Search (No AI)</span>
-                            </li>
-                        </ul>
-                    </div>
-
-                    <div className="mt-auto">
-                        {currentTier === 'free' ? (
-                            <div className="w-full py-3 rounded-xl bg-neutral-100 dark:bg-white/5 border border-neutral-200 dark:border-white/5 text-center text-sm font-medium text-neutral-500">
-                                Current Plan
-                            </div>
-                        ) : (
-                            <div className="w-full py-3 rounded-xl bg-transparent text-center text-sm font-medium text-neutral-600">
-                                Downgrade not available
-                            </div>
-                        )}
-                    </div>
-                </div>
-
-                <div
-                    className={cn(
-                        "p-8 rounded-3xl border transition-all duration-500 relative overflow-hidden group flex flex-col",
-                        planType === 'founder'
-                            ? "border-amber-200 dark:border-amber-500/30 bg-white dark:bg-gradient-to-b dark:from-amber-900/20 dark:to-[#0a0a0a] hover:border-amber-300 dark:hover:border-amber-500/50"
-                            : "border-violet-200 dark:border-[#a78bfa]/30 bg-white dark:bg-gradient-to-b dark:from-[#180260]/20 dark:to-[#0a0a0a] hover:border-violet-300 dark:hover:border-[#a78bfa]/50"
-                    )}
+                <button
+                    disabled={true}
+                    className="w-full py-3 rounded-xl bg-neutral-100 dark:bg-white/5 text-neutral-500 font-medium cursor-not-allowed"
                 >
-                    <div
-                        className={cn(
-                            "absolute inset-0 transition-colors duration-500",
-                            planType === 'founder' ? "bg-amber-50/50 dark:bg-amber-500/5 group-hover:bg-amber-100/50 dark:group-hover:bg-amber-500/10" : "bg-violet-50/50 dark:bg-[#a78bfa]/5 group-hover:bg-violet-100/50 dark:group-hover:bg-[#a78bfa]/10"
-                        )}
-                    />
-
-                    <div className="relative z-10 flex-1">
-                        <div className="flex justify-between items-start mb-2">
-                            <h3
-                                className={cn(
-                                    "text-lg font-medium transition-colors duration-300",
-                                    planType === 'founder' ? "text-amber-600 dark:text-amber-400" : "text-violet-600 dark:text-[#a78bfa]"
-                                )}
-                            >
-                                {planType === 'founder' ? 'Founder Edition' : 'Legend (Pro)'}
-                            </h3>
-                            <span
-                                className={cn(
-                                    "px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-colors duration-300",
-                                    planType === 'founder' ? "bg-amber-100 dark:bg-amber-400 text-amber-800 dark:text-amber-950" : "bg-violet-100 dark:bg-[#a78bfa] text-violet-800 dark:text-[#1e1b4b]"
-                                )}
-                            >
-                                {planType === 'founder' ? 'Limited Time' : 'Recommended'}
-                            </span>
-                        </div>
-
-                        <div className="flex items-baseline gap-1 mb-6 h-10">
-                            {planType === 'founder' ? (
-                                <>
-                                    <span className="text-3xl font-bold text-neutral-900 dark:text-white">€49.99</span>
-                                    <span className="text-sm text-neutral-500">/5 years</span>
-                                </>
-                            ) : (
-                                <>
-                                    <span className="text-3xl font-bold text-neutral-900 dark:text-white">€8.99</span>
-                                    <span className="text-sm text-neutral-500">/month</span>
-                                </>
-                            )}
-                        </div>
-
-                        <ul className="space-y-4 mb-8">
-                            <li className="flex items-center gap-3 text-sm text-neutral-700 dark:text-white font-medium">
-                                <Globe
-                                    className={cn("w-4 h-4 transition-colors", planType === 'founder' ? "text-amber-600 dark:text-amber-400" : "text-violet-600 dark:text-[#a78bfa]")}
-                                />
-                                <span>
-                                    {planType === 'founder' ? '100 Active Projects' : '50 Active Projects'}
-                                </span>
-                            </li>
-                            <li className="flex items-center gap-3 text-sm text-neutral-700 dark:text-white font-medium">
-                                <Github
-                                    className={cn("w-4 h-4 transition-colors", planType === 'founder' ? "text-amber-600 dark:text-amber-400" : "text-violet-600 dark:text-[#a78bfa]")}
-                                />
-                                <span>Auto-Sync with GitHub</span>
-                            </li>
-                            <li className="flex items-center gap-3 text-sm text-neutral-700 dark:text-white font-medium">
-                                <Zap
-                                    className={cn("w-4 h-4 transition-colors", planType === 'founder' ? "text-amber-600 dark:text-amber-400" : "text-violet-600 dark:text-[#a78bfa]")}
-                                />
-                                <span>AI Semantic Search</span>
-                            </li>
-                            <li className="flex items-center gap-3 text-sm text-neutral-700 dark:text-white font-medium">
-                                {planType === 'founder' ? (
-                                    <Gem className="w-4 h-4 text-amber-500 dark:text-amber-400" />
-                                ) : (
-                                    <Shield className="w-4 h-4 text-violet-600 dark:text-[#a78bfa]" />
-                                )}
-                                <span>
-                                    {planType === 'founder' ? 'Exclusive Founder Badge' : 'Priority Support'}
-                                </span>
-                            </li>
-                        </ul>
-                    </div>
-
-                    <div className="mt-auto">
-                        {currentTier === 'pro' || currentTier === 'founder' ? (
-                            <div
-                                className={cn(
-                                    "w-full py-3 rounded-xl border text-center text-sm font-medium",
-                                    planType === 'founder'
-                                        ? "bg-amber-400/20 border-amber-400/30 text-amber-400"
-                                        : "bg-[#a78bfa]/20 border-[#a78bfa]/30 text-[#a78bfa]"
-                                )}
-                            >
-                                Active Plan
-                            </div>
-                        ) : (
-                            <a
-                                href={user ? getCheckoutLink(planType) : '/login'}
-                                className={cn(
-                                    "w-full py-3 rounded-xl text-[#1e1b4b] transition-all font-bold shadow-lg block text-center",
-                                    // Only add lemonsqueezy-button class if user is logged in to trigger overlay
-                                    user ? "lemonsqueezy-button" : "",
-                                    planType === 'founder'
-                                        ? "bg-amber-400 hover:bg-amber-300 shadow-amber-400/20"
-                                        : "bg-[#a78bfa] hover:bg-[#c4b5fd] shadow-[#a78bfa]/20"
-                                )}
-                            >
-                                {user
-                                    ? (planType === 'founder' ? 'Become a Founder' : 'Upgrade to Pro')
-                                    : 'Sign in to Upgrade'
-                                }
-                            </a>
-                        )}
-                    </div>
-                </div>
+                    Current Plan
+                </button>
             </div>
 
-            <div className="text-center mt-8 text-xs text-neutral-600">
-                Secure payments via Lemon Squeezy • Cancel anytime
+            {/* Pro Plan */}
+            <div className="relative p-8 rounded-3xl border border-purple-500/30 bg-purple-900/5 dark:bg-[#1a1033]">
+                <div className="absolute top-0 right-0 bg-purple-500 text-white text-[10px] uppercase font-bold px-3 py-1 rounded-bl-xl rounded-tr-2xl">
+                    Most Popular
+                </div>
+                <h3 className="text-lg font-bold text-purple-900 dark:text-purple-300 mb-2">Pro</h3>
+                <div className="text-3xl font-bold mb-6 text-purple-900 dark:text-white">$19<span className="text-sm font-normal text-neutral-500">/mo</span></div>
+
+                <ul className="space-y-4 mb-8">
+                    <li className="flex items-center gap-3 text-sm text-neutral-700 dark:text-neutral-300">
+                        <Check className="w-4 h-4 text-purple-500" /> Unlimited Projects
+                    </li>
+                    <li className="flex items-center gap-3 text-sm text-neutral-700 dark:text-neutral-300">
+                        <Check className="w-4 h-4 text-purple-500" /> <strong>Google Gemini Flash</strong> (Massive Context)
+                    </li>
+                    <li className="flex items-center gap-3 text-sm text-neutral-700 dark:text-neutral-300">
+                        <Check className="w-4 h-4 text-purple-500" /> Multimodal Inputs (Images)
+                    </li>
+                    <li className="flex items-center gap-3 text-sm text-neutral-700 dark:text-neutral-300">
+                        <Check className="w-4 h-4 text-purple-500" /> Priority Indexing
+                    </li>
+                </ul>
+
+                {isPro ? (
+                    <button
+                        disabled={true}
+                        className="w-full py-3 rounded-xl bg-green-500 text-white font-bold flex items-center justify-center gap-2"
+                    >
+                        <Check className="w-5 h-5" /> Active Plan
+                    </button>
+                ) : (
+                    <button
+                        onClick={() => proVariantId && handleCheckout(proVariantId)}
+                        disabled={loading || !proVariantId}
+                        className="w-full py-3 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold shadow-lg shadow-purple-500/20 transition-all hover:scale-[1.02] disabled:opacity-50 disabled:hover:scale-100"
+                    >
+                        {loading ? 'Redirecting...' : 'Upgrade to Pro'}
+                    </button>
+                )}
+
+                {!proVariantId && (
+                    <p className="text-[10px] text-red-400 mt-2 text-center">
+                        * Configure LEMONSQUEEZY_VARIANT_ID_PRO in .env
+                    </p>
+                )}
             </div>
         </div>
     );

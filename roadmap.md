@@ -37,11 +37,11 @@
   - [x] **Code-Animated Promo**: Created `/promo` page with "Terminal -> Chaos -> Order" animation for video intro.
 
 - **Leveraging Gemini's Superpowers**:
-  - [ ] **Massive Context (1M+ Tokens)**:
-    - [ ] **"Whole Repo" Understanding**: Refactor Vibe Coder to ingest full file structures/content instead of just chunks.
-    - [ ] Eliminate/Reduce RAG complexity by passing full context text.
-  - [ ] **Multimodal Native**:
-    - [ ] **Visual Debugging**: Allow users to paste screenshots of UI errors in chat.
+  - [x] **Massive Context (1M+ Tokens)**:
+    - [x] **"Whole Repo" Understanding**: Refactor Vibe Coder to ingest full file structures/content instead of just chunks.
+    - [x] Eliminate/Reduce RAG complexity by passing full context text.
+  - [x] **Multimodal Native**:
+    - [x] **Visual Debugging**: Allow users to paste screenshots of UI errors in chat.
     - [ ] **Video Analysis**: Analyze short screencasts to offer UX improvements.
 
 ## ✅ Phase 2: Semantic Intelligence (The "Vibe Coder" Core)
@@ -110,6 +110,15 @@
 - **Deep Cost Analysis**: Break down costs per project.
 - **AI Insights**: Analyze journal entries for decision patterns.
 - **Team Collaboration**: Shared projects and comments.
+
+## 🧠 Phase 4: Advanced AI Experiences (Post-Monetization)
+
+- **VibeOnboard (The Human Layer)**:
+  - [ ] **Interactive Onboarding**: AI-generated courses to teach new devs the codebase.
+  - [ ] **Contextual Tutorials**: "How to add a route in this specific project".
+- **Video Analysis (Multimodal Phase 2)**:
+  - [ ] **Screencast Debugging**: Analyze short videos of bugs to suggest fixes.
+  - [ ] **UX Audits**: AI watches user sessions to propose UI improvements.
 
 ### 🧠 New Product Concepts
 
