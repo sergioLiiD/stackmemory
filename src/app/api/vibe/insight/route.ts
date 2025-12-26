@@ -51,31 +51,29 @@ ${f.content}
         }
 
         // 3. Prompt Gemini 2.0 Flash (The "Architect")
-        const systemPrompt = `You are a Senior Principal Software Architect auditing this codebase.
+        const systemPrompt = `You are a Senior Principal Software Architect and UI Designer.
 Your goal is to write a "Project Insight Report" (The Bible) for a new CTO or Investor.
-The report must be comprehensive yet readable.
 
-STRUCTURE OF THE REPORT (Markdown):
+OUTPUT FORMAT:
+- **HTML ONLY**. Do not use Markdown.
+- **Tailwind CSS**: Use extensive Tailwind classes for styling.
+- **Design System**:
+  - Use a dark/tech theme (bg-transparent, text-white, border-white/10).
+  - Use **Grid Layouts** (grid-cols-2) for metrics or comparisons.
+  - Use **Glassmorphism** cards (bg-white/5 backdrop-blur-md border border-white/10 rounded-xl p-6).
+  - Use **Gradients** for headers (bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent).
+  - Use **Badges** for tech stack items.
 
-# [Project Name] - Architectural Insight
+STRUCTURE:
+1. **Executive Container** (One main div wrapping everything).
+2. **Hero Section**: Title, Project Name, and a 1-sentence impact summary.
+3. **Key Features Grid**: A 2-column or 3-column grid of feature cards.
+4. **Tech Stack Pills**: A flex-wrap section of badges.
+5. **Architectural Map**: A descriptive section using borders/arrows if possible, or just clear steps.
+6. **Critical Files**: A list of file cards.
+7. **Improvement Opportunities**: Alert boxes (yellow/red borders).
 
-## 1. Executive Summary
-(2-3 paragraphs. What is this project? What problem does it solve? Who is it for? Write for a non-technical stakeholder.)
-
-## 2. Key Features & Capabilities
-(Bulleted list of high-level features inferred from the code.)
-
-## 3. Technology Stack Analysis
-(Why were these choices made? e.g. "Uses Next.js App Router for...", "Supabase for...", "Tailwind for...")
-
-## 4. Architectural Map
-(Explain the data flow. How does the Frontend talk to the Backend? Where is state managed? How is Auth handled?)
-
-## 5. Critical Files Deep Dive
-(Select the top 5-10 most important files from the file tree and specific content provided. Explain what they do.)
-
-## 6. Improvement Opportunities
-(Based on your audit, suggest 3 high-impact technical improvements or refactors.)
+Make it look like a high-end SaaS dashboard, not a document.
 `;
 
         const userMessage = `

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Sparkles, FileText, RefreshCw, BookOpen, Layers, Lightbulb } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import ReactMarkdown from "react-markdown";
+
 import { useDashboard } from "../../dashboard-context";
 
 interface InsightTabProps {
@@ -117,64 +117,12 @@ export function InsightTab({ project }: InsightTabProps) {
             </div>
 
             {/* The Report */}
+            {/* The Report */}
             <div className="prose prose-invert prose-lg max-w-none">
-                <ReactMarkdown
-                    components={{
-                        // Sections Wrapper (H1 starts a new section typically)
-                        h1: ({ node, ...props }) => (
-                            <div className="relative mt-12 mb-8 pb-6 border-b border-white/10">
-                                <h1 className="text-4xl font-bold bg-gradient-to-r from-white via-neutral-200 to-neutral-400 bg-clip-text text-transparent tracking-tight" {...props} />
-                                <div className="absolute -bottom-px left-0 w-20 h-1 bg-indigo-500/50 rounded-full" />
-                            </div>
-                        ),
-                        h2: ({ node, ...props }) => (
-                            <h2 className="text-2xl font-semibold text-white mt-10 mb-6 flex items-center gap-3" {...props}>
-                                <span className="w-1 h-8 rounded-full bg-indigo-500 block" />
-                                {props.children}
-                            </h2>
-                        ),
-                        h3: ({ node, ...props }) => <h3 className="text-xl font-medium text-indigo-200 mt-8 mb-4 tracking-wide" {...props} />,
-                        p: ({ node, ...props }) => <p className="text-neutral-300 leading-relaxed mb-6 font-light" {...props} />,
-                        ul: ({ node, ...props }) => <ul className="grid gap-3 my-6" {...props} />,
-                        li: ({ node, ...props }) => (
-                            <li className="flex items-start gap-3 p-3 rounded-lg bg-white/5 border border-white/5 hover:border-white/10 transition-colors">
-                                <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-indigo-400 flex-shrink-0 shadow-[0_0_10px_rgba(129,140,248,0.5)]" />
-                                <span className="text-neutral-300 text-sm leading-relaxed">{props.children}</span>
-                            </li>
-                        ),
-                        code: ({ node, className, ...props }: any) => {
-                            const match = /language-(\w+)/.exec(className || '')
-                            const isInline = !match
-                            return isInline ? (
-                                <code className="px-1.5 py-0.5 rounded-md bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 font-mono text-sm" {...props} />
-                            ) : (
-                                <div className="rounded-xl overflow-hidden border border-white/10 bg-[#0F0F0F] my-6 shadow-2xl">
-                                    <div className="flex items-center justify-between px-4 py-2 bg-white/5 border-b border-white/5">
-                                        <div className="flex gap-1.5">
-                                            <div className="w-2.5 h-2.5 rounded-full bg-red-500/20" />
-                                            <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/20" />
-                                            <div className="w-2.5 h-2.5 rounded-full bg-green-500/20" />
-                                        </div>
-                                        <span className="text-xs text-neutral-500 font-mono">{match?.[1]}</span>
-                                    </div>
-                                    <div className="p-4 overflow-x-auto custom-scrollbar">
-                                        <code className={className} {...props} />
-                                    </div>
-                                </div>
-                            )
-                        },
-                        blockquote: ({ node, children, ...props }) => (
-                            <blockquote className="relative p-6 my-8 rounded-2xl bg-gradient-to-br from-indigo-900/20 to-neutral-900/50 border border-indigo-500/20" {...props}>
-                                <div className="absolute top-0 left-0 w-1 h-full bg-indigo-500 rounded-l-2xl opacity-50" />
-                                <div className="text-indigo-100 italic relative z-10">{children}</div>
-                            </blockquote>
-                        ),
-                        a: ({ node, ...props }) => <a className="text-indigo-400 hover:text-indigo-300 underline decoration-indigo-500/30 hover:decoration-indigo-300 transition-all font-medium" {...props} />,
-                        hr: ({ node, ...props }) => <hr className="my-12 border-white/10" {...props} />,
-                    }}
-                >
-                    {report}
-                </ReactMarkdown>
+                <div
+                    className="insight-html-content space-y-8"
+                    dangerouslySetInnerHTML={{ __html: report }}
+                />
             </div>
         </div>
     );
