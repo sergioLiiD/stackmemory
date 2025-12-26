@@ -86,9 +86,20 @@ ${contextContent}
 Please generate the Project Insight Report.
 `;
 
-        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" }); // Default is text output, which is what we want (Markdown)
-        const result = await model.generateContent([systemPrompt, userMessage]);
-        const report = result.response.text();
+        const model = genAI.getGenerativeModel({
+            model: "gemini-2.0-flash",
+            systemInstruction: systemPrompt
+        });
+
+        const result = await model.generateContent([
+            "OUTPUT RULES: Return RAW HTML only. DO NOT wrap in ```html code blocks. DO NOT use Markdown.",
+            userMessage
+        ]);
+
+        let report = result.response.text();
+
+        // CLEANUP: Remove markdown code blocks if Gemini ignores instructions
+        report = report.replace(/```html/g, '').replace(/```/g, '');
 
         // 4. Save to Database
         const { error: updateError } = await supabase
