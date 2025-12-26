@@ -52,7 +52,10 @@ export function PricingTable({
                         <Check className="w-4 h-4 text-green-500" /> 1 Project Limit
                     </li>
                     <li className="flex items-center gap-3 text-sm text-neutral-600 dark:text-neutral-400">
-                        <Check className="w-4 h-4 text-green-500" /> Basic Vibe Coder (GPT-4o-mini)
+                        <Check className="w-4 h-4 text-green-500" /> <strong>20 Chats / Month</strong>
+                    </li>
+                    <li className="flex items-center gap-3 text-sm text-neutral-600 dark:text-neutral-400">
+                        <Check className="w-4 h-4 text-green-500" /> <strong>3 Project Insights / Month</strong>
                     </li>
                     <li className="flex items-center gap-3 text-sm text-neutral-600 dark:text-neutral-400">
                         <Check className="w-4 h-4 text-green-500" /> Community Support
@@ -79,10 +82,13 @@ export function PricingTable({
                         <Check className="w-4 h-4 text-purple-500" /> Unlimited Projects
                     </li>
                     <li className="flex items-center gap-3 text-sm text-neutral-700 dark:text-neutral-300">
-                        <Check className="w-4 h-4 text-purple-500" /> <strong>Google Gemini Flash</strong> (Massive Context)
+                        <Check className="w-4 h-4 text-purple-500" /> <strong>Unlimited Chats & Insights</strong>
                     </li>
                     <li className="flex items-center gap-3 text-sm text-neutral-700 dark:text-neutral-300">
-                        <Check className="w-4 h-4 text-purple-500" /> Multimodal Inputs (Images)
+                        <Check className="w-4 h-4 text-purple-500" /> <strong>Gemini 1.5 Pro & 2.0 Flash</strong>
+                    </li>
+                    <li className="flex items-center gap-3 text-sm text-neutral-700 dark:text-neutral-300">
+                        <Check className="w-4 h-4 text-purple-500" /> Multimodal Inputs (Images/Video)
                     </li>
                 </ul>
 

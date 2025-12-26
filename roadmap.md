@@ -23,6 +23,19 @@
   - [x] **Firebase Configuration**: Store and manage API keys securely.
   - [x] **Project To-Do List**: Simple task tracking within the dashboard.
 
+## 🛡️ Phase 8: Beta Launch Prep (Usage Limits & Guardrails)
+
+- **Usage Controls**:
+  - [x] **Database Schema**: Created `usage_logs` and updated `profiles` with limits.
+  - [x] **Limit Logic**: Implemented `checkAndIncrementLimit` for Feature Gating (Chat/Insight).
+  - [x] **Tier Enforcement**: Project Insight restricted to Pro/Founder tiers.
+- **Admin Analytics 2.0**:
+  - [x] **Real-time Cost Tracking**: Tracking Gemini API spend per request.
+  - [x] **Detailed Breakdown**: Visual split of costs by Model and Feature.
+  - [x] **Usage Logs Table**: Admin view of recent 100 API calls with metadata.
+- **Founder Privileges**:
+  - [x] **Founder Tier**: Created unlimited tier for Admins.
+
 ## 🏆 Special Phase: Operation Gemini (Hackathon Pivot)
 
 **Goal**: Refactor the core AI engine to use Google Gemini 1.5 Pro/Flash to win the Gemini Hackathon.
@@ -117,7 +130,7 @@
 
 ## 🔮 Future Ideas
 
-- **Deep Cost Analysis**: Break down costs per project.
+- [x] **Deep Cost Analysis**: Break down costs per project (Implemented in Admin Dash).
 - **AI Insights**: Analyze journal entries for decision patterns.
 - **Team Collaboration**: Shared projects and comments.
 

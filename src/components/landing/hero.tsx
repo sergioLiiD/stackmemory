@@ -35,7 +35,10 @@ export function Hero() {
                 transition={{ delay: 0.2 }}
                 className="text-5xl md:text-7xl font-bold text-white tracking-tight mb-6 max-w-4xl"
             >
-                Give Your Project <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-600">A Long-Term Memory</span>.
+                The AI Journal That <br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 animate-gradient">
+                    Actually Remembers Your Code.
+                </span>
             </motion.h1>
 
             {/* Subheading */}
@@ -45,8 +48,9 @@ export function Hero() {
                 transition={{ delay: 0.3 }}
                 className="text-lg md:text-xl text-neutral-400 max-w-2xl mb-10 leading-relaxed"
             >
-                Your AI Assistant has amnesia. It doesn't know your stack, your rules, or your history.
-                <span className="text-white font-medium"> StackMemory solves this.</span> We give each of your projects a permanent brain that you can talk to.
+                Powered by <span className="text-white font-medium">Google Gemini 2.0</span>.
+                Vibe Coder reads your <strong>entire repo</strong> (docs, config, code) to give you instant answers,
+                architectural insights, and deep debugging. Stop explaining your stack repeatedly.
             </motion.p>
 
             {/* CTAs */}
