@@ -2,6 +2,8 @@
 import { NextResponse } from 'next/server';
 import { searchSimilarDocuments } from '@/lib/vector-store';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { createClient } from '@/lib/supabase/server';
+import { cookies } from 'next/headers';
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || '');
 
@@ -15,6 +17,20 @@ export async function POST(req: Request) {
 
         if ((!query && !media) || !projectId) {
             return NextResponse.json({ error: 'Query/Media and Project ID are required' }, { status: 400 });
+        }
+
+        const cookieStore = await cookies();
+        const supabase = createClient(cookieStore);
+        const { data: { user } } = await supabase.auth.getUser();
+
+        // 0. Check Limits (Authenticated Only)
+        if (user) {
+            const { allowed, error: limitError } = await import('@/lib/limits').then(m => m.checkAndIncrementLimit(user.id, 'chat'));
+            if (!allowed) {
+                return NextResponse.json({ error: limitError }, { status: 403 });
+            }
+        } else {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
         // 1. Retrieve Context
@@ -104,7 +120,7 @@ INSTRUCTIONS:
 
                 try {
                     const { logUsage } = await import('@/lib/usage-logger');
-                    await logUsage(projectId, 'chat', 'gemini-1.5-flash', estimatedInputTokens, estimatedOutputTokens);
+                    await logUsage(projectId, 'chat', 'gemini-2.0-flash', estimatedInputTokens, estimatedOutputTokens);
                 } catch (e) {
                     console.error("Failed to log chat usage", e);
                 }

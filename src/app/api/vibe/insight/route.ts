@@ -20,6 +20,12 @@ export async function POST(req: Request) {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
+        // A. Check Limits
+        const { allowed, error: limitError } = await import('@/lib/limits').then(m => m.checkAndIncrementLimit(user.id, 'insight'));
+        if (!allowed) {
+            return NextResponse.json({ error: limitError }, { status: 403 });
+        }
+
         // 2. Fetch Massive Context
         // A. File Tree (All paths)
         const { data: allFiles } = await supabase
@@ -99,6 +105,13 @@ Please generate the Project Insight Report.
 
         // CLEANUP: Remove markdown code blocks if Gemini ignores instructions
         report = report.replace(/```markdown/g, '').replace(/```/g, '');
+
+        // LOG USAGE
+        // Calculate rough tokens
+        const inputTokens = Math.ceil((userMessage.length + systemPrompt.length) / 4);
+        const outputTokens = Math.ceil(report.length / 4);
+        const { logUsage } = await import('@/lib/usage-logger');
+        await logUsage(projectId, 'insight', 'gemini-2.0-flash', inputTokens, outputTokens);
 
         // 4. Save to Database
         const { error: updateError } = await supabase

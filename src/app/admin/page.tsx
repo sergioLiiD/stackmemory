@@ -28,7 +28,7 @@ export default async function AdminPage() {
     // 1. Fetch Profiles Stats
     const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
-        .select('id, email, tier, created_at, billing_period_end, custom_project_limit, last_sign_in_at')
+        .select('id, email, tier, created_at, billing_period_end, custom_project_limit, last_sign_in_at, usage_count_chat, usage_limit_chat, usage_count_insight, usage_limit_insight')
         .order('created_at', { ascending: false });
 
     if (profilesError) {
@@ -56,6 +56,13 @@ export default async function AdminPage() {
         .from('embeddings')
         .select('*', { count: 'exact', head: true });
 
+    // 4. Fetch Usage Costs
+    const { data: usageLogs } = await supabase
+        .from('usage_logs')
+        .select('cost_estimated');
+
+    const totalCost = usageLogs?.reduce((acc, log) => acc + (log.cost_estimated || 0), 0) || 0;
+
 
     return (
         <div className="min-h-screen bg-black text-white p-8">
@@ -74,7 +81,7 @@ export default async function AdminPage() {
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <StatCard title="Total Users" value={totalUsers} subtext="Registered accounts" />
                     <StatCard title="Pro Legends" value={proUsers} subtext="€8.99/mo (MRR Impact)" />
-                    <StatCard title="Founders" value={founderUsers} subtext="€49.99 One-time" />
+                    <StatCard title="AI Costs (Est.)" value={`$${totalCost.toFixed(4)}`} subtext="Gemini API Spend" />
                     <StatCard title="Total Projects" value={totalProjects || 0} subtext={`${totalEmbeddings || 0} AI Vectors stored`} />
                 </div>
 
@@ -88,9 +95,9 @@ export default async function AdminPage() {
                                     <tr>
                                         <th className="p-4">Email</th>
                                         <th className="p-4">Tier</th>
-                                        <th className="p-4">Projects</th>
+                                        <th className="p-4">Values</th>
+                                        <th className="p-4">Usage (Mos.)</th>
                                         <th className="p-4">Last Active</th>
-                                        <th className="p-4">Joined</th>
                                         <th className="p-4">Actions</th>
                                     </tr>
                                 </thead>
@@ -112,13 +119,20 @@ export default async function AdminPage() {
                                                     </span>
                                                 </td>
                                                 <td className="p-4 text-neutral-300 font-mono">
-                                                    {projectCounts[user.id] || 0}
+                                                    {projectCounts[user.id] || 0} Proj
+                                                </td>
+                                                <td className="p-4 font-mono text-xs">
+                                                    <div className="flex flex-col gap-1">
+                                                        <span className={user.usage_count_chat >= (user.usage_limit_chat || 20) ? "text-red-400" : "text-neutral-400"}>
+                                                            Chat: {user.usage_count_chat}/{user.usage_limit_chat || 20}
+                                                        </span>
+                                                        <span className={user.usage_count_insight >= (user.usage_limit_insight || 1) ? "text-red-400" : "text-neutral-400"}>
+                                                            Insight: {user.usage_count_insight}/{user.usage_limit_insight || 3}
+                                                        </span>
+                                                    </div>
                                                 </td>
                                                 <td className="p-4 text-xs text-neutral-500">
                                                     {user.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleDateString() : 'Never'}
-                                                </td>
-                                                <td className="p-4 text-neutral-500 text-xs">
-                                                    {new Date(user.created_at).toLocaleDateString()}
                                                 </td>
                                                 <td className="p-4">
                                                     <AdminUserActions
