@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Send, Sparkles, FileCode, ExternalLink, Bot, User, RefreshCcw } from "lucide-react";
+import { Send, Sparkles, FileCode, ExternalLink, Bot, User, RefreshCcw, Image as ImageIcon, X } from "lucide-react";
 import { Project } from "@/data/mock";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -25,7 +25,9 @@ export function AssistantTab({ project }: AssistantTabProps) {
         { id: 'welcome', role: 'assistant', content: "Hello! I'm Vibe Coder. I've analyzed your codebase using semantic search. Ask me anything about your logic, components, or architecture." }
     ]);
     const [isLoading, setIsLoading] = useState(false);
+    const [selectedImage, setSelectedImage] = useState<string | null>(null);
     const scrollRef = useRef<HTMLDivElement>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         if (scrollRef.current) {
@@ -33,13 +35,36 @@ export function AssistantTab({ project }: AssistantTabProps) {
         }
     }, [messages]);
 
+    const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setSelectedImage(reader.result as string);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
     const handleSubmit = async (e?: React.FormEvent) => {
         e?.preventDefault();
-        if (!input.trim() || isLoading) return;
+        if ((!input.trim() && !selectedImage) || isLoading) return;
 
-        const userMsg: Message = { id: Date.now().toString(), role: 'user', content: input };
+        // Optimistically add user message
+        const userMsg: Message = {
+            id: Date.now().toString(),
+            role: 'user',
+            content: input + (selectedImage ? " [Image Uploaded]" : "")
+        };
         setMessages(prev => [...prev, userMsg]);
+
+        // Capture current state for API call
+        const currentInput = input;
+        const currentImage = selectedImage;
+
+        // Clear input state immediately
         setInput("");
+        setSelectedImage(null);
         setIsLoading(true);
 
         const aiMsgId = (Date.now() + 1).toString();
@@ -50,7 +75,11 @@ export function AssistantTab({ project }: AssistantTabProps) {
             const res = await fetch('/api/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ query: userMsg.content, projectId: project.id })
+                body: JSON.stringify({
+                    query: currentInput,
+                    projectId: project.id,
+                    image: currentImage // Send base64 image
+                })
             });
 
             if (!res.ok) throw new Error("Chat failed");
@@ -204,21 +233,59 @@ export function AssistantTab({ project }: AssistantTabProps) {
 
             {/* Input Area */}
             <div className="p-4 bg-white dark:bg-[#0a0a0a] border-t border-neutral-200 dark:border-white/10">
-                <form onSubmit={handleSubmit} className="max-w-3xl mx-auto relative">
+                {selectedImage && (
+                    <div className="mb-2 max-w-3xl mx-auto flex items-start">
+                        <div className="relative group">
+                            <img src={selectedImage} alt="Preview" className="h-16 w-auto rounded-lg border border-neutral-200 dark:border-white/10 object-cover" />
+                            <button
+                                onClick={() => setSelectedImage(null)}
+                                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                                <X className="w-3 h-3" />
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                <form onSubmit={handleSubmit} className="max-w-3xl mx-auto relative flex gap-2">
                     <input
-                        value={input}
-                        onChange={(e) => setInput(e.target.value)}
-                        placeholder="Ask Vibe Coder about your project..."
-                        className="w-full bg-neutral-100 dark:bg-white/5 border border-neutral-200 dark:border-white/5 rounded-2xl pl-4 pr-12 py-3 text-sm focus:outline-none focus:border-purple-500 transition-colors dark:text-white"
-                        autoFocus
+                        type="file"
+                        ref={fileInputRef}
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleImageSelect}
                     />
+
                     <button
-                        type="submit"
-                        disabled={!input.trim() || isLoading}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-purple-600 text-white rounded-xl hover:bg-purple-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className={cn(
+                            "p-3 rounded-2xl transition-colors shrink-0 border border-neutral-200 dark:border-white/5",
+                            selectedImage
+                                ? "bg-purple-100 dark:bg-purple-500/20 text-purple-600 dark:text-purple-400"
+                                : "bg-neutral-100 dark:bg-white/5 text-neutral-500 hover:bg-neutral-200 dark:hover:bg-white/10"
+                        )}
+                        title="Upload Image"
                     >
-                        <Send className="w-4 h-4" />
+                        <ImageIcon className="w-5 h-5" />
                     </button>
+
+                    <div className="relative flex-1">
+                        <input
+                            value={input}
+                            onChange={(e) => setInput(e.target.value)}
+                            placeholder="Ask Vibe Coder (or paste screenshot)..."
+                            className="w-full bg-neutral-100 dark:bg-white/5 border border-neutral-200 dark:border-white/5 rounded-2xl pl-4 pr-12 py-3 text-sm focus:outline-none focus:border-purple-500 transition-colors dark:text-white"
+                            autoFocus
+                        />
+                        <button
+                            type="submit"
+                            disabled={(!input.trim() && !selectedImage) || isLoading}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-purple-600 text-white rounded-xl hover:bg-purple-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        >
+                            <Send className="w-4 h-4" />
+                        </button>
+                    </div>
                 </form>
             </div>
         </div>

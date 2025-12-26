@@ -6,14 +6,12 @@ import { ProcessedFile } from './crawler/github-crawler';
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || '');
 
 export async function generateEmbedding(text: string): Promise<number[]> {
-    console.log(`[DEBUG] generateEmbedding called for text length: ${text.length}`);
     try {
         const model = genAI.getGenerativeModel({ model: "text-embedding-004" });
         const result = await model.embedContent(text);
-        console.log(`[DEBUG] Gemini response received. Embedding length: ${result.embedding.values.length}`);
         return result.embedding.values;
     } catch (e: any) {
-        console.error("[DEBUG] Gemini generateEmbedding ERROR:", e);
+        console.error("Gemini generateEmbedding ERROR:", e);
         throw e;
     }
 }
@@ -26,8 +24,8 @@ export async function storeEmbeddings(projectId: string, files: ProcessedFile[])
 
     for (const file of files) {
         // Simple chunking strategy for now:
-        // 1. If file is small (< 8KB), treat as one chunk.
-        // 2. If larger, we should split. For MVP, let's truncate or just take the first X chars.
+        // 1. If file is small (< 50KB), treat as one chunk.
+        // 2. If larger, we should split.
         // TODO: Implement proper sliding window chunking.
 
         const content = file.content;
@@ -35,9 +33,8 @@ export async function storeEmbeddings(projectId: string, files: ProcessedFile[])
         // Skip empty files
         if (!content.trim()) continue;
 
-        // Naive chunking: Limit to ~8000 tokens (approx 32000 chars) for Ada-002
-        // We'll be much more conservative: 8000 characters per chunk.
-        const chunkSize = 8000;
+        // Chunking: Increased to 50000 chars (~12k tokens) for Gemini Massive Context
+        const chunkSize = 50000;
         const chunks = [];
 
         for (let i = 0; i < content.length; i += chunkSize) {
@@ -46,7 +43,6 @@ export async function storeEmbeddings(projectId: string, files: ProcessedFile[])
 
         for (const chunk of chunks) {
             try {
-                console.log(`[DEBUG] Processing chunk for ${file.path} (Length: ${chunk.length})`);
                 const embedding = await generateEmbedding(chunk);
 
                 const { error } = await supabase.from('embeddings').insert({
@@ -63,9 +59,8 @@ export async function storeEmbeddings(projectId: string, files: ProcessedFile[])
                 });
 
                 if (error) {
-                    console.error(`[DEBUG] Supabase INSERT ERROR for ${file.path}:`, error);
+                    console.error(`Supabase INSERT ERROR for ${file.path}:`, error);
                 } else {
-                    console.log(`[DEBUG] Supabase INSERT SUCCESS for ${file.path}`);
                     totalChunks++;
                     // Log Usage (Approx: 1 token = 4 chars)
                     const estimatedTokens = Math.ceil(chunk.length / 4);
@@ -77,7 +72,7 @@ export async function storeEmbeddings(projectId: string, files: ProcessedFile[])
                     await logUsage(projectId, 'embedding', 'text-embedding-004', estimatedTokens, 0);
                 }
             } catch (e) {
-                console.error(`[DEBUG] Failed to generate embedding for ${file.path}`, e);
+                console.error(`Failed to generate embedding for ${file.path}`, e);
             }
         }
     }
@@ -85,7 +80,7 @@ export async function storeEmbeddings(projectId: string, files: ProcessedFile[])
     return totalChunks;
 }
 
-export async function searchSimilarDocuments(projectId: string, query: string, matchThreshold: number = 0.78, matchCount: number = 5) {
+export async function searchSimilarDocuments(projectId: string, query: string, matchThreshold: number = 0.65, matchCount: number = 20) {
     const cookieStore = await cookies();
     const supabase = createClient(cookieStore);
 
@@ -94,9 +89,9 @@ export async function searchSimilarDocuments(projectId: string, query: string, m
 
     // 2. Search via RPC
     const { data: documents, error } = await supabase.rpc('match_documents', {
-        query_embedding: queryEmbedding, // Corrected from 'embedding' to 'queryEmbedding' to maintain semantic correctness
-        match_threshold: 0.5, // Lowered from 0.7 to 0.5 to catch more results
-        match_count: 5,
+        query_embedding: queryEmbedding,
+        match_threshold: matchThreshold,
+        match_count: matchCount, // Use the passed matchCount (default 20)
         filter_project_id: projectId
     });
 

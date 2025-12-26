@@ -28,9 +28,13 @@
 **Goal**: Refactor the core AI engine to use Google Gemini 1.5 Pro/Flash to win the Gemini Hackathon.
 
 - **Core Brain Transplant (OpenAI -> Gemini)**:
-  - [ ] **Model Switch**: Replace `gpt-4o-mini` with `gemini-1.5-flash` (Speed/Cost) and `gemini-1.5-pro` (Reasoning).
-  - [ ] **SDK Migration**: Implement `@google/generative-ai` SDK.
-  - [ ] **Embeddings**: Switch `text-embedding-ada-002` to Google's `text-embedding-004`.
+  - [x] **Model Switch**: Replaced `gpt-4o-mini` with `gemini-1.5-flash` (Speed/Cost) and `gemini-1.5-pro` (Reasoning).
+  - [x] **SDK Migration**: Implemented `@google/generative-ai` SDK.
+  - [x] **Embeddings**: Switched `text-embedding-ada-002` to Google's `text-embedding-004` (768 dims).
+  - [x] **Branding**: Updated UI to remove OpenAI references and show "Powered by Gemini".
+
+- **Launch Assets**:
+  - [x] **Code-Animated Promo**: Created `/promo` page with "Terminal -> Chaos -> Order" animation for video intro.
 
 - **Leveraging Gemini's Superpowers**:
   - [ ] **Massive Context (1M+ Tokens)**:

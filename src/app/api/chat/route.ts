@@ -11,19 +11,25 @@ export const runtime = 'edge'; // Optional: Use edge runtime for faster streamin
 
 export async function POST(req: Request) {
     try {
-        const { query, projectId } = await req.json();
+        const { query, projectId, image } = await req.json();
 
-        if (!query || !projectId) {
-            return NextResponse.json({ error: 'Query and Project ID are required' }, { status: 400 });
+        if ((!query && !image) || !projectId) {
+            return NextResponse.json({ error: 'Query/Image and Project ID are required' }, { status: 400 });
         }
 
         // 1. Retrieve Context
-        const documents = await searchSimilarDocuments(projectId, query);
+        // Note: For image-only queries, we might still want RAG if there's text, 
+        // OR we might want to just let Gemini analyze the image. 
+        // For now, if there is a query text, we do RAG.
+        let documents: any[] = [];
+        let contextText = "";
 
-        // Format context for the LLM
-        const contextText = documents.map((doc: any) =>
-            `--- FILE: ${doc.file_path} ---\n${doc.content}\n------`
-        ).join('\n\n');
+        if (query && query.length > 5) { // Only RAG if meaningful text
+            documents = await searchSimilarDocuments(projectId, query);
+            contextText = documents.map((doc: any) =>
+                `--- FILE: ${doc.file_path} ---\n${doc.content}\n------`
+            ).join('\n\n');
+        }
 
         const systemPrompt = `You are Vibe Coder, an expert senior software engineer assisting the user with their project.
 You have access to valid code snippets from the project's codebase below.
@@ -33,20 +39,47 @@ ${contextText}
 
 INSTRUCTIONS:
 - Answer the user's question based PRIMARILY on the provided context.
+- If the user provides an IMAGE, analyze it carefully (it might be a UI error, a design, or code screenshot).
 - If the context answers the question, cite the specific files.
 - If the context is missing information, say so, but try to answer based on general knowledge if appropriate (while noting it's not in the visible context).
 - Be concise, professional, and helpful.
 - Use Markdown for code blocks.
 `;
 
-        // 2. Generate Stream
         // 2. Generate Stream with Gemini
         const model = genAI.getGenerativeModel({
             model: "gemini-1.5-flash",
             systemInstruction: systemPrompt
         });
 
-        const result = await model.generateContentStream(query);
+        // Construct Content Parts
+        let promptParts: any[] = [];
+
+        if (query) {
+            promptParts.push(query);
+        }
+
+        if (image) {
+            // content type: 'image/jpeg' or 'image/png'. 
+            // The frontend sends raw base64 dataUrl: "data:image/png;base64,....."
+            // We need to strip the prefix.
+            const base64Data = image.split(',')[1];
+            // Detect mime type
+            const mimeType = image.split(';')[0].split(':')[1];
+
+            promptParts.push({
+                inlineData: {
+                    data: base64Data,
+                    mimeType: mimeType
+                }
+            });
+        }
+
+        if (promptParts.length === 0) {
+            return NextResponse.json({ error: 'No content provided' }, { status: 400 });
+        }
+
+        const result = await model.generateContentStream(promptParts);
 
         // 3. Return Readable Stream
         const readableStream = new ReadableStream({
