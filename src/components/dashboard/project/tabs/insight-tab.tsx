@@ -163,10 +163,10 @@ export function InsightTab({ project }: InsightTabProps) {
                                 </div>
                             )
                         },
-                        blockquote: ({ node, ...props }) => (
-                            <blockquote className="relative p-6 my-8 rounded-2xl bg-gradient-to-br from-indigo-900/20 to-neutral-900/50 border border-indigo-500/20">
+                        blockquote: ({ node, children, ...props }) => (
+                            <blockquote className="relative p-6 my-8 rounded-2xl bg-gradient-to-br from-indigo-900/20 to-neutral-900/50 border border-indigo-500/20" {...props}>
                                 <div className="absolute top-0 left-0 w-1 h-full bg-indigo-500 rounded-l-2xl opacity-50" />
-                                <p className="text-indigo-100 italic relative z-10" {...props} />
+                                <div className="text-indigo-100 italic relative z-10">{children}</div>
                             </blockquote>
                         ),
                         a: ({ node, ...props }) => <a className="text-indigo-400 hover:text-indigo-300 underline decoration-indigo-500/30 hover:decoration-indigo-300 transition-all font-medium" {...props} />,
