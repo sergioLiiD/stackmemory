@@ -14,6 +14,7 @@ import { PromptVaultTab } from "@/components/dashboard/project/tabs/prompt-vault
 import { JournalTab, SnippetsTab } from "@/components/dashboard/project/tabs/journal-tab";
 import { AssistantTab } from "@/components/dashboard/project/tabs/assistant-tab";
 import { GuideTab } from "@/components/dashboard/project/tabs/guide-tab";
+import { InsightTab } from "@/components/dashboard/project/tabs/insight-tab";
 import { TourWizard } from "@/components/onboarding/tour-wizard";
 
 export default function ProjectDetailsPage({ params }: { params: Promise<{ id: string }> }) {
@@ -161,6 +162,7 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
                 {activeTab === 'journal' && <JournalTab project={project} />}
                 {activeTab === 'snippets' && <SnippetsTab project={project} />}
                 {activeTab === 'assistant' && <AssistantTab project={project} />}
+                {activeTab === 'insight' && <InsightTab project={project} />}
                 {activeTab === 'guide' && <GuideTab />}
             </div>
 
