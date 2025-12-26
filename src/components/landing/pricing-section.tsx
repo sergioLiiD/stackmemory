@@ -22,8 +22,8 @@ export function PricingSection() {
                 <div className="dark">
                     <PricingTable
                         currentPlan="free"
-                        proVariantId={process.env.LEMONSQUEEZY_VARIANT_ID_PRO}
-                        ltdVariantId={process.env.LEMONSQUEEZY_VARIANT_ID_LTD}
+                        proVariantId={process.env.NEXT_PUBLIC_LEMONSQUEEZY_VARIANT_ID_PRO}
+                        ltdVariantId={process.env.NEXT_PUBLIC_LEMONSQUEEZY_VARIANT_ID_LTD}
                     />
                 </div>
             </div>

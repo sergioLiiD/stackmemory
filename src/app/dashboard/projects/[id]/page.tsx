@@ -1,15 +1,53 @@
-import { TourWizard } from "@/components/onboarding/tour-wizard";
-import { Sparkles } from "lucide-react";
+"use client";
 
-// ... existing imports
+import { use, useEffect, useState } from "react";
+import { useDashboard } from "@/components/dashboard/dashboard-context";
+import { Project } from "@/data/mock";
+import { ArrowLeft, Pencil, Check, X as XIcon, Sparkles, BrainCircuit, Copy } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { cn } from "@/lib/utils";
+import { ProjectTabs, TabId } from "@/components/dashboard/project/project-tabs";
+import { OverviewTab } from "@/components/dashboard/project/tabs/overview-tab";
+import { StackTab } from "@/components/dashboard/project/tabs/stack-tab";
+import { PromptVaultTab } from "@/components/dashboard/project/tabs/prompt-vault-tab";
+import { JournalTab, SnippetsTab } from "@/components/dashboard/project/tabs/journal-tab";
+import { AssistantTab } from "@/components/dashboard/project/tabs/assistant-tab";
+import { GuideTab } from "@/components/dashboard/project/tabs/guide-tab";
+import { TourWizard } from "@/components/onboarding/tour-wizard";
 
 export default function ProjectDetailsPage({ params }: { params: Promise<{ id: string }> }) {
-    // ... existing hooks
+    const unwrappedParams = use(params);
+    const { projects, updateProject } = useDashboard();
+    const router = useRouter();
+    const [project, setProject] = useState<Project | null>(null);
+    const [activeTab, setActiveTab] = useState<TabId>('overview');
+
+    // Tour State
     const [showTour, setShowTour] = useState(false);
 
-    // ... existing useEffect
+    // Edit State
+    const [isEditing, setIsEditing] = useState(false);
+    const [editName, setEditName] = useState("");
+    const [editDesc, setEditDesc] = useState("");
 
-    // ... existing if (!project) check
+    useEffect(() => {
+        const found = projects.find(p => p.id === unwrappedParams.id);
+        if (found) {
+            setProject(found);
+            setEditName(found.name);
+            setEditDesc(found.description);
+        }
+    }, [unwrappedParams.id, projects]);
+
+    if (!project) {
+        return (
+            <div className="p-10 flex flex-col items-center justify-center min-h-[50vh] text-neutral-500">
+                <p>Project not found or loading...</p>
+                <Link href="/dashboard" className="text-[#a78bfa] hover:underline mt-4">Return to Dashboard</Link>
+            </div>
+        );
+    }
 
     return (
         <div className="max-w-5xl mx-auto pb-20">

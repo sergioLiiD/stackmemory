@@ -39,14 +39,17 @@ export function TourWizard({ projectId, onClose }: { projectId: string; onClose:
                     body: JSON.stringify({ projectId })
                 });
 
-                if (!res.ok) throw new Error("Failed to generate tour");
+                if (!res.ok) {
+                    const errData = await res.json();
+                    throw new Error(errData.error || "Failed to generate tour");
+                }
 
                 const data = await res.json();
                 setTour(data);
                 setLoading(false);
-            } catch (e) {
+            } catch (e: any) {
                 console.error(e);
-                setError("Could not generate tour. Please try again.");
+                setError(e.message || "Could not generate tour. Please try again.");
                 setLoading(false);
             }
         }

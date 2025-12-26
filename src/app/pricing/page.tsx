@@ -9,8 +9,8 @@ import Script from "next/script";
 export default function PricingPage() {
     const { tier } = useSubscription();
 
-    const proVariantId = process.env.LEMONSQUEEZY_VARIANT_ID_PRO;
-    const ltdVariantId = process.env.LEMONSQUEEZY_VARIANT_ID_LTD;
+    const proVariantId = process.env.NEXT_PUBLIC_LEMONSQUEEZY_VARIANT_ID_PRO;
+    const ltdVariantId = process.env.NEXT_PUBLIC_LEMONSQUEEZY_VARIANT_ID_LTD;
 
     return (
         <div className="min-h-screen bg-[#020202] text-white p-6 relative overflow-hidden flex flex-col items-center">
