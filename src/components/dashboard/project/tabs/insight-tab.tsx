@@ -26,7 +26,10 @@ export function InsightTab({ project }: InsightTabProps) {
                 body: JSON.stringify({ projectId: project.id }),
             });
 
-            if (!response.ok) throw new Error("Failed to generate insight");
+            if (!response.ok) {
+                const errData = await response.json();
+                throw new Error(errData.error || "Failed to generate insight");
+            }
 
             const data = await response.json();
 
@@ -38,9 +41,16 @@ export function InsightTab({ project }: InsightTabProps) {
 
             setReport(data.report);
             setLastGenerated(new Date().toISOString());
-        } catch (error) {
+            setReport(data.report);
+            setLastGenerated(new Date().toISOString());
+        } catch (error: any) {
             console.error("Error generating insight:", error);
-            // Show error toast
+            if (error.message.includes('Upgrade to Pro')) {
+                // We could set a specific state here to show a paywall, but for now alert is fine or a toast
+                alert("✨ Premium Feature: Upgrade to Pro (StackMemory+) to generate Deep Dive Insights!");
+            } else {
+                alert("Failed to generate insight. Please try again.");
+            }
         } finally {
             setLoading(false);
         }

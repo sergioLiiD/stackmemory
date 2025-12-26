@@ -56,7 +56,17 @@ export async function checkAndIncrementLimit(userId: string, action: LimitAction
     }
 
     // 4. Check Limits
-    const limit = action === 'chat' ? profile.usage_limit_chat : profile.usage_limit_insight;
+    let limit = action === 'chat' ? profile.usage_limit_chat : profile.usage_limit_insight;
+
+    // Feature Gating: Insight is strictly PRO/FOUNDER only
+    // If user is FREE, limit for insight is effectively 0 (unless they have some override check, but for now strict)
+    if (action === 'insight' && !['pro', 'founder'].includes(profile.tier)) {
+        return {
+            allowed: false,
+            error: `Project Insight is a Premium feature. Upgrade to Pro to generate comprehensive reports.` // Specific error we can catch
+        };
+    }
+
     const current = action === 'chat' ? profile.usage_count_chat : profile.usage_count_insight;
 
     if (current >= limit) {
