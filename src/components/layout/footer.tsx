@@ -56,9 +56,9 @@ export function Footer() {
                             <Image
                                 src="/logo_ideapunkt-t-w.png"
                                 alt="Ideapunkt"
-                                width={80}
-                                height={24}
-                                className="h-4 w-auto grayscale group-hover:grayscale-0 transition-all"
+                                width={160}
+                                height={48}
+                                className="h-8 w-auto grayscale group-hover:grayscale-0 transition-all"
                             />
                         </a>
                     </div>

@@ -4,9 +4,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
 
 const SLIDES = [
-    "95% of new projects are abandoned every year...",
-    "Because developers lose track of how their code works.",
-    "StackMemory turns your codebase into knowledge."
+    "95% of projects rot because context is lost.",
+    "StackMemory + Gemini 2.0 restores that context.",
+    "Welcome to the era of Vibe Coding."
 ];
 
 export function IntroView({ onComplete }: { onComplete: () => void }) {

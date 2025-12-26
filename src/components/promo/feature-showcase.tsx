@@ -1,12 +1,13 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { BookOpen, Code2, MessageSquare } from "lucide-react";
+import { Map, Video, Zap, MessageSquare } from "lucide-react";
 
 const FEATURES = [
-    { icon: BookOpen, title: "Automatic Docs", desc: "Always up to date." },
-    { icon: Code2, title: "Visual Diagrams", desc: "See the big picture." },
-    { icon: MessageSquare, title: "Contextual Chat", desc: "Ask your code anything." },
+    { icon: Map, title: "Vibe Onboard", desc: "Auto-generated Guides." },
+    { icon: Video, title: "Video Debugging", desc: "Fix bugs from screencasts." },
+    { icon: Zap, title: "Project Insight", desc: "Deep architectural analysis." },
+    { icon: MessageSquare, title: "Vibe Coder", desc: "Powered by Gemini 2.0." },
 ];
 
 export function FeatureShowcase() {

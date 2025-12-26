@@ -83,6 +83,13 @@
   - [ ] Compliance (Cookie Banner).
   - [ ] Lifetime Deal Signup & Checkout verification.
 
+- **Phase 12: CLI Evolution (The Local Agent)**:
+  - [ ] **Env Var Drift**: Compare local `.env` vs `.env.example` and alert on missing keys.
+  - [ ] **Infra Scan**: Detect invisible stack (Docker, Makefiles, Justfiles, Redis, Postgres).
+  - [ ] **IDE Sync**: `npx stackmemory pull rules` to sync `.cursorrules` / `.vscode` team settings.
+  - [ ] **Interactive Init**: Wizard based on VibeOnboard guide (`npm install`, key setup).
+  - [ ] **Vibe Check**: Local health report (Git status, uncommitted changes, last build).
+
 ## ✅ Phase 2: Semantic Intelligence (The "Vibe Coder" Core)
 
 - **Foundation: Secure Access**
