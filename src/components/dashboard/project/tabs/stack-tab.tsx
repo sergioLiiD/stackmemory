@@ -1,12 +1,177 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Project, StackItem } from "@/data/mock";
 import { Box, Layers, Plus, Trash2, Save, X, Pencil, ShieldAlert, ArrowUpRight, RefreshCw, FileText, Terminal } from "lucide-react";
-// ... imports ...
+import { useDashboard } from "../../dashboard-context";
+import { supabase } from "@/lib/supabase";
+import { StackModal } from "./stack-modal";
+import { FirebaseConfigCard } from "./firebase-card";
 
 export function StackTab({ project }: { project: Project }) {
-    // ... hooks ...
+    const { updateProject } = useDashboard();
+
+    // Modal state
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingItem, setEditingItem] = useState<StackItem | null>(null);
+    const [editingIndex, setEditingIndex] = useState<number | null>(null);
+    const [updates, setUpdates] = useState<{ [key: string]: { latest?: string, vulnerabilities?: any[] } }>({});
+
+    // Sync state
+    const [isSyncing, setIsSyncing] = useState(false);
+
+    const handleStackSync = async () => {
+        if (!project.repoUrl) return;
+        setIsSyncing(true);
+        try {
+            const res = await fetch('/api/crawl', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    repoUrl: project.repoUrl,
+                    projectId: project.id
+                })
+            });
+
+            if (res.status === 401) {
+                if (confirm("Session expired. Would you like to reconnect GitHub now?")) {
+                    await supabase.auth.signInWithOAuth({
+                        provider: 'github',
+                        options: {
+                            redirectTo: window.location.href,
+                            scopes: 'repo read:user'
+                        }
+                    });
+                }
+                return;
+            }
+
+            const data = await res.json();
+
+            if (res.ok) {
+                if (data.stackUpdate?.updated) {
+                    window.location.reload();
+                } else if (data.stackUpdate?.error) {
+                    alert("Sync warning: Stack update failed - " + data.stackUpdate.error);
+                } else if (data.stackUpdate && !data.stackUpdate.found) {
+                    alert("No package.json found. Crawler analyzed " + data.filesFound + " files.");
+                } else {
+                    window.location.reload();
+                }
+            } else {
+                alert("Failed to sync: " + (data.error || "Unknown error"));
+            }
+        } catch (e) {
+            console.error(e);
+            alert("Error syncing stack");
+        } finally {
+            setIsSyncing(false);
+        }
+    };
+
+    // Check for updates
+    useEffect(() => {
+        const checkUpdates = async () => {
+            if (!project.stack.length) return;
+            const packages = project.stack
+                .filter(item => item.version)
+                .map(item => ({ name: item.name, version: item.version }));
+
+            if (packages.length === 0) return;
+
+            try {
+                const res = await fetch('/api/stack/check-updates', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ packages })
+                });
+                const data = await res.json();
+                if (data.updates) {
+                    const updateMap: { [key: string]: { latest?: string, vulnerabilities?: any[] } } = {};
+                    data.updates.forEach((u: any) => {
+                        updateMap[u.name.toLowerCase()] = {
+                            latest: u.latest,
+                            vulnerabilities: u.vulnerabilities
+                        };
+                    });
+
+                    const hasNewUpdates = data.updates.some((u: any) => u.latest && (!u.vulnerabilities || u.vulnerabilities.length === 0));
+                    const hasVulnerabilities = data.updates.some((u: any) => u.vulnerabilities && u.vulnerabilities.length > 0);
+
+                    if (hasNewUpdates !== project.hasUpdates || hasVulnerabilities !== project.hasVulnerabilities) {
+                        updateProject(project.id, {
+                            hasUpdates: hasNewUpdates,
+                            hasVulnerabilities: hasVulnerabilities
+                        });
+                        if (supabase) {
+                            supabase.from('projects')
+                                .update({
+                                    has_updates: hasNewUpdates,
+                                    has_vulnerabilities: hasVulnerabilities
+                                })
+                                .eq('id', project.id).then();
+                        }
+                    }
+
+                    setUpdates(updateMap);
+                }
+            } catch (error) {
+                console.error("Failed to check updates", error);
+            }
+        };
+
+        checkUpdates();
+    }, [project.stack]);
+
+    // Helper to persist changes
+    const saveStack = async (newStack: StackItem[]) => {
+        // Optimistic update
+        updateProject(project.id, { stack: newStack });
+
+        // DB update
+        if (supabase) {
+            const { error } = await supabase
+                .from('projects')
+                .update({ stack: newStack })
+                .eq('id', project.id);
+
+            if (error) console.error("Error saving stack:", error);
+        }
+    };
+
+    const handleAdd = () => {
+        setEditingItem(null);
+        setEditingIndex(null);
+        setIsModalOpen(true);
+    };
+
+    const handleEditItem = (item: StackItem, index: number) => {
+        setEditingItem(item);
+        setEditingIndex(index);
+        setIsModalOpen(true);
+    };
+
+    const handleModalSave = (item: StackItem) => {
+        let newStack = [...project.stack];
+
+        if (editingIndex !== null) {
+            // Edit existing
+            newStack[editingIndex] = item;
+        } else {
+            // Add new
+            newStack.push(item);
+        }
+
+        saveStack(newStack);
+        setIsModalOpen(false);
+    };
+
+    const handleDelete = (index: number) => {
+        if (confirm("Remove this item?")) {
+            const newStack = project.stack.filter((_, i) => i !== index);
+            saveStack(newStack);
+        }
+    };
 
     const handleDownloadPlan = () => {
         if (Object.keys(updates).length === 0) {
@@ -91,8 +256,6 @@ export function StackTab({ project }: { project: Project }) {
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
     };
-
-    // ... existing handlers ...
 
     return (
         <div>

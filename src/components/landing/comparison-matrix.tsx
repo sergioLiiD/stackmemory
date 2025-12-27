@@ -1,6 +1,7 @@
 "use client";
 
 import { Check, X, Minus } from "lucide-react";
+import { Fragment } from "react";
 
 export function ComparisonMatrix() {
     const features = [
@@ -51,8 +52,8 @@ export function ComparisonMatrix() {
                     </thead>
                     <tbody className="divide-y divide-neutral-200 dark:divide-white/5 bg-white dark:bg-[#0a0a0a]">
                         {features.map((section, sIdx) => (
-                            <>
-                                <tr key={section.category} className="bg-neutral-50/50 dark:bg-white/[0.02]">
+                            <Fragment key={section.category}>
+                                <tr className="bg-neutral-50/50 dark:bg-white/[0.02]">
                                     <td colSpan={3} className="py-2 px-6 text-xs font-bold uppercase tracking-wider text-neutral-400">
                                         {section.category}
                                     </td>
@@ -70,7 +71,7 @@ export function ComparisonMatrix() {
                                         </td>
                                     </tr>
                                 ))}
-                            </>
+                            </Fragment>
                         ))}
                     </tbody>
                 </table>
