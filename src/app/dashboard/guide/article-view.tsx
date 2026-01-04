@@ -10,7 +10,7 @@ export interface GuideArticle {
     title: string;
     description: string; // Short description for card
     icon: any;
-    badge: 'FREE' | 'PRO';
+    badge: 'FREE' | 'PRO' | 'NEW';
     color: string;
     bg: string;
     btnColor: string;
@@ -18,6 +18,7 @@ export interface GuideArticle {
     // Rich Content
     longDescription: string;
     benefits: string[];
+    useCases?: string[]; // New: Real-world scenarios
     tips: string[];
     actionLink?: string;
     actionLabel?: string;
@@ -84,6 +85,20 @@ export function GuideArticleView({ article, onClose }: ArticleViewProps) {
                 {/* Right Panel: Details */}
                 <div className="w-full md:w-3/5 p-8 md:p-12 overflow-y-auto bg-white dark:bg-[#0a0a0a]">
                     <div className="space-y-10">
+                        {/* Use Cases Section (New) */}
+                        {article.useCases && article.useCases.length > 0 && (
+                            <section>
+                                <h3 className="text-sm font-bold text-neutral-400 uppercase tracking-widest mb-6">Real-World Use Cases</h3>
+                                <ul className="grid grid-cols-1 gap-4">
+                                    {article.useCases.map((useCase, idx) => (
+                                        <li key={idx} className="bg-neutral-50 dark:bg-white/5 p-4 rounded-xl border border-neutral-100 dark:border-white/5 text-sm font-medium text-neutral-700 dark:text-neutral-300 leading-relaxed">
+                                            "{useCase}"
+                                        </li>
+                                    ))}
+                                </ul>
+                            </section>
+                        )}
+
                         {/* Benefits Section */}
                         <section>
                             <h3 className="text-sm font-bold text-neutral-400 uppercase tracking-widest mb-6">Why use it?</h3>

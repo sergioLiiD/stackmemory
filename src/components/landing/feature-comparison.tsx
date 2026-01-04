@@ -20,8 +20,17 @@ export function FeatureComparison() {
             items: [
                 { name: "Manual Import", free: true, pro: true, founder: true, tooltip: "Import projects via CLI or manual entry." },
                 { name: "GitHub Auto-Sync", free: false, pro: true, founder: true, tooltip: "Automatically keep your stack updated when you push code." },
+                { name: "CLI Integration", free: true, pro: true, founder: true, tooltip: "Sync, Log, and Ask from your terminal." },
+                { name: "Context Bridges (MCP)", free: "Basic", pro: "AI Advisor", founder: "AI Advisor", tooltip: "Manage MCP Servers and get AI suggestions." },
                 { name: "Global Vault", free: "Read-Only", pro: "Full Access", founder: "Full Access", tooltip: "Store and reuse prompts & snippets across projects." },
                 { name: "Export Reports", free: "PDF Only", pro: "PDF, JSON, CSV", founder: "All Formats", tooltip: "Export your analysis for presentations or audits." },
+            ]
+        },
+        {
+            category: "AI Capabilities",
+            items: [
+                { name: "Multimodal Analysis", free: false, pro: true, founder: true, tooltip: "Upload screenshots and videos for visual debugging." },
+                { name: "Auto-Tagging Journal", free: "Limit 5/mo", pro: "Unlimited", founder: "Unlimited", tooltip: "AI automatically categorizes your journal entries." },
             ]
         },
         {

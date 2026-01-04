@@ -1,7 +1,7 @@
 "use client";
 
 import { BentoCard, BentoHeader } from "@/components/ui/bento-card";
-import { Terminal, BrainCircuit, MessageSquareText, History, Database, Code2, Box, Sparkles, Map as MapIcon } from "lucide-react";
+import { Terminal, BrainCircuit, MessageSquareText, History, Database, Code2, Box, Sparkles, Map as MapIcon, Bot, Network } from "lucide-react";
 import Image from "next/image";
 
 export function FeatureGrid() {
@@ -67,24 +67,25 @@ export function FeatureGrid() {
                     </div>
                 </BentoCard>
 
-                {/* 3. DECISION RECORDS */}
-                <BentoCard className="md:col-span-1 md:row-span-2" delay={0.3}>
+                {/* 3. MULTIMODAL VIBE CODER (New) */}
+                <BentoCard className="md:col-span-1 md:row-span-2 group" delay={0.3}>
                     <div className="h-full flex flex-col">
                         <div className="mb-auto">
-                            <History className="w-8 h-8 text-orange-400 mb-4" />
-                            <BentoHeader title="Living History" />
+                            <Bot className="w-8 h-8 text-fuchsia-400 mb-4" />
+                            <BentoHeader title="Vibe Coder" subtitle="Multimodal AI Agent." />
                             <p className="text-sm text-neutral-500 mt-2">
-                                It remembers *why* you chose Supabase over Firebase.
+                                "Look at this screenshot and fix the padding."
                             </p>
                         </div>
 
-                        <div className="space-y-3 mt-6">
-                            {[1, 2, 3].map((i) => (
-                                <div key={i} className="p-3 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors cursor-default">
-                                    <div className="h-2 w-12 bg-white/20 rounded mb-2" />
-                                    <div className="h-1.5 w-full bg-white/10 rounded" />
-                                </div>
-                            ))}
+                        <div className="mt-6 relative rounded-lg overflow-hidden border border-white/10 aspect-video bg-neutral-900 group-hover:scale-105 transition-transform duration-500">
+                            {/* Mock UI with Glitch */}
+                            <div className="absolute inset-0 bg-[#180260]/20" />
+                            <div className="absolute top-2 left-2 w-3/4 h-2 bg-neutral-800 rounded animate-pulse" />
+                            <div className="absolute top-6 left-2 w-1/2 h-2 bg-neutral-800 rounded" />
+                            <div className="absolute bottom-2 right-2 p-1 bg-red-500/20 text-red-400 text-[8px] rounded border border-red-500/50">
+                                Padding Error
+                            </div>
                         </div>
                     </div>
                 </BentoCard>
@@ -108,17 +109,22 @@ export function FeatureGrid() {
                     </div>
                 </BentoCard>
 
-                {/* 5. PROMPT LIBRARY (New) */}
-                <BentoCard className="md:col-span-2 md:row-span-1 flex flex-row items-center justify-between p-6" delay={0.5}>
+                {/* 5. CONTEXT BRIDGES (New) */}
+                <BentoCard className="md:col-span-2 md:row-span-1 flex flex-row items-center justify-between p-6 bg-gradient-to-r from-cyan-900/20 to-transparent" delay={0.5}>
                     <div className="flex flex-col justify-center max-w-[60%]">
-                        <MessageSquareText className="w-8 h-8 text-pink-400 mb-3" />
-                        <BentoHeader title="Omniscient Search" subtitle="Query across all your projects." />
-                        <p className="text-xs text-neutral-500 mt-2">"In which project did I use Stripe?"</p>
+                        <Network className="w-8 h-8 text-cyan-400 mb-3" />
+                        <BentoHeader title="Context Bridges" subtitle="MCP Server Management." />
+                        <p className="text-xs text-neutral-500 mt-2">Connect your AI to Postgres, GitHub, and more.</p>
                     </div>
                     <div className="relative">
-                        <div className="absolute inset-0 bg-pink-500 blur-3xl opacity-20" />
-                        <div className="relative z-10 bg-black/50 backdrop-blur-md p-3 rounded-lg border border-white/10 text-[10px] text-neutral-300 font-mono w-40">
-                            &gt; Found 'Stripe' in 3 projects.
+                        <div className="absolute inset-0 bg-cyan-500 blur-3xl opacity-10" />
+                        <div className="relative z-10 flex gap-2">
+                            <div className="px-3 py-1.5 rounded-md bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-mono">
+                                stdio
+                            </div>
+                            <div className="px-3 py-1.5 rounded-md bg-white/5 border border-white/10 text-neutral-400 text-xs font-mono">
+                                sse
+                            </div>
                         </div>
                     </div>
                 </BentoCard>

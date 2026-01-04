@@ -12,7 +12,11 @@ import {
     BookOpen,
     Terminal,
     Sparkles,
-    Map as MapIcon
+    Map as MapIcon,
+    Network,
+    Bot,
+    PenTool,
+    Palette
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -24,6 +28,32 @@ export default function GuidePage() {
     const [selectedArticle, setSelectedArticle] = useState<GuideArticle | null>(null);
 
     const guides: GuideArticle[] = [
+        {
+            id: "multimodal-agent",
+            title: "Vibe Coder AI",
+            description: "Your intelligent coding partner with Vision. Explain bugs with screenshots or videos.",
+            longDescription: "Vibe Coder isn't just a text bot. It's a Multimodal AI agent powered by Gemini 2.0 Flash. It can see what you see. Upload screenshots of broken layouts or screen recordings of buggy behaviors, and it will analyze the visual context alongside your code to provide pinpoint solutions.",
+            icon: Bot,
+            badge: "NEW",
+            color: "text-fuchsia-500",
+            bg: "bg-fuchsia-500/10",
+            btnColor: "bg-fuchsia-600 hover:bg-fuchsia-700",
+            actionLink: "/dashboard",
+            benefits: [
+                "Multimodal analysis (Text + Image + Video)",
+                "Full codebase retrieval (RAG)",
+                "Deep reasoning on architectural decisions"
+            ],
+            useCases: [
+                "Upload a screenshot of a CSS misalignment -> AI gives you the Tailwind fix.",
+                "Record a video of a weird animation glitch -> AI analyzes the frame timing.",
+                "Paste a Figma design -> AI generates the React component code."
+            ],
+            tips: [
+                "Use the 'Attach' button in chat to upload media.",
+                "Be specific: 'Look at the top-right corner of this screenshot'."
+            ]
+        },
         {
             id: "project-management",
             title: "Project Management",
@@ -39,6 +69,11 @@ export default function GuidePage() {
                 "Single pane of glass for all your repositories",
                 "Historical tracking of stack changes",
                 "Visualize tech debt and upgrade opportunities"
+            ],
+            useCases: [
+                "Tracking which version of Next.js each of your 10 client projects use.",
+                "Auditing all projects that use a deprecated library.",
+                "Onboarding a freelancer by sharing the project stack view."
             ],
             tips: [
                 "Use the 'Active' vs 'Archived' status to focus on what matters.",
@@ -62,6 +97,11 @@ export default function GuidePage() {
                 "Instant parsing of package.json and other config files",
                 "Keeps your dashboard in sync with your codebase"
             ],
+            useCases: [
+                "Migrating a legacy portfolio of 50 repos into StackMemory in minutes.",
+                "Automatically separating Monorepo workspaces into distinct projects.",
+                "Keeping documentation up-to-date automatically via CI/CD hooks."
+            ],
             tips: [
                 "Connect your GitHub account to enable auto-sync on push.",
                 "For monorepos, you can select specific sub-directories to import separate projects."
@@ -70,8 +110,8 @@ export default function GuidePage() {
         {
             id: "cli-tool",
             title: "StackMemory CLI",
-            description: "Sync your local projects directly from your terminal. Seamless integration for developers.",
-            longDescription: "The CLI is the developer's bridge to StackMemory. It allows you to synchronize your local project stacks, detect dependencies, and update your dashboard without leaving your terminal.",
+            description: "Your terminal companion. Sync, Chat, and Journal without leaving your IDE.",
+            longDescription: "The CLI is the developer's bridge to StackMemory. Sync your stack, ask your codebase questions with `stackmem ask`, log journal entries with `stackmem log`, and verify health with `stackmem doctor`.",
             icon: Terminal,
             badge: "FREE",
             color: "text-slate-500",
@@ -79,13 +119,44 @@ export default function GuidePage() {
             btnColor: "bg-slate-800 hover:bg-slate-900",
             actionLink: "/dashboard",
             benefits: [
-                "Instant sync from local environment",
-                "Integrates with your existing workflow",
-                "Supports CI/CD pipelines for automated docs"
+                "Instant Sync (`stackmem sync`)",
+                "Chat with Codebase (`stackmem ask`)",
+                "Dev Diary & Health Checks"
+            ],
+            useCases: [
+                "Asking 'Where is the Auth logic?' directly from your terminal.",
+                "Logging a quick decision: `stackmem log 'Switched to Supabase for auth' -t arch`.",
+                "Verifying environment health before a deployment."
             ],
             tips: [
-                "Run `npx stackmemory init` in your project root to get started.",
-                "Add `stackmemory sync` to your build script."
+                "Run `stackmem login` to authenticate.",
+                "Use `stackmem ask 'how do I...'` for instant answers."
+            ]
+        },
+        {
+            id: "journal-tags",
+            title: "Journal & Auto-Tagging",
+            description: "A developer diary that knows what you're writing about. Powered by Semantic Analysis.",
+            longDescription: "Don't just write code, document the journey. The Journal allows you to log decisions, bugs, and victories. Our 'Magic Auto-Tag' feature analyzes your entry text and automatically suggests semantic tags (e.g., #refactor, #database) so you don't have to organize manually.",
+            icon: PenTool,
+            badge: "NEW",
+            color: "text-pink-500",
+            bg: "bg-pink-500/10",
+            btnColor: "bg-pink-600 hover:bg-pink-700",
+            actionLink: "/dashboard",
+            benefits: [
+                "Mood tracking (Euphoric, Flow, Stuck, etc.)",
+                "AI-Suggested Tags based on content",
+                "Timeline visualization of your progress"
+            ],
+            useCases: [
+                "Logging a critical bug fix to explain 'Why' it happened for future you.",
+                "Tracking your daily 'State of Mind' to correlate with productivity.",
+                "Generating a weekly report of what you worked on based on tags."
+            ],
+            tips: [
+                "Click the ✨ Magic Wand icon in the modal to auto-tag your entry.",
+                "Use the 'Stuck' mood when you're blocked; it helps identify pain points later."
             ]
         },
         {
@@ -104,9 +175,40 @@ export default function GuidePage() {
                 "Actionable fix recommendations",
                 "Prioritize updates based on severity"
             ],
+            useCases: [
+                "Getting alerted that your version of 'axios' has a known XSS flaw.",
+                "Checking safety before upgrading a major dependency.",
+                "Generating a security compliance report for a client."
+            ],
             tips: [
                 "Check the dashboard weekly for new alerts.",
                 "We highlight 'Critical' vulnerabilities in red so you can triage immediately."
+            ]
+        },
+        {
+            id: "context-bridges",
+            title: "Context Bridges (MCP)",
+            description: "Manage Model Context Protocol servers. Connect your AI agents to your data sources.",
+            longDescription: "Transform StackMemory into your MCP command center. Document active servers, get AI-powered suggestions for your stack, and share configurations with your team for Claude Desktop or Cursor.",
+            icon: Network,
+            badge: "NEW",
+            color: "text-cyan-500",
+            bg: "bg-cyan-500/10",
+            btnColor: "bg-cyan-600 hover:bg-cyan-700",
+            actionLink: "/dashboard",
+            benefits: [
+                "Centralized MCP Server tracking",
+                "AI Advisor for stack-based suggestions",
+                "One-click config generation for teams"
+            ],
+            useCases: [
+                "Connecting your AI to a local Postgres database to query data.",
+                "Standardizing the 'GitHub MCP' configuration for your entire team.",
+                "Discovering that a 'Sentry MCP' exists because you use Sentry."
+            ],
+            tips: [
+                "Check 'Overview' for suggested bridges based on your stack.",
+                "Copy the JSON config to your `claude_desktop_config.json`."
             ]
         },
         {
@@ -126,15 +228,46 @@ export default function GuidePage() {
                 "Standardize your AI persona across projects",
                 "Share common utility functions instantly"
             ],
+            useCases: [
+                "Saving your perfect 'Senior React Engineer' system prompt.",
+                "Storing your standard 'Tailwind Config' snippet.",
+                "Sharing a 'Bug Report' template with the whole team."
+            ],
             tips: [
                 "Create a 'Master System Prompt' for your preferred coding style.",
                 "Store complex regex patterns or API wrappers as snippets for quick access."
             ]
         },
         {
+            id: "design-system",
+            title: "Design System Explorer",
+            description: "Visual overview of your project's UI tokens. Colors, Fonts, and Components.",
+            longDescription: "Consistency is key. The Design System Explorer analyzes your CSS/Tailwind configuration to present a live style guide of your project's colors, typography, and core components.",
+            icon: Palette,
+            badge: "FREE",
+            color: "text-rose-500",
+            bg: "bg-rose-500/10",
+            btnColor: "bg-rose-600 hover:bg-rose-700",
+            actionLink: "/dashboard",
+            benefits: [
+                "Auto-detected Color Palette",
+                "Typography scale visualization",
+                "Ensure brand consistency"
+            ],
+            useCases: [
+                "Checking if you are using the correct shade of 'primary-blue'.",
+                "Onboarding a designer to the project's existing constraints.",
+                "Auditing for accessibility contrast issues."
+            ],
+            tips: [
+                "It works best with TailwindCSS projects.",
+                "Check the 'Overview' tab to see the Design System card."
+            ]
+        },
+        {
             id: "report-export",
             title: "Report Export",
-            description: "Generate professional PDF reports of your stack analysis. Perfect for client handoffs or documentation.",
+            description: "Generate professional PDF reports of your stack analysis. Perfect for client handoffs.",
             longDescription: "Impress clients and stakeholders with professional, branded documentation of your technology stack. Generate PDFs that detail every dependency, version, and security status.",
             icon: Share2,
             badge: "PRO",
@@ -147,6 +280,11 @@ export default function GuidePage() {
                 "Ideal for agency client handoffs",
                 "Keep a paper trail of stack decisions"
             ],
+            useCases: [
+                "Sending a 'Technical Audit' PDF to a potential client.",
+                "Archiving the state of the stack at the end of a sprint (v1.0.0).",
+                "Providing documentation for a due dilligence process."
+            ],
             tips: [
                 "Attach these reports to your invoices as a value-add for clients.",
                 "Use them for internal compliance audits."
@@ -155,7 +293,7 @@ export default function GuidePage() {
         {
             id: "stack-analysis",
             title: "Stack Analysis",
-            description: "Deep dive into your technology choices. Get AI-powered insights on compatibility and upgrades.",
+            description: "Deep dive into your technology choices. AI-powered insights on compatibility.",
             longDescription: "Make informed architectural decisions. Our AI analyzes your combination of technologies to suggest optimizations, compatibility fixes, and modern alternatives.",
             icon: Laptop,
             badge: "FREE",
@@ -168,7 +306,11 @@ export default function GuidePage() {
                 "Discover new tools that work well with your stack",
                 "Plan upgrades with confidence"
             ],
-
+            useCases: [
+                "Evaluating if 'Next.js 14' is compatible with your current 'Auth' library.",
+                "Finding a modern replacement for 'moment.js'.",
+                "Understanding why your build is so slow (dependency bloat)."
+            ],
             tips: [
                 "Run an analysis before adding a major new library to your project.",
                 "Use the 'Alternatives' suggestions to modernize legacy codebases."
@@ -191,6 +333,11 @@ export default function GuidePage() {
                 "Uncover architectural flaws and technical debt",
                 "Shareable report for stakeholders/investors"
             ],
+            useCases: [
+                "Generating a 'Current State' report for a legacy project you just inherited.",
+                "Creating an 'Architecture Document' for compliance.",
+                "Summarizing the entire project for a new CTO."
+            ],
             tips: [
                 "Insights are perfect for summarizing a project before a big refactor.",
                 "Reports are persisted, so you can look back at how your project evolved."
@@ -212,6 +359,11 @@ export default function GuidePage() {
                 " Instant setup instructions for new team members",
                 "Detects required API keys and env vars",
                 "Standardizes documentation across projects"
+            ],
+            useCases: [
+                "Creating a foolproof 'Setup Guide' for Junior Developers.",
+                "Standardizing the onboarding process across 10 microservices.",
+                "Rapidly spinning up a dev environment for a project you haven't touched in 6 months."
             ],
             tips: [
                 "Use this when handing off a project to a client.",
