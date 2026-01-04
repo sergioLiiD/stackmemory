@@ -207,6 +207,95 @@ program
     });
 
 program
+    .command('check')
+    .description('Check for Env Var Drift (missing keys)')
+    .action(() => {
+        console.log(chalk.bold('🔍 Checking Environment Variables...'));
+        const cwd = process.cwd();
+        const envPath = path.join(cwd, '.env');
+        const examplePath = [
+            path.join(cwd, '.env.example'),
+            path.join(cwd, '.env.template'),
+            path.join(cwd, 'env.example')
+        ].find(p => fs.existsSync(p));
+
+        if (!fs.existsSync(envPath)) {
+            console.log(chalk.red('✘ No .env file found.'));
+            return;
+        }
+
+        if (!examplePath) {
+            console.log(chalk.yellow('⚠ No .env.example found. Create one to enable drift checks.'));
+            return;
+        }
+
+        const parseKeys = (content) => {
+            return content.split('\n')
+                .map(l => l.trim())
+                .filter(l => l && !l.startsWith('#'))
+                .map(l => l.split('=')[0].trim())
+                .filter(k => k);
+        };
+
+        const envKeys = parseKeys(fs.readFileSync(envPath, 'utf8'));
+        const exampleKeys = parseKeys(fs.readFileSync(examplePath, 'utf8'));
+
+        const missing = exampleKeys.filter(k => !envKeys.includes(k));
+        const extra = envKeys.filter(k => !exampleKeys.includes(k));
+
+        if (missing.length === 0) {
+            console.log(chalk.green('✔ .env is in sync with example!'));
+        } else {
+            console.log(chalk.red('✘ Missing Keys in .env:'));
+            missing.forEach(k => console.log(chalk.red(`  - ${k}`)));
+        }
+
+        if (extra.length > 0) {
+            console.log(chalk.dim('\nExtra keys in .env (not in example):'));
+            extra.forEach(k => console.log(chalk.dim(`  - ${k}`)));
+        }
+    });
+
+program
+    .command('scan')
+    .description('Scan for invisible infrastructure (Docker, Make, etc.)')
+    .action(() => {
+        console.log(chalk.bold('📡 Scanning Infrastructure...'));
+        const cwd = process.cwd();
+
+        const sigs = {
+            'Docker': ['Dockerfile', 'docker-compose.yml', 'docker-compose.yaml'],
+            'Kubernetes': ['k8s', 'charts', 'helm'], // dirs or files
+            'Make': ['Makefile'],
+            'Just': ['Justfile', 'justfile'],
+            'Vercel': ['vercel.json'],
+            'Netlify': ['netlify.toml'],
+            'Supabase': ['supabase/config.toml'],
+            'Redis': ['redis.conf'], // rudimentary
+            'Prisma': ['prisma/schema.prisma'],
+            'Drizzle': ['drizzle.config.ts', 'drizzle.config.js']
+        };
+
+        const found = [];
+
+        Object.entries(sigs).forEach(([name, patterns]) => {
+            const hit = patterns.some(p => {
+                const full = path.join(cwd, p);
+                return fs.existsSync(full);
+            });
+            if (hit) found.push(name);
+        });
+
+        if (found.length === 0) {
+            console.log(chalk.yellow('No infrastructure signatures found.'));
+        } else {
+            console.log(chalk.green(`✔ Detected Stack:`));
+            found.forEach(f => console.log(chalk.cyan(`  • ${f}`)));
+            console.log(chalk.dim('\nTip: Add these to your Project Stack in the Dashboard.'));
+        }
+    });
+
+program
     .command('doctor')
     .description('Check local environment health')
     .action(() => {

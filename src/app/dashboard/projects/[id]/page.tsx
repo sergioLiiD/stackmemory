@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { ProjectTabs, TabId } from "@/components/dashboard/project/project-tabs";
 import { OverviewTab } from "@/components/dashboard/project/tabs/overview-tab";
 import { StackTab } from "@/components/dashboard/project/tabs/stack-tab";
+import { WorkflowsTab } from "@/components/dashboard/project/tabs/workflows-tab";
 import { PromptVaultTab } from "@/components/dashboard/project/tabs/prompt-vault-tab";
 import { JournalTab, SnippetsTab } from "@/components/dashboard/project/tabs/journal-tab";
 import { AssistantTab } from "@/components/dashboard/project/tabs/assistant-tab";
@@ -159,6 +160,7 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
             <div className="min-h-[400px]">
                 {activeTab === 'overview' && <OverviewTab project={project} />}
                 {activeTab === 'stack' && <StackTab project={project} />}
+                {activeTab === 'workflows' && <WorkflowsTab project={project} />}
                 {activeTab === 'prompts' && <PromptVaultTab project={project} />}
                 {activeTab === 'journal' && <JournalTab project={project} />}
                 {activeTab === 'snippets' && <SnippetsTab project={project} />}

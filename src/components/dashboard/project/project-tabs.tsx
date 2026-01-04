@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { Layout, Box, Terminal, Book, Code2, Sparkles, Waves, BookOpen, Map } from "lucide-react";
 import { motion } from "framer-motion";
 
-export type TabId = 'overview' | 'stack' | 'prompts' | 'journal' | 'snippets' | 'assistant' | 'guide' | 'insight' | 'onboard';
+export type TabId = 'overview' | 'stack' | 'prompts' | 'journal' | 'snippets' | 'assistant' | 'guide' | 'insight' | 'onboard' | 'workflows';
 
 interface ProjectTabsProps {
     activeTab: TabId;
@@ -15,7 +15,8 @@ export function ProjectTabs({ activeTab, onTabChange }: ProjectTabsProps) {
     const tabs: { id: TabId; label: string; icon: any }[] = [
         { id: 'overview', label: 'Overview', icon: Layout },
         { id: 'stack', label: 'Stack', icon: Box },
-        { id: 'prompts', label: 'Context Weaver', icon: Waves }, // Renamed from Prompt Vault
+        { id: 'workflows', label: 'Workflows', icon: Waves }, // Reuse or import new icon if needed
+        { id: 'prompts', label: 'Context Weaver', icon: Waves },
         { id: 'insight', label: 'Insight', icon: BookOpen },
         { id: 'onboard', label: 'Onboarding', icon: Map },
         { id: 'journal', label: 'Journal', icon: Book },

@@ -84,22 +84,22 @@
   - [x] Compliance (Cookie Banner).
   - [ ] Lifetime Deal Signup & Checkout verification.
 
-## 📊 Phase 16: The Watchtower (Analytics) - CURRENT FOCUS
+## 📊 Phase 16: The Watchtower (Analytics) - COMPLETED
 
 - **Goal**: Stop flying blind. Understand user behavior to iterate fast.
-- [ ] **PostHog Integration**:
-  - [ ] Install `posthog-js`.
-  - [ ] Create Client-Side Provider.
-  - [ ] Track Core Events (Sign Up, Project Created, Vibe Coder Usage).
-  - [ ] Create "Feature Usage" dashboard.
+- [x] **PostHog Integration**:
+  - [x] Install `posthog-js`.
+  - [x] Create Client-Side Provider.
+  - [x] Track Core Events (Sign Up, Project Created, Vibe Coder Usage).
+  - [x] Create "Feature Usage" dashboard.
 
-## � Phase 12: CLI Evolution (The Local Agent) - NEXT UP
+## 💻 Phase 12: CLI Evolution (The Local Agent) - COMPLETED
 
-- [ ] **Env Var Drift**: Compare local `.env` vs `.env.example` and alert on missing keys.
-- [ ] **Infra Scan**: Detect invisible stack (Docker, Makefiles, Justfiles, Redis, Postgres).
+- [x] **Env Var Drift**: `stackmemory check` compares local `.env` vs `.env.example`.
+- [x] **Infra Scan**: `stackmemory scan` detects invisible stack (Docker, Makefiles, Justfiles).
 - [ ] **IDE Sync**: `npx stackmemory pull rules` to sync `.cursorrules` / `.vscode` team settings.
 
-## � Phase 17: Low-Code Operations (n8n Integration)
+## 🧩 Phase 17: Low-Code Operations (n8n Integration) - CURRENT FOCUS
 
 **Goal**: Solve "Credential Amnesia" for n8n users.
 

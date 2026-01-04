@@ -1,0 +1,69 @@
+{
+    "name": "My Sample Workflow",
+    "nodes": [
+        {
+            "parameters": {},
+            "name": "Start",
+            "type": "n8n-nodes-base.start",
+            "typeVersion": 1,
+            "position": [
+                250,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "operation": "getAll"
+            },
+            "name": "Stripe",
+            "type": "n8n-nodes-base.stripe",
+            "typeVersion": 1,
+            "position": [
+                450,
+                300
+            ],
+            "credentials": {
+                "stripeApi": {
+                    "id": "1",
+                    "name": "Stripe account"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "operation": "executeQuery",
+                "query": "SELECT * FROM users;"
+            },
+            "name": "Postgres",
+            "type": "n8n-nodes-base.postgres",
+            "typeVersion": 1,
+            "position": [
+                650,
+                300
+            ],
+            "credentials": {
+                "postgres": {
+                    "id": "2",
+                    "name": "Local DB"
+                }
+            }
+        },
+        {
+            "parameters": {},
+            "name": "Gmail",
+            "type": "n8n-nodes-base.gmail",
+            "typeVersion": 1,
+            "position": [
+                850,
+                300
+            ],
+            "credentials": {
+                "gmailOAuth2": {
+                    "id": "3",
+                    "name": "My Email"
+                }
+            }
+        }
+    ],
+    "connections": {}
+}

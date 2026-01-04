@@ -88,6 +88,15 @@ export interface DesignSystem {
     fonts: { name: string; type: 'sans' | 'serif' | 'mono' | 'display' }[];
 }
 
+export interface Workflow {
+    id: string;
+    name: string;
+    content: any; // Raw JSON
+    nodes_index: string[];
+    credentials_needed: string[];
+    created_at?: string;
+}
+
 export interface Project {
     id: string;
     name: string;
@@ -99,6 +108,7 @@ export interface Project {
     deployAccount?: string; // e.g. personal@gmail.com
     stack: StackItem[]; // Changed from string[]
     mcps?: MCPServer[]; // Model Context Protocol Servers
+    workflows?: Workflow[]; // n8n Workflows
     hasUpdates?: boolean;
     lastUpdated: string;
     health: number; // 0-100
