@@ -20,7 +20,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "STACKMEMORY | The Developer's Second Brain",
-  description: "Stop forgetting your stack. The intelligent journal for your coding projects. Features Multimodal AI Vibe Coder, MCP Context Bridges, and Project Insight.",
+  description: "Stop forgetting your stack. The intelligent journal for your coding projects. Features Multimodal AI Vibe Coder, n8n Workflow Brain, MCP Context Bridges, and CLI Guardian.",
   keywords: [
     "developer tools",
     "coding journal",
@@ -32,14 +32,17 @@ export const metadata: Metadata = {
     "gemini 2.0",
     "vibe coding",
     "vibecoders",
-    "cursor alternative",
+    "n8n workflows",
+    "credential management",
+    "cli developer tool",
+    "env var drift",
     "software architecture",
     "documentation generator"
   ],
   authors: [{ name: "StackMemory Team" }],
   openGraph: {
     title: "STACKMEMORY | The Developer's Second Brain",
-    description: "Your Stack's Memory. Features Multimodal AI Agent, MCP Server Management, and automatic documentation.",
+    description: "Your Stack's Memory. Features Multimodal AI, n8n Integration, and automatic documentation.",
     url: "https://stackmemory.app",
     siteName: "StackMemory",
     images: [

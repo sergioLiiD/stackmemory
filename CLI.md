@@ -30,6 +30,26 @@ Mirrors your `scripts` (e.g., `dev`, `build`, `test`) to the project's "Command 
 
 - **Benefit**: Team members can see available commands without opening `package.json`.
 
+### 3. Local Guardian (`check`)
+
+Prevents "It works on my machine" syndrome by detecting Env Var Drift.
+
+```bash
+stackmem check
+```
+
+- **Benefit**: Alerts you if your `.env` is missing keys defined in `.env.example`.
+
+### 4. Infra Scan (`scan`)
+
+Detects "invisible" infrastructure components that aren't in `package.json`.
+
+```bash
+stackmem scan
+```
+
+- **Benefit**: Finds Docker, Makefiles, Vercel configs, and suggests adding them to your Tech Stack.
+
 ---
 
 ## 🔮 The Vision: "The Developer's Trojan Horse"

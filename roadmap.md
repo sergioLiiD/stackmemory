@@ -99,14 +99,14 @@
 - [x] **Infra Scan**: `stackmemory scan` detects invisible stack (Docker, Makefiles, Justfiles).
 - [ ] **IDE Sync**: `npx stackmemory pull rules` to sync `.cursorrules` / `.vscode` team settings.
 
-## 🧩 Phase 17: Low-Code Operations (n8n Integration) - CURRENT FOCUS
+## 🧩 Phase 17: Low-Code Operations (n8n Integration) - COMPLETED
 
 **Goal**: Solve "Credential Amnesia" for n8n users.
 
-- [ ] **Credential Memory**:
-  - [ ] Parse n8n workflow JSON.
-  - [ ] Extract credential references (e.g., "Stripe API", "Supabase Admin").
-  - [ ] Map usage: "This API Key is used in workflows A, B, and C".
+- [x] **Credential Memory**:
+  - [x] Parse n8n workflow JSON.
+  - [x] Extract credential references (e.g., "Stripe API", "Supabase Admin").
+  - [x] Map usage: "This API Key is used in workflows A, B, and C".
 - [ ] **Workflow Logic**:
   - [ ] "Explain this Workflow": AI reads the JSON graph and writes a human summary.
   - [ ] Semantic Search: "Where do we use the SendGrid node?"

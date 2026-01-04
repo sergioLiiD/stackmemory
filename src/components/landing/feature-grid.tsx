@@ -12,7 +12,7 @@ export function FeatureGrid() {
                 <p className="text-neutral-400 max-w-2xl mx-auto">A complete memory system that acts as the bridge between you and your AI.</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-4 md:grid-rows-3 gap-6 w-full md:h-[900px]">
+            <div className="grid grid-cols-1 md:grid-cols-4 md:grid-rows-4 gap-6 w-full md:h-[1200px]">
 
                 {/* 1. MAGIC IMPORT (Large) */}
                 <BentoCard className="md:col-span-2 md:row-span-1 bg-gradient-to-br from-[#180260]/40 to-transparent border-[#180260]/50" delay={0.1}>
@@ -125,6 +125,30 @@ export function FeatureGrid() {
                             <div className="px-3 py-1.5 rounded-md bg-white/5 border border-white/10 text-neutral-400 text-xs font-mono">
                                 sse
                             </div>
+                        </div>
+                    </div>
+                </BentoCard>
+
+                {/* 6. N8N BRAIN (New) */}
+                <BentoCard className="md:col-span-1 md:row-span-1 bg-gradient-to-br from-orange-900/40 to-transparent border-orange-500/20" delay={0.6}>
+                    <div className="h-full flex flex-col">
+                        <Network className="w-6 h-6 text-orange-400 mb-2" />
+                        <BentoHeader title="n8n Brain" subtitle="Fix Credential Amnesia." />
+                        <div className="mt-auto pt-2 grid grid-cols-2 gap-1 opacity-50">
+                            <div className="h-1 bg-orange-500 rounded-full w-full" />
+                            <div className="h-1 bg-neutral-700 rounded-full w-2/3" />
+                        </div>
+                    </div>
+                </BentoCard>
+
+                {/* 7. CLI GUARDIAN (New) */}
+                <BentoCard className="md:col-span-1 md:row-span-1 bg-neutral-900/50" delay={0.7}>
+                    <div className="h-full flex flex-col">
+                        <Terminal className="w-6 h-6 text-white mb-2" />
+                        <BentoHeader title="CLI Guardian" subtitle="Drift Detection." />
+                        <div className="mt-auto bg-black rounded p-2 text-[8px] font-mono text-neutral-400 border border-white/10">
+                            $ stackmem check<br />
+                            <span className="text-red-400">Missing keys...</span>
                         </div>
                     </div>
                 </BentoCard>
