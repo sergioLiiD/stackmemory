@@ -190,6 +190,13 @@
   - [x] Prepare `package.json` for NPM publication (`bin`, `files`).
   - [x] Publish `stackmemory` to NPM Registry.
   - [x] Verify `npm install -g stackmemory` works on clean machine.
+- [x] **CLI "Trojan Horse" v1**
+  - [x] Structure using `commander.js`.
+  - [x] `stackmem login` & `init` flow.
+  - [x] `stackmem sync` (Stack + Scripts).
+  - [x] `stackmem ask` (Chat).
+  - [x] `stackmem log` (Journal).
+  - [x] `stackmem doctor` (Health Check).
 - **CLI Evolution (The Trojan Horse)**:
   - [x] **New Architecture**: Refactored to `commander.js`.
   - [x] **Commands Implemented**: `login`, `init`, `ask`, `log`, `doctor`, `sync`.

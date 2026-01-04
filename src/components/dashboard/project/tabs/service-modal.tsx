@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Service } from "@/data/mock";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Server, Link as LinkIcon, Hash, FileText, LayoutGrid } from "lucide-react";
@@ -9,9 +9,10 @@ interface ServiceModalProps {
     isOpen: boolean;
     onClose: () => void;
     onSave: (service: Service) => void;
+    initialData?: Service | null;
 }
 
-export function ServiceModal({ isOpen, onClose, onSave }: ServiceModalProps) {
+export function ServiceModal({ isOpen, onClose, onSave, initialData }: ServiceModalProps) {
     const [provider, setProvider] = useState("");
     const [name, setName] = useState("");
     const [account, setAccount] = useState("");
@@ -19,6 +20,20 @@ export function ServiceModal({ isOpen, onClose, onSave }: ServiceModalProps) {
     const [url, setUrl] = useState("");
     const [category, setCategory] = useState<Service['category']>('infrastructure');
     const [notes, setNotes] = useState("");
+
+    useEffect(() => {
+        if (initialData) {
+            setProvider(initialData.provider);
+            setName(initialData.name);
+            setAccount(initialData.account);
+            setCost(initialData.cost);
+            setUrl(initialData.url || "");
+            setCategory(initialData.category || 'infrastructure');
+            setNotes(initialData.notes || "");
+        } else {
+            resetForm();
+        }
+    }, [initialData, isOpen]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -65,7 +80,7 @@ export function ServiceModal({ isOpen, onClose, onSave }: ServiceModalProps) {
                     <div className="px-6 py-4 border-b border-white/10 flex justify-between items-center bg-[#121212]">
                         <h2 className="text-lg font-bold text-white flex items-center gap-2">
                             <Server className="w-5 h-5 text-[#a78bfa]" />
-                            Add Service
+                            {initialData ? "Edit Service" : "Add Service"}
                         </h2>
                         <button onClick={handleClose} className="text-neutral-400 hover:text-white transition-colors">
                             <X className="w-5 h-5" />
@@ -73,6 +88,7 @@ export function ServiceModal({ isOpen, onClose, onSave }: ServiceModalProps) {
                     </div>
 
                     <form onSubmit={handleSubmit} className="p-6 space-y-4">
+                        {/* ... existing form fields ... */}
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <label className="text-xs font-semibold uppercase text-neutral-500 flex items-center gap-1">
@@ -171,7 +187,7 @@ export function ServiceModal({ isOpen, onClose, onSave }: ServiceModalProps) {
                                 type="submit"
                                 className="px-6 py-2 bg-[#a78bfa] text-[#1e1b4b] font-bold rounded-lg hover:bg-[#c4b5fd] transition-colors shadow-lg shadow-[#a78bfa]/20"
                             >
-                                Add Service
+                                {initialData ? "Save Changes" : "Add Service"}
                             </button>
                         </div>
 

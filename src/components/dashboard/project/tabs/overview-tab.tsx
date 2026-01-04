@@ -210,6 +210,7 @@ export function OverviewTab({ project }: { project: Project }) {
 
     // Modal State
     const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
+    const [editingServiceIndex, setEditingServiceIndex] = useState<number | null>(null);
 
     // Helper to persist services
     const saveServices = async (newServices: Service[]) => {
@@ -228,7 +229,21 @@ export function OverviewTab({ project }: { project: Project }) {
     };
 
     const handleAddService = (service: Service) => {
-        saveServices([...(project.services || []), service]);
+        if (editingServiceIndex !== null) {
+            // Edit existing
+            const newServices = [...(project.services || [])];
+            newServices[editingServiceIndex] = service;
+            saveServices(newServices);
+            setEditingServiceIndex(null);
+        } else {
+            // Add new
+            saveServices([...(project.services || []), service]);
+        }
+    };
+
+    const handleEditService = (service: Service, index: number) => {
+        setEditingServiceIndex(index);
+        setIsServiceModalOpen(true);
     };
 
     return (
@@ -638,11 +653,15 @@ export function OverviewTab({ project }: { project: Project }) {
                                         {service.category === 'social' ? <Globe className="w-5 h-5" /> : <Server className="w-5 h-5" />}
                                     </div>
                                     <div className="min-w-0">
+                                        {/* Provider displayed prominently above */}
+                                        <div className="text-[10px] font-bold text-blue-400 uppercase tracking-wider mb-0.5">
+                                            {service.provider}
+                                        </div>
                                         <div className="flex items-center gap-2">
                                             <h4 className="text-sm font-bold text-neutral-900 dark:text-white truncate">{service.name}</h4>
                                             {service.category && <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-white/5 border border-white/5 text-neutral-500 uppercase tracking-wide">{service.category}</span>}
                                         </div>
-                                        <div className="flex items-center gap-3 text-xs text-neutral-500">
+                                        <div className="flex items-center gap-3 text-xs text-neutral-500 mt-1">
                                             <span className="truncate max-w-[150px]">{service.account}</span>
                                             {service.url && (
                                                 <a href={service.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-blue-400 hover:underline">
@@ -660,7 +679,14 @@ export function OverviewTab({ project }: { project: Project }) {
                                 </div>
                                 <div className="text-right shrink-0">
                                     <div className="text-xs font-mono text-neutral-400 mb-1">{service.cost}</div>
-                                    <div className="flex gap-2 justify-end opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <div className="flex gap-1 justify-end opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <button
+                                            onClick={() => handleEditService(service, i)}
+                                            className="p-1.5 hover:bg-white/10 rounded-full text-neutral-400 hover:text-white transition-colors"
+                                            title="Edit Service"
+                                        >
+                                            <Pencil className="w-3 h-3" />
+                                        </button>
                                         <button className="p-1.5 hover:bg-white/10 rounded-full text-neutral-400 hover:text-white transition-colors" title="Copy Account">
                                             <Copy className="w-3 h-3" />
                                         </button>
@@ -675,8 +701,9 @@ export function OverviewTab({ project }: { project: Project }) {
 
             <ServiceModal
                 isOpen={isServiceModalOpen}
-                onClose={() => setIsServiceModalOpen(false)}
+                onClose={() => { setIsServiceModalOpen(false); setEditingServiceIndex(null); }}
                 onSave={handleAddService}
+                initialData={editingServiceIndex !== null ? project.services?.[editingServiceIndex] : null}
             />
         </div >
     );

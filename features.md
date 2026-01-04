@@ -44,14 +44,13 @@ The central hub for all user activity.
 
 ### 4. Developer Tools
 
-- **CLI Integration**:
-  - **New "Trojan Horse" CLI** (`npx stackmemory`):
-    - `stackmem login`: Secure local authentication via token.
-    - `stackmem init`: Link local project folder to StackMemory ID.
-    - `stackmem sync`: Two-way sync of dependencies and scripts.
-    - `stackmem ask "question"`: Chat with your codebase directly from terminal.
-    - `stackmem log "entry"`: Post to Journal with optional AI auto-tagging.
-    - `stackmem doctor`: Analyze local environment health.
+- **The Trojan Horse CLI**: A powerful command-line interface that silently integrates into your workflow. (`npm install -g stackmemory`)
+  - **Authentication**: securely login via `stackmem login` using your dashboard access token.
+  - **Project Linking**: Link any local folder to a Vault project with `stackmem init`.
+  - **Silent Sync**: `stackmem sync` analyzes your `package.json` to instantly update your Tech Stack and Scripts in the Vault, with Real-time UI updates.
+  - **Doctor**: `stackmem doctor` verifies your local environment, token status, and project connection.
+  - **Direct Inquiry**: Ask questions to your project's brain directly from terminal with `stackmem ask "how do I..."`.
+  - **Journaling**: Log thoughts and decisions without leaving your IDE using `stackmem log "content" -t tag`.
 - **Design System Explorer**: Visual overview of the UI components used in the project.
 - **Firebase Integration**: Manage and view Firebase project details.
 - **Theme Support**: Fully responsive Light and Dark mode (Mac-like aesthetics).

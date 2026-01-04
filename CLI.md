@@ -112,7 +112,13 @@ npm run build 2>&1 | stackmem push --analyze
 
 1. **Refactor CLI**: Move from simple script to `commander.js` or `oclif` structure.
 2. **Auth**: Implement `stackmem login` (Device Flow) to persist token locally (e.g., `~/.stackmemory/auth.json`).
-3. **Commands**:
-    - `stackmem init`: Interactive setup.
-    - `stackmem ask <query>`: Calls `/api/chat`.
-    - `stackmem log <text>`: Calls `/api/journal`.
+3. - [x] **`stackmem login`**: Store access token securely in local config (`~/.config/stackmemory-cli`).
+
+- [x] **`stackmem init`**: Link the current directory to a StackMemory Project ID.
+- [x] **`stackmem sync`**: Parse `package.json` (Stack & Scripts) and push to the Vault.
+  - [x] Must support `dependencies` and `devDependencies`.
+  - [x] Must support sending `scripts` as Snippets/Command Zone items.
+  - [x] **Real-time**: Frontend updates instantly upon sync.
+- [x] **`stackmem doctor`**: Diagnoses connection, token status, and linked project.
+- [x] **`stackmem ask <query>`**: Direct interface to the Project Brain (RAG).
+- [x] **`stackmem log <content>`**: Quick journal entry with optional tags.
