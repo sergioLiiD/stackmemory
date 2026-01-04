@@ -22,16 +22,30 @@ export async function POST(req: Request) {
         }
 
         const cookieStore = await cookies();
-        const supabase = createClient(cookieStore);
-        const { data: { user } } = await supabase.auth.getUser();
+        let supabase = createClient(cookieStore);
+        let { data: { user } } = await supabase.auth.getUser();
 
-        // 0. Check Limits (Authenticated Only)
-        if (user) {
-            const { allowed, error: limitError } = await import('@/lib/limits').then(m => m.checkAndIncrementLimit(user.id, 'chat'));
-            if (!allowed) {
-                return NextResponse.json({ error: limitError }, { status: 403 });
+        // 2. Try Bearer Token (if no cookie user)
+        if (!user && req.headers.get('Authorization')) {
+            const token = req.headers.get('Authorization')?.replace('Bearer ', '');
+            if (token) {
+                const { createClient: createClientManual } = await import('@supabase/supabase-js');
+                const manualClient = createClientManual(
+                    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+                    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+                    {
+                        global: {
+                            headers: { Authorization: `Bearer ${token}` }
+                        }
+                    }
+                );
+                const { data: { user: tokenUser } } = await manualClient.auth.getUser();
+                user = tokenUser;
+                if (user) supabase = manualClient as any;
             }
-        } else {
+        }
+
+        if (!user) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 

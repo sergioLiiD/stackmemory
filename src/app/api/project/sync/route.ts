@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase/server';
+import { cookies } from 'next/headers';
 
 export async function POST(req: Request) {
     try {
@@ -10,8 +11,40 @@ export async function POST(req: Request) {
             return NextResponse.json({ success: false, error: 'Missing projectId' }, { status: 400 });
         }
 
-        if (!supabase) {
-            return NextResponse.json({ success: false, error: 'Supabase client unavailable' }, { status: 500 });
+        // Auth Strategy: Cookie OR Bearer Token
+        const cookieStore = await cookies();
+        let supabase = createClient(cookieStore);
+        let user;
+
+        // 1. Try Cookie Auth
+        const { data: { user: cookieUser } } = await supabase.auth.getUser();
+        user = cookieUser;
+
+        // 2. Try Bearer Token (if no cookie user)
+        if (!user && req.headers.get('Authorization')) {
+            const token = req.headers.get('Authorization')?.replace('Bearer ', '');
+            if (token) {
+                const { createClient: createClientManual } = await import('@supabase/supabase-js');
+                const manualClient = createClientManual(
+                    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+                    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+                    {
+                        global: {
+                            headers: { Authorization: `Bearer ${token}` }
+                        }
+                    }
+                );
+                const { data: { user: tokenUser } } = await manualClient.auth.getUser();
+                user = tokenUser;
+                if (user) supabase = manualClient as any;
+            }
+        }
+
+        // If still no user, we might want to allow it IF we use a Service Role (Dangerous)
+        // Or we enforce Auth.
+        // For CLI 'sync', forcing auth is safer and consistent with "Trojan Horse" vision.
+        if (!user) {
+            return NextResponse.json({ success: false, error: 'Unauthorized: Please run `stackmem login`' }, { status: 401 });
         }
 
         // 1. Get current project to preserve manual items

@@ -1,136 +1,214 @@
 #!/usr/bin/env node
+const { Command } = require('commander');
+const inquirer = require('inquirer');
+const Conf = require('conf');
+const axios = require('axios');
+const chalk = require('chalk');
+const ora = require('ora');
 const fs = require('fs');
 const path = require('path');
 
-// Colors for console
-const colors = {
-    reset: "\x1b[0m",
-    bright: "\x1b[1m",
-    green: "\x1b[32m",
-    yellow: "\x1b[33m",
-    blue: "\x1b[34m",
-    red: "\x1b[31m",
+const program = new Command();
+const config = new Conf({ projectName: 'stackmemory-cli' });
+const pkg = require('../package.json');
+
+const DEFAULT_API_URL = process.env.STACKMEMORY_API_URL || 'https://stackmemory.app/api';
+
+// --- Helpers ---
+
+const getAuth = () => {
+    const token = config.get('token');
+    const projectId = config.get('projectId') || process.env.STACKMEMORY_PROJECT_ID;
+    return { token, projectId };
 };
 
-const LOG_PREFIX = `${colors.blue}[StackMemory]${colors.reset}`;
-const API_URL = process.env.STACKMEMORY_API_URL || 'https://stackmemory.app/api/project/sync';
-
-// Parse Args
-const args = process.argv.slice(2);
-
-// Find flags
-const helpIdx = args.findIndex(arg => arg === '--help' || arg === '-h');
-const versionIdx = args.findIndex(arg => arg === '--version' || arg === '-v');
-const projectIdx = args.findIndex(arg => arg === '--project' || arg === '-p');
-
-// Show Version
-if (versionIdx !== -1) {
-    const pkg = require('../package.json');
-    console.log(`${pkg.name} version ${pkg.version}`);
-    process.exit(0);
-}
-
-// Show Help
-if (helpIdx !== -1) {
-    console.log(`
-${colors.bright}StackMemory CLI${colors.reset} - The Silent Observer
-
-${colors.yellow}Usage:${colors.reset}
-  npx stackmemory --project <PROJECT_ID>
-
-${colors.yellow}Options:${colors.reset}
-  --project, -p   Required. The Project ID from your StackMemory Dashboard.
-  --help, -h      Show this help message.
-  --version, -v   Show version number.
-
-${colors.yellow}Description:${colors.reset}
-  This tool runs in the background and watches your ${colors.bright}package.json${colors.reset} file.
-  When changes are detected (new dependencies, scripts), it automatically
-  syncs them to your StackMemory Vault.
-
-${colors.yellow}Environment Variables:${colors.reset}
-  STACKMEMORY_PROJECT_ID  (Optional) Auto-fill project ID.
-  STACKMEMORY_API_URL     (Debug) Override API endpoint.
-`);
-    process.exit(0);
-}
-
-const projectId = projectIdx !== -1 ? args[projectIdx + 1] : process.env.STACKMEMORY_PROJECT_ID;
-
-if (!projectId) {
-    console.error(`${LOG_PREFIX} ${colors.red}Error: No Project ID provided.${colors.reset}`);
-    console.log(`Try: ${colors.green}npx stackmemory --help${colors.reset}`);
-    process.exit(1);
-}
-
-console.log(`${LOG_PREFIX} Starting Auto-Sync for Project: ${colors.bright}${projectId}${colors.reset}`);
-console.log(`${LOG_PREFIX} Target API: ${API_URL}`);
-
-const targetFile = path.resolve(process.cwd(), 'package.json');
-
-if (!fs.existsSync(targetFile)) {
-    console.error(`${colors.red}Error: package.json not found in ${process.cwd()}${colors.reset}`);
-    process.exit(1);
-}
-
-// Debounce logic
-let fsWait = false;
-fs.watch(targetFile, (event, filename) => {
-    if (filename && event === 'change') {
-        if (fsWait) return;
-        fsWait = setTimeout(() => {
-            fsWait = false;
-        }, 500); // 500ms debounce
-
-        console.log(`${LOG_PREFIX} ${colors.yellow}Change detected in ${filename}!${colors.reset}`);
-        analyzeAndSync();
-    }
-});
-
-async function analyzeAndSync() {
-    try {
-        const fileContent = fs.readFileSync(targetFile, 'utf8');
-        const pkg = JSON.parse(fileContent);
-
-        // 1. Extract Stack
-        const dependencies = { ...pkg.dependencies, ...pkg.devDependencies, ...pkg.peerDependencies };
-        const stack = Object.keys(dependencies).map(key => ({
-            name: key,
-            version: dependencies[key].replace(/[\^~]/g, '')
-        }));
-
-        // 2. Extract Scripts
-        const scripts = pkg.scripts || {};
-
-        console.log(`${LOG_PREFIX} Found ${stack.length} dependencies & ${Object.keys(scripts).length} scripts.`);
-        console.log(`${LOG_PREFIX} Syncing...`);
-
-        // 3. Send to API
-        const response = await fetch(API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                projectId,
-                stack,
-                scripts
-            })
-        });
-
-        const data = await response.json();
-
-        if (response.ok && data.success) {
-            console.log(`${LOG_PREFIX} ${colors.green}✔ Sync Success!${colors.reset}`);
-        } else {
-            console.error(`${LOG_PREFIX} ${colors.red}Sync Failed: ${data.error || 'Unknown Error'}${colors.reset}`);
+const getApiClient = (token) => {
+    return axios.create({
+        baseURL: DEFAULT_API_URL,
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
         }
+    });
+};
 
-    } catch (error) {
-        console.error(`${LOG_PREFIX} ${colors.red}Error: ${error.message}${colors.reset}`);
-    }
-}
+const spinner = (text) => ora(text);
 
-// Initial scan
-analyzeAndSync();
+// --- Commands ---
 
-// Keep alive
-setInterval(() => { }, 10000);
+program
+    .version(pkg.version)
+    .description('StackMemory CLI - The Silent Observer & Vibe Coder');
+
+program
+    .command('login')
+    .description('Authenticate with StackMemory')
+    .action(async () => {
+        console.log(chalk.blue('StackMemory Login'));
+        console.log('Please grab your access token (JWT) from dashboard/settings (or developer tools for now).');
+
+        const answers = await inquirer.prompt([
+            {
+                type: 'password',
+                name: 'token',
+                message: 'Enter your Access Token:',
+                mask: '*'
+            }
+        ]);
+
+        if (answers.token) {
+            config.set('token', answers.token);
+            console.log(chalk.green('✔ Token saved!'));
+        }
+    });
+
+program
+    .command('init')
+    .description('Initialize this directory with a Project ID')
+    .action(async () => {
+        const answers = await inquirer.prompt([
+            {
+                type: 'input',
+                name: 'projectId',
+                message: 'Enter your Project ID (from URL):',
+                validate: input => input.length > 5 ? true : 'Invalid ID'
+            }
+        ]);
+
+        config.set('projectId', answers.projectId);
+        console.log(chalk.green(`✔ Project ID linked: ${answers.projectId}`));
+    });
+
+program
+    .command('sync')
+    .description('Sync package.json dependencies and scripts')
+    .action(async () => {
+        const { projectId, token } = getAuth();
+        if (!projectId) return console.log(chalk.red('Run "stackmemory init" first.'));
+
+        const targetFile = path.resolve(process.cwd(), 'package.json');
+        if (!fs.existsSync(targetFile)) return console.log(chalk.red('No package.json found.'));
+
+        const s = spinner('Analyzing package.json...').start();
+
+        try {
+            const pkgContent = JSON.parse(fs.readFileSync(targetFile, 'utf8'));
+            const dependencies = { ...pkgContent.dependencies, ...pkgContent.devDependencies };
+            const stack = Object.keys(dependencies).map(key => ({
+                name: key,
+                version: dependencies[key].replace(/[\^~]/g, '')
+            }));
+            const scripts = pkgContent.scripts || {};
+
+            // Use Sync Endpoint (Legacy URL or new route? Using the one in stackmemory.js original)
+            // Original used: https://stackmemory.app/api/project/sync
+            // Let's assume /api/project/sync is compatible or needs update.
+            // Original code used a specific full URL. Let's stick to that for sync.
+            // Actually, let's use the Axios client if possible, but the original script didn't use auth.
+            // For now, let's allow unauthenticated sync with ProjectID only (as before) OR use auth if available.
+
+            if (token) {
+                const client = getApiClient(token);
+                await client.post('/project/sync', { projectId, stack, scripts });
+            } else {
+                await axios.post(`${DEFAULT_API_URL}/project/sync`, {
+                    projectId,
+                    stack,
+                    scripts
+                });
+            }
+
+            s.succeed('Sync Complete!');
+        } catch (e) {
+            s.fail(`Sync Failed: ${e.message}`);
+        }
+    });
+
+program
+    .command('ask <query>')
+    .description('Ask your project brain a question')
+    .action(async (query) => {
+        const { token, projectId } = getAuth();
+        if (!token || !projectId) return console.log(chalk.red('Run "stackmemory login" and "init" first.'));
+
+        const s = spinner('Thinking...').start();
+        const client = getApiClient(token);
+
+        try {
+            // Streaming response is hard with Axios + formatting, let's use fetch for stream or simplified POST
+            // The /api/chat returns a stream. For CLI, simpler to wait or handle stream.
+            // Let's try simple POST and buffering for now (MVP).
+
+            // Actually, fetch API is available in Node 18+.
+            const response = await fetch(`${DEFAULT_API_URL}/chat`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ query, projectId })
+            });
+
+            if (!response.ok) throw new Error(response.statusText);
+
+            s.stop();
+
+            // Stream reader
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+
+            process.stdout.write(chalk.cyan('AI: '));
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                process.stdout.write(decoder.decode(value));
+            }
+            process.stdout.write('\n');
+
+        } catch (e) {
+            s.fail(`Error: ${e.message}`);
+        }
+    });
+
+program
+    .command('log <content>')
+    .description('Log an entry to your Journal')
+    .option('-t, --tags <tags>', 'Comma separated tags')
+    .action(async (content, options) => {
+        const { token, projectId } = getAuth();
+        if (!token || !projectId) return console.log(chalk.red('Run "stackmemory login" and "init" first.'));
+
+        const s = spinner('Logging to Journal...').start();
+        const client = getApiClient(token);
+
+        try {
+            await client.post('/vibe/journal', {
+                content,
+                projectId,
+                tags: options.tags ? options.tags.split(',') : [],
+                title: 'CLI Entry'
+            });
+            s.succeed('Entry Saved!');
+        } catch (e) {
+            s.fail(`Failed: ${e.response?.data?.error || e.message}`);
+        }
+    });
+
+program
+    .command('doctor')
+    .description('Check local environment health')
+    .action(() => {
+        console.log(chalk.bold('StackMemory Doctor 🩺'));
+        const { projectId } = getAuth();
+
+        if (projectId) console.log(chalk.green(`✔ Project ID linked: ${projectId}`));
+        else console.log(chalk.red('✘ No Project ID linked (Run "stackmemory init")'));
+
+        if (fs.existsSync('package.json')) console.log(chalk.green('✔ package.json found'));
+        else console.log(chalk.red('✘ package.json missing'));
+
+        // Add more checks here
+    });
+
+program.parse(process.argv);

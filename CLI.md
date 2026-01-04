@@ -1,46 +1,118 @@
-# 👻 StacKMemory CLI
+# StackMemory CLI Evolution 🚀
 
-Automate your dashboard documentation using the StacKMemory Watcher.
-This CLI tool watches your local `package.json` and automatically syncs your:
+This document outlines the capabilities of the StackMemory Command Line Interface (CLI), currently known as the "Trojan Horse" for developer productivity.
 
-1. **Tech Stack**: Dependencies and versions.
-2. **Command Zone**: Custom transcripts (`npm run scripts`).
+## Status: Active Development
 
-## 🚀 Quick Start
+- **Package**: `stackmemory` (NPM)
+- **Current Version**: `0.0.2`
+- **Command**: `npx stackmemory`
 
-### 1. Installation
+---
 
-The CLI is included in the project. No global installation required if you are working within the repo.
+## 🏗 Current Capabilities (The Foundation)
 
-```bash
-# It uses the local script at src/cli/watch.js
-```
+Currently, the CLI serves as a **Sync Agent** that connects your local environment to the StackMemory Dashboard.
 
-### 2. Usage
+### 1. Auto-Absorb via `sync`
 
-Run the watcher in a separate terminal window while you work:
+Automatically scans `package.json` to extract dependencies and syncs them to your project's "Tech Stack".
 
 ```bash
-npm run cli:watch
+npx stackmemory --project <ID>
 ```
 
-Output should look like this:
+- **Benefit**: No manual data entry. Your dashboard always reflects the actual code state.
 
-```text
-[StacKMemory CLI] Starting Auto-Sync Watcher... 👻
-[StacKMemory CLI] Watching package.json for changes...
-[StacKMemory CLI] Found 25 deps & 6 scripts.
-[StacKMemory CLI] Syncing to Dashboard API...
-[StacKMemory CLI] ✔ Sync Success! Updated Command Zone.
+### 2. Script Sync
+
+Mirrors your `scripts` (e.g., `dev`, `build`, `test`) to the project's "Command Zone".
+
+- **Benefit**: Team members can see available commands without opening `package.json`.
+
+---
+
+## 🔮 The Vision: "The Developer's Trojan Horse"
+
+We aim to remove friction by meeting the developer where they live: **The Terminal**.
+
+### 🛠 High-Priority Requests
+
+#### 1. Contextual Q&A (`ask`)
+
+Query your StackMemory brain directly from the terminal.
+
+```bash
+stackmem ask "How do I add a new service to the docker-compose?"
 ```
 
-### 3. Features
+- **How it works**: Uses RAG against your indexed codebase (Vector Store) to provide an answer without leaving the terminal.
+- **Output**: Returns concise markdown-formatted answers with code snippets.
 
-- **Auto-Discovery**: Detects new packages installed via `npm install` and adds them to your Stack tab.
-- **Script Sync**: Detects changes to `scripts` in `package.json` and pushes them to your "Command Zone" card in the Dashboard.
-- **Real-time**: Updates continuously as you save `package.json`.
+#### 2. Journal Logging (`log`)
 
-## 🛠 Troubleshooting
+Capture thoughts, bugs, or decisions instantly.
 
-- **"API not reachable"**: Ensure your Next.js dev server is running on `http://localhost:3000`.
-- **"Project ID mismatch"**: Currently defaults to Project ID '1'. (Configure in `src/cli/watch.js` if needed).
+```bash
+stackmem log "Fixed the cert issue on staging. It was a missing env var." --tags bugfix,infra
+```
+
+- **How it works**: Sends text to the Journal API.
+- **Magic**: Automatically applies "Semantic Tags" using the new Auto-Tag feature.
+
+#### 3. Semantic History Search (`history`)
+
+Forget `Ctrl+R`. Find commands by *meaning*, not just syntax.
+
+```bash
+stackmem history "certificate ssl configuration"
+```
+
+- **How it works**: Indexes shell history ~bash_history~ / ~zsh_history~ embedded with meaning.
+- **Output**: Returns the exact command you ran 3 weeks ago: `openssl req -x509 -newkey rsa:4096 ...`
+
+#### 4. Repo & Stack Update (`update`)
+
+Force a re-scan of the codebase state.
+
+```bash
+stackmem update
+```
+
+- **Action**: Triggers the GitHub Crawler server-side (or local analysis) to refresh the "Project Insight" and "Security Insights".
+
+### 🚀 Future Moonshots
+
+#### 5. Local Agent Guidelines
+
+Verify if the local environment matches the team's standards.
+
+```bash
+stackmem doctor
+```
+
+- **Checks**:
+  - `node` version matches `.nvmrc`?
+  - `.env` keys missing compared to `.env.example`?
+  - Pending git commits?
+
+#### 6. "Push to Stack" (Error Piping)
+
+Pipe error logs directly to the AI for analysis.
+
+```bash
+npm run build 2>&1 | stackmem push --analyze
+```
+
+- **Result**: Creates a Journal Entry with the crash log + AI Analysis of the fix.
+
+---
+
+## Technical Implementation Plan
+
+1. **Refactor CLI**: Move from simple script to `commander.js` or `oclif` structure.
+2. **Auth**: Implement `stackmem login` (Device Flow) to persist token locally (e.g., `~/.stackmemory/auth.json`).
+3. **Commands**:
+    - `stackmem init`: Interactive setup.
+    - `stackmem ask <query>`: Calls `/api/chat`.
+    - `stackmem log <text>`: Calls `/api/journal`.

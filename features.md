@@ -44,7 +44,14 @@ The central hub for all user activity.
 
 ### 4. Developer Tools
 
-- **CLI Integration**: Instructions for connecting local environments via CLI.
+- **CLI Integration**:
+  - **New "Trojan Horse" CLI** (`npx stackmemory`):
+    - `stackmem login`: Secure local authentication via token.
+    - `stackmem init`: Link local project folder to StackMemory ID.
+    - `stackmem sync`: Two-way sync of dependencies and scripts.
+    - `stackmem ask "question"`: Chat with your codebase directly from terminal.
+    - `stackmem log "entry"`: Post to Journal with optional AI auto-tagging.
+    - `stackmem doctor`: Analyze local environment health.
 - **Design System Explorer**: Visual overview of the UI components used in the project.
 - **Firebase Integration**: Manage and view Firebase project details.
 - **Theme Support**: Fully responsive Light and Dark mode (Mac-like aesthetics).

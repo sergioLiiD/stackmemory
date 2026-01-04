@@ -190,6 +190,11 @@
   - [x] Prepare `package.json` for NPM publication (`bin`, `files`).
   - [x] Publish `stackmemory` to NPM Registry.
   - [x] Verify `npm install -g stackmemory` works on clean machine.
+- **CLI Evolution (The Trojan Horse)**:
+  - [x] **New Architecture**: Refactored to `commander.js`.
+  - [x] **Commands Implemented**: `login`, `init`, `ask`, `log`, `doctor`, `sync`.
+  - [x] **Journal Integration**: Developers can log entries from terminal.
+  - [x] **Q&A**: Semantic search via `stackmem ask`.
 - **Onboarding Experience**:
   - [x] "Connect CLI" Modal with instructions.
   - [x] "Empty State" for new users (Quick Start Guide).
