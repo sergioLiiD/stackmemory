@@ -92,6 +92,22 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
         }
 
         fetchProjects();
+
+        // Realtime Subscription
+        const channel = supabase?.channel('projects-realtime')
+            .on(
+                'postgres_changes',
+                { event: '*', schema: 'public', table: 'projects' },
+                (payload) => {
+                    console.log('Realtime update:', payload);
+                    fetchProjects(); // Re-fetch on any change
+                }
+            )
+            .subscribe();
+
+        return () => {
+            supabase?.removeChannel(channel as any);
+        };
     }, []);
 
     const addProject = async (project: Project) => {
