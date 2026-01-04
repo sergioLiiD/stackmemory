@@ -2,7 +2,7 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Terminal, Copy, Check, ChevronRight, Key } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 
 interface CliInstructionsModalProps {
@@ -13,6 +13,19 @@ interface CliInstructionsModalProps {
 
 export function CliInstructionsModal({ isOpen, onClose, projectId }: CliInstructionsModalProps) {
     const [copiedStep, setCopiedStep] = useState<number | null>(null);
+    const [token, setToken] = useState<string>("");
+
+    useEffect(() => {
+        const getToken = async () => {
+            const { createClient } = await import("@/lib/supabase/client");
+            const supabase = createClient();
+            const { data } = await supabase.auth.getSession();
+            if (data.session) {
+                setToken(data.session.access_token);
+            }
+        };
+        getToken();
+    }, []);
 
     const copyToClipboard = (text: string, stepIndex: number) => {
         navigator.clipboard.writeText(text);
@@ -22,15 +35,22 @@ export function CliInstructionsModal({ isOpen, onClose, projectId }: CliInstruct
 
     const steps = [
         {
-            title: "Run the Magic Command",
-            description: "Go to your project's root folder and run this single command. No installation required.",
-            command: `npx stackmemory --project ${projectId}`,
+            title: "Install & Login",
+            description: "Install the Trojan Horse CLI and authenticate.",
+            command: "npm install -g stackmemory && stackmem login",
             icon: Terminal
         },
         {
-            title: "Watch it Sync",
-            description: "The CLI will silently watch your package.json and sync any dependency changes or scripts instantly.",
-            command: "Parsing package.json... Sync Success! ✔",
+            title: "Your Access Token",
+            description: "Paste this when prompted by 'stackmem login'.",
+            command: token || "Loading token...",
+            icon: Key,
+            isToken: true
+        },
+        {
+            title: "Link Project",
+            description: "Run this in your project root to link it.",
+            command: `stackmem init`, // We can auto-fill input but the command is interactive
             icon: ChevronRight
         }
     ];
@@ -80,7 +100,11 @@ export function CliInstructionsModal({ isOpen, onClose, projectId }: CliInstruct
 
                                     <div className="relative pl-8 group">
                                         <div className="bg-black/50 border border-white/10 rounded-lg p-3 font-mono text-sm text-[#a78bfa] flex items-center justify-between">
-                                            <span>{step.command}</span>
+                                            <span className={step.isToken ? "blur-sm group-hover:blur-none transition-all duration-300 select-all" : ""}>
+                                                {step.command.length > 50 && step.isToken
+                                                    ? step.command.substring(0, 20) + "..." + step.command.substring(step.command.length - 20)
+                                                    : step.command}
+                                            </span>
                                             <button
                                                 onClick={() => copyToClipboard(step.command, index)}
                                                 className="p-1.5 rounded-md hover:bg-white/10 text-neutral-500 hover:text-white transition-colors"
