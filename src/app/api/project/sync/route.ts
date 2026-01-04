@@ -3,9 +3,11 @@ import { createClient } from '@/lib/supabase/server';
 import { cookies } from 'next/headers';
 
 export async function POST(req: Request) {
+    console.log("SYNC API: Request Received");
     try {
         const body = await req.json();
         const { projectId, stack, scripts } = body;
+        console.log("SYNC API: Body parsed", { projectId });
 
         if (!projectId) {
             return NextResponse.json({ success: false, error: 'Missing projectId' }, { status: 400 });
@@ -19,32 +21,38 @@ export async function POST(req: Request) {
         // 1. Try Cookie Auth
         const { data: { user: cookieUser } } = await supabase.auth.getUser();
         user = cookieUser;
+        console.log("SYNC API: Cookie User", user?.id);
 
         // 2. Try Bearer Token (if no cookie user)
         if (!user && req.headers.get('Authorization')) {
+            console.log("SYNC API: Checking Bearer Token");
             const token = req.headers.get('Authorization')?.replace('Bearer ', '');
             if (token) {
-                const { createClient: createClientManual } = await import('@supabase/supabase-js');
-                const manualClient = createClientManual(
-                    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-                    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-                    {
-                        global: {
-                            headers: { Authorization: `Bearer ${token}` }
+                try {
+                    const { createClient: createClientManual } = await import('@supabase/supabase-js');
+                    const manualClient = createClientManual(
+                        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+                        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+                        {
+                            global: {
+                                headers: { Authorization: `Bearer ${token}` }
+                            }
                         }
-                    }
-                );
-                const { data: { user: tokenUser } } = await manualClient.auth.getUser();
-                user = tokenUser;
-                if (user) supabase = manualClient as any;
+                    );
+                    const { data: { user: tokenUser }, error: tokenError } = await manualClient.auth.getUser();
+                    if (tokenError) console.error("SYNC API: Token Error", tokenError);
+                    user = tokenUser;
+                    if (user) supabase = manualClient as any;
+                    console.log("SYNC API: Token User found", user?.id);
+                } catch (err) {
+                    console.error("SYNC API: Manual Client Error", err);
+                }
             }
         }
 
-        // If still no user, we might want to allow it IF we use a Service Role (Dangerous)
-        // Or we enforce Auth.
-        // For CLI 'sync', forcing auth is safer and consistent with "Trojan Horse" vision.
         if (!user) {
-            return NextResponse.json({ success: false, error: 'Unauthorized: Please run `stackmem login`' }, { status: 401 });
+            console.log("SYNC API: No User Found");
+            return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
         }
 
         // 1. Get current project to preserve manual items
@@ -107,12 +115,16 @@ export async function POST(req: Request) {
         // 3. Update It
         const { error: stackUpdateError } = await supabase
             .from('projects')
-            .update({ stack: mergedStack, last_updated: new Date().toISOString() })
+            .update({ stack: mergedStack, updated_at: new Date().toISOString() })
             .eq('id', projectId);
 
         if (stackUpdateError) {
             console.error("Stack update error:", stackUpdateError);
-            return NextResponse.json({ success: false, error: 'Update failed' }, { status: 500 });
+            return NextResponse.json({
+                success: false,
+                error: 'Update failed: ' + stackUpdateError.message || stackUpdateError.details,
+                details: stackUpdateError
+            }, { status: 500 });
         }
 
         // 2. Sync Scripts as Snippets
@@ -148,6 +160,14 @@ export async function POST(req: Request) {
         });
 
     } catch (error: any) {
-        return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+        return NextResponse.json({
+            success: false,
+            error: error.message,
+            stack: error.stack,
+            debug: {
+                hasUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
+                hasKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+            }
+        }, { status: 500 });
     }
 }

@@ -120,7 +120,8 @@ program
 
             s.succeed('Sync Complete!');
         } catch (e) {
-            s.fail(`Sync Failed: ${e.message}`);
+            if (e.response?.data) console.error(chalk.red('Debug Info:'), JSON.stringify(e.response.data, null, 2));
+            s.fail(`Sync Failed: ${e.response?.data?.error || e.message}`);
         }
     });
 
@@ -191,6 +192,7 @@ program
             });
             s.succeed('Entry Saved!');
         } catch (e) {
+            console.error(chalk.red('Debug Info:'), JSON.stringify(e.response?.data || {}, null, 2));
             s.fail(`Failed: ${e.response?.data?.error || e.message}`);
         }
     });
