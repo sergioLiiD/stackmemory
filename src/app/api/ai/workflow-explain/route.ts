@@ -17,7 +17,8 @@ export async function POST(req: Request) {
         }
 
         const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        // User reported 1.5 deprecated/not found, switching to 2.0
+        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
 
         let promptParts: any[] = [];
 
