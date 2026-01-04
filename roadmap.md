@@ -18,6 +18,7 @@
   - [x] Journal Tab fully functional.
   - [x] "New Entry" Modal with Title, Content (Markdown), and Tags.
   - [x] Timeline visualization.
+  - [x] **Automatic Semantic Tagging**: AI analyzes functionality to suggest relevant tags.
 
 - **Modules**:
   - [x] **Firebase Configuration**: Store and manage API keys securely.

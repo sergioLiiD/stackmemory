@@ -44,6 +44,7 @@ export function JournalTab({ project }: { project: Project }) {
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 onSave={handleSaveEntry}
+                projectId={project.id}
             />
 
             <div className="border-l border-neutral-200 dark:border-white/10 ml-4 space-y-12">

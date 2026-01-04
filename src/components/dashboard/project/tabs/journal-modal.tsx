@@ -3,18 +3,21 @@
 import { useState } from "react";
 import { JournalEntry } from "@/data/mock";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Book, Calendar } from "lucide-react";
+import { X, Book, Calendar, Sparkles } from "lucide-react";
+import { useDashboard } from "../../dashboard-context";
 
 interface JournalModalProps {
     isOpen: boolean;
     onClose: () => void;
     onSave: (entry: JournalEntry) => void;
+    projectId: string; // [NEW] Pass ID directly
 }
 
-export function JournalModal({ isOpen, onClose, onSave }: JournalModalProps) {
+export function JournalModal({ isOpen, onClose, onSave, projectId }: JournalModalProps) {
     const [title, setTitle] = useState("");
     const [content, setContent] = useState("");
     const [tags, setTags] = useState("");
+    const [isAutoTagging, setIsAutoTagging] = useState(false);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -36,6 +39,37 @@ export function JournalModal({ isOpen, onClose, onSave }: JournalModalProps) {
         setTitle("");
         setContent("");
         setTags("");
+    };
+
+    const handleAutoTag = async () => {
+        if (!content || content.length < 10) {
+            alert("Please write a bit more content first!");
+            return;
+        }
+
+        setIsAutoTagging(true);
+        try {
+            const res = await fetch('/api/vibe/auto-tag', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    content,
+                    projectId: projectId
+                })
+            });
+
+            const data = await res.json();
+            if (data.tags && Array.isArray(data.tags)) {
+                const currentTags = tags.split(',').map(t => t.trim()).filter(Boolean);
+                const uniqueTags = Array.from(new Set([...currentTags, ...data.tags]));
+                setTags(uniqueTags.join(', '));
+            }
+
+        } catch (error) {
+            console.error("Auto-tag failed", error);
+        } finally {
+            setIsAutoTagging(false);
+        }
     };
 
     if (!isOpen) return null;
@@ -84,7 +118,18 @@ export function JournalModal({ isOpen, onClose, onSave }: JournalModalProps) {
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-neutral-400">Tags <span className="text-neutral-600">(Comma separated)</span></label>
+                            <label className="text-sm font-medium text-neutral-400 flex items-center justify-between">
+                                <span>Tags <span className="text-neutral-600">(Comma separated)</span></span>
+                                <button
+                                    type="button"
+                                    onClick={handleAutoTag}
+                                    disabled={isAutoTagging || !content}
+                                    className="flex items-center gap-1.5 text-xs text-[#a78bfa] hover:text-[#c4b5fd] disabled:opacity-50 transition-colors"
+                                >
+                                    <Sparkles className={`w-3 h-3 ${isAutoTagging ? 'animate-spin' : ''}`} />
+                                    {isAutoTagging ? 'Analyzing...' : 'Auto-Tag'}
+                                </button>
+                            </label>
                             <input
                                 value={tags}
                                 onChange={(e) => setTags(e.target.value)}
