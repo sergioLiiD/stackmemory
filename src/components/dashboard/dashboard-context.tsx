@@ -164,6 +164,7 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
                 if (updates.hasVulnerabilities !== undefined) dbUpdates.has_vulnerabilities = updates.hasVulnerabilities;
                 if (updates.insight_report) dbUpdates.insight_report = updates.insight_report;
                 if (updates.insight_generated_at) dbUpdates.insight_generated_at = updates.insight_generated_at;
+                if (updates.snippets) dbUpdates.snippets = updates.snippets;
 
                 if (Object.keys(dbUpdates).length > 0) {
                     const { error } = await supabase
