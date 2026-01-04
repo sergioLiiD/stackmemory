@@ -373,8 +373,8 @@ export default function GuidePage() {
         {
             id: "n8n-integration",
             title: "n8n Workflow Brain",
-            description: "Solve 'Credential Amnesia'. Import workflows and let AI detect missing API keys.",
-            longDescription: "n8n workflows are complex graphs that depend on specific credentials. StackMemory parses your exported JSON files to identify every service used (Stripe, Postgres, OpenAI) and cross-references them with your Project Secrets. No more broken workflows due to missing keys.",
+            description: "Solve 'Credential Amnesia'. AI explains your workflows and detects keys.",
+            longDescription: "n8n workflows are complex graphs. StackMemory not only detects missing credentials but now uses Gemini to read the workflow structure and explain it to you in plain English. Perfect for understanding automations you didn't write.",
             icon: Network, // Reusing Network icon or import Workflow icon
             badge: "NEW",
             color: "text-orange-500",
@@ -383,17 +383,17 @@ export default function GuidePage() {
             actionLink: "/dashboard",
             benefits: [
                 "Auto-detect Required Credentials",
-                "Visualize Node Infrastructure",
+                "✨ AI Workflow Summaries",
                 "Prevent runtime errors in production"
             ],
             useCases: [
+                "Asking 'What does this huge JSON do?' and getting a 2-sentence summary.",
                 "Importing a complex 'User Onboarding' workflow to see all 5 APIs it touches.",
-                "Onboarding a team member: 'Here is the workflow, and here represent the secrets you need'.",
-                "Auditing which workflows depend on a specific API key (e.g., 'OpenAI Key')."
+                "Onboarding a team member: 'Here is the workflow, and here represent the secrets you need'."
             ],
             tips: [
                 "Export your workflow from n8n editor as JSON.",
-                "Upload it in the 'Workflows' tab of your project."
+                "Click the ✨ button to generate an AI summary."
             ]
         }
     ];

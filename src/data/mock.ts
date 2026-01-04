@@ -94,7 +94,8 @@ export interface Workflow {
     content: any; // Raw JSON
     nodes_index: string[];
     credentials_needed: string[];
-    created_at?: string;
+    ai_description?: string;
+    created_at: string;
 }
 
 export interface Project {

@@ -33,6 +33,8 @@ export const metadata: Metadata = {
     "vibe coding",
     "vibecoders",
     "n8n workflows",
+    "n8n ai explainer",
+    "workflow visualization",
     "credential management",
     "cli developer tool",
     "env var drift",

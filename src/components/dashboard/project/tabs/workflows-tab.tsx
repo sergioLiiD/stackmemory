@@ -5,20 +5,18 @@ import { Project, Workflow } from "@/data/mock";
 import { parseN8nWorkflow } from "@/lib/n8n-parser";
 import { useDashboard } from "../../dashboard-context";
 import { supabase } from "@/lib/supabase";
-import { Upload, FileJson, Check, AlertTriangle, Key, Trash2, Plus, ArrowRight } from "lucide-react";
+import { Upload, FileJson, Check, AlertTriangle, Key, Trash2, Plus, ArrowRight, Sparkles, Search, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function WorkflowsTab({ project }: { project: Project }) {
     const { updateProject } = useDashboard();
-    const [isDragging, setIsDragging] = useState(false);
     const [uploading, setUploading] = useState(false);
+    const [analyzingIds, setAnalyzingIds] = useState<string[]>([]);
+    const [searchQuery, setSearchQuery] = useState("");
 
     // Helpers to identify missing credentials
     const getMissingCredentials = (needed: string[]) => {
         const existingKeys = (project.secrets || []).map(s => s.key.toLowerCase());
-        // n8n credential names might be "stripeApi", while env var might be "STRIPE_SECRET_KEY".
-        // For now, we just check generic inclusion or match.
-        // Let's look for simple substring matches or distinct missing ones.
         return needed.filter(n => !existingKeys.some(k => k.includes(n.toLowerCase()) || n.toLowerCase().includes(k)));
     };
 
@@ -90,57 +88,109 @@ export function WorkflowsTab({ project }: { project: Project }) {
         }
     };
 
+    const handleExplain = async (workflow: Workflow) => {
+        if (analyzingIds.includes(workflow.id)) return;
+
+        setAnalyzingIds(prev => [...prev, workflow.id]);
+
+        try {
+            const res = await fetch('/api/ai/workflow-explain', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    workflow_id: workflow.id,
+                    json: workflow.content,
+                    project_id: project.id
+                })
+            });
+
+            const data = await res.json();
+            if (data.summary) {
+                // Update local state
+                const updated = (project.workflows || []).map(w =>
+                    w.id === workflow.id ? { ...w, ai_description: data.summary } : w
+                );
+                updateProject(project.id, { workflows: updated });
+            }
+
+        } catch (error) {
+            console.error(error);
+            alert("Failed to analyze workflow.");
+        } finally {
+            setAnalyzingIds(prev => prev.filter(id => id !== workflow.id));
+        }
+    };
+
+    // FILTER LOGIC
+    const filteredWorkflows = (project.workflows || []).filter(w => {
+        const lowerQ = searchQuery.toLowerCase();
+        return w.name.toLowerCase().includes(lowerQ) ||
+            w.nodes_index.some(n => n.toLowerCase().includes(lowerQ));
+    });
+
     return (
         <div className="space-y-6">
             {/* Header */}
             <div className="p-6 rounded-3xl bg-gradient-to-br from-[#ff6d5a]/10 to-[#ff6d5a]/5 border border-[#ff6d5a]/20 relative overflow-hidden">
-                <div className="flex items-start justify-between relative z-10">
+                <div className="flex flex-col md:flex-row items-start md:items-center justify-between relative z-10 gap-4">
                     <div>
                         <h3 className="text-lg font-bold text-white flex items-center gap-2">
                             <FileJson className="w-5 h-5 text-[#ff6d5a]" /> n8n Workflows
                         </h3>
                         <p className="text-xs text-neutral-400 mt-2 max-w-lg">
                             Import your n8n workflow JSON files to automatically detecting required credentials and infrastructure nodes.
-                            Stop "Credential Amnesia".
                         </p>
                     </div>
-                    {/* Upload Button */}
-                    <div className="relative">
-                        <input
-                            type="file"
-                            accept=".json"
-                            onChange={(e) => handleFileUpload(e.target.files)}
-                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
-                        />
-                        <button disabled={uploading} className="px-4 py-2 bg-[#ff6d5a] hover:bg-[#ff6d5a]/80 text-white rounded-xl text-xs font-bold transition-colors flex items-center gap-2 shadow-lg shadow-[#ff6d5a]/20">
-                            {uploading ? (
-                                <span className="animate-spin">⏳</span>
-                            ) : (
-                                <Plus className="w-4 h-4" />
-                            )}
-                            Import JSON
-                        </button>
+                    {/* Controls */}
+                    <div className="flex items-center gap-3 w-full md:w-auto">
+                        <div className="relative flex-1 md:w-64">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500" />
+                            <input
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                placeholder="Search workflows or nodes..."
+                                className="w-full bg-black/20 border border-white/5 rounded-xl pl-9 pr-4 py-2 text-xs text-white focus:outline-none focus:border-[#ff6d5a]/50 placeholder:text-neutral-600"
+                            />
+                        </div>
+
+                        <div className="relative">
+                            <input
+                                type="file"
+                                accept=".json"
+                                onChange={(e) => handleFileUpload(e.target.files)}
+                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
+                            />
+                            <button disabled={uploading} className="px-4 py-2 bg-[#ff6d5a] hover:bg-[#ff6d5a]/80 text-white rounded-xl text-xs font-bold transition-colors flex items-center gap-2 shadow-lg shadow-[#ff6d5a]/20 whitespace-nowrap">
+                                {uploading ? (
+                                    <span className="animate-spin">⏳</span>
+                                ) : (
+                                    <Plus className="w-4 h-4" />
+                                )}
+                                Import JSON
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
 
             {/* List */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {project.workflows?.map((workflow) => {
+                {filteredWorkflows.map((workflow) => {
                     const missingCreds = getMissingCredentials(workflow.credentials_needed);
+                    const isAnalyzing = analyzingIds.includes(workflow.id);
 
                     return (
-                        <div key={workflow.id} className="group p-5 rounded-2xl bg-neutral-900 border border-white/5 hover:border-[#ff6d5a]/30 transition-all flex flex-col h-full">
+                        <div key={workflow.id} className="group p-5 rounded-2xl bg-neutral-900 border border-white/5 hover:border-[#ff6d5a]/30 transition-all flex flex-col h-full relative">
                             <div className="flex items-start justify-between mb-4">
                                 <div className="flex items-center gap-3">
                                     <div className="w-10 h-10 rounded-lg bg-[#ff6d5a]/10 text-[#ff6d5a] flex items-center justify-center">
                                         <FileJson className="w-5 h-5" />
                                     </div>
-                                    <div>
+                                    <div className="overflow-hidden">
                                         <h4 className="text-sm font-bold text-white truncate max-w-[150px]" title={workflow.name}>
                                             {workflow.name}
                                         </h4>
-                                        <span className="text-[10px] text-neutral-500">
+                                        <span className="text-[10px] text-neutral-500 block">
                                             {workflow.nodes_index.length} nodes
                                         </span>
                                     </div>
@@ -162,6 +212,29 @@ export function WorkflowsTab({ project }: { project: Project }) {
                                 ))}
                                 {workflow.nodes_index.length > 5 && (
                                     <span className="text-[9px] px-1 py-0.5 text-neutral-600">+{workflow.nodes_index.length - 5}</span>
+                                )}
+                            </div>
+
+                            {/* AI Summary */}
+                            <div className="mb-4 bg-black/20 rounded-lg p-3 border border-white/5 min-h-[60px]">
+                                {workflow.ai_description ? (
+                                    <div className="flex gap-2">
+                                        <Sparkles className="w-3 h-3 text-[#ff6d5a] flex-shrink-0 mt-0.5" />
+                                        <p className="text-[10px] text-neutral-300 leading-relaxed">
+                                            {workflow.ai_description}
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <div className="flex flex-col items-center justify-center h-full gap-2">
+                                        <button
+                                            onClick={() => handleExplain(workflow)}
+                                            disabled={isAnalyzing}
+                                            className="text-[10px] font-medium text-[#ff6d5a] hover:text-[#ff6d5a]/80 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#ff6d5a]/10 hover:bg-[#ff6d5a]/20 transition-colors"
+                                        >
+                                            {isAnalyzing ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
+                                            {isAnalyzing ? "Analyzing..." : "Explain this workflow"}
+                                        </button>
+                                    </div>
                                 )}
                             </div>
 
@@ -202,11 +275,11 @@ export function WorkflowsTab({ project }: { project: Project }) {
                 })}
 
                 {/* Empty State */}
-                {(!project.workflows?.length) && (
+                {(!filteredWorkflows.length) && (
                     <div className="col-span-full py-12 flex flex-col items-center justify-center border border-dashed border-white/10 rounded-3xl text-neutral-600">
                         <FileJson className="w-8 h-8 mb-4 opacity-50" />
-                        <p className="text-sm font-medium">No workflows imported yet.</p>
-                        <p className="text-xs opacity-50 max-w-xs text-center mt-2">Upload a JSON file exported from n8n to analyze its credential requirements.</p>
+                        <p className="text-sm font-medium">No workflows found.</p>
+                        <p className="text-xs opacity-50 max-w-xs text-center mt-2">Try importing a new JSON or adjusting your search.</p>
                     </div>
                 )}
             </div>

@@ -107,9 +107,9 @@
   - [x] Parse n8n workflow JSON.
   - [x] Extract credential references (e.g., "Stripe API", "Supabase Admin").
   - [x] Map usage: "This API Key is used in workflows A, B, and C".
-- [ ] **Workflow Logic**:
-  - [ ] "Explain this Workflow": AI reads the JSON graph and writes a human summary.
-  - [ ] Semantic Search: "Where do we use the SendGrid node?"
+- [x] **Workflow Logic**:
+  - [x] "Explain this Workflow": AI reads the JSON graph and writes a human summary.
+  - [x] Semantic Search: "Where do we use the SendGrid node?"
 
 ## 🖥️ Phase 14: Native Mac App (The Local Brain)
 

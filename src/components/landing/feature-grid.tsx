@@ -133,7 +133,7 @@ export function FeatureGrid() {
                 <BentoCard className="md:col-span-1 md:row-span-1 bg-gradient-to-br from-orange-900/40 to-transparent border-orange-500/20" delay={0.6}>
                     <div className="h-full flex flex-col">
                         <Network className="w-6 h-6 text-orange-400 mb-2" />
-                        <BentoHeader title="n8n Brain" subtitle="Fix Credential Amnesia." />
+                        <BentoHeader title="n8n Brain" subtitle="AI Explain & Credentials." />
                         <div className="mt-auto pt-2 grid grid-cols-2 gap-1 opacity-50">
                             <div className="h-1 bg-orange-500 rounded-full w-full" />
                             <div className="h-1 bg-neutral-700 rounded-full w-2/3" />
