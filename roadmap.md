@@ -81,155 +81,49 @@
 
 - **Phase 11: Beta Launch (Business)**:
   - [ ] Analytics (Google/PostHog).
-  - [ ] Compliance (Cookie Banner).
+  - [x] Compliance (Cookie Banner).
   - [ ] Lifetime Deal Signup & Checkout verification.
 
-- **Phase 12: CLI Evolution (The Local Agent)**:
-  - [ ] **Env Var Drift**: Compare local `.env` vs `.env.example` and alert on missing keys.
-  - [ ] **Infra Scan**: Detect invisible stack (Docker, Makefiles, Justfiles, Redis, Postgres).
-  - [ ] **IDE Sync**: `npx stackmemory pull rules` to sync `.cursorrules` / `.vscode` team settings.
-  - [ ] **Interactive Init**: Wizard based on VibeOnboard guide (`npm install`, key setup).
-  - [ ] **Vibe Check**: Local health report (Git status, uncommitted changes, last build).
+## 📊 Phase 16: The Watchtower (Analytics) - CURRENT FOCUS
 
-## ✅ Phase 2: Semantic Intelligence (The "Vibe Coder" Core)
+- **Goal**: Stop flying blind. Understand user behavior to iterate fast.
+- [ ] **PostHog Integration**:
+  - [ ] Install `posthog-js`.
+  - [ ] Create Client-Side Provider.
+  - [ ] Track Core Events (Sign Up, Project Created, Vibe Coder Usage).
+  - [ ] Create "Feature Usage" dashboard.
 
-- **Foundation: Secure Access**
-  - [x] **GitHub OAuth Integration**:
-    - [x] Configure Supabase Auth with GitHub Provider.
-    - [x] Added `repo` scope for private access.
-    - [x] Validated Persistent Login.
+## � Phase 12: CLI Evolution (The Local Agent) - NEXT UP
 
-- **Data Ingestion Engine**
-  - [x] **Repository Crawler**:
-    - [x] Backend worker to crawl GitHub repo trees.
-    - [x] Smart filtering (ignoring `node_modules`, images).
-    - [x] Optimized for Markdown documentation priority.
+- [ ] **Env Var Drift**: Compare local `.env` vs `.env.example` and alert on missing keys.
+- [ ] **Infra Scan**: Detect invisible stack (Docker, Makefiles, Justfiles, Redis, Postgres).
+- [ ] **IDE Sync**: `npx stackmemory pull rules` to sync `.cursorrules` / `.vscode` team settings.
 
-- **The Brain: Vector Storage**
-  - [x] **Database Upgrade**:
-    - [x] Enabled `pgvector` extension.
-    - [x] Created `embeddings` table with RLS.
-  - [x] **Embedding Generation**:
-    - [x] OpenAI `text-embedding-ada-002` integration.
-    - [x] Chunking strategy implemented.
+## � Phase 17: Low-Code Operations (n8n Integration)
 
-- **The Mouth: Semantic Search & Chat**
-  - [x] **Vibe Coder Assistant**:
-    - [x] Full RAG (Retrieval Augmented Generation) pipeline.
-    - [x] Streaming Responses with citations.
-    - [x] Integrated `GPT-4o-mini`.
+**Goal**: Solve "Credential Amnesia" for n8n users.
 
-## 🛠️ Phase 3: Advanced Tools & Admin
+- [ ] **Credential Memory**:
+  - [ ] Parse n8n workflow JSON.
+  - [ ] Extract credential references (e.g., "Stripe API", "Supabase Admin").
+  - [ ] Map usage: "This API Key is used in workflows A, B, and C".
+- [ ] **Workflow Logic**:
+  - [ ] "Explain this Workflow": AI reads the JSON graph and writes a human summary.
+  - [ ] Semantic Search: "Where do we use the SendGrid node?"
 
-- **Context Weaver (The "Mega-Prompt" Generator)**
-  - [x] **Automatic Context Injection**:
-    - [x] Fetches README.md & package.json from DB.
-    - [x] Generates File Tree.
-  - [x] **Manual Context Input**: Dedicated area for functional requirements.
-  - [x] **Prompt Persistence**:
-    - [x] Save custom prompts to Database.
-    - [x] "Saved Prompts" library per project.
+## 🖥️ Phase 14: Native Mac App (The Local Brain)
 
-- **Admin Dashboard**
-  - [x] **Usage Monitoring**:
-    - [x] Track Token Usage & Estimated Costs.
-    - [x] `usage_logs` table.
-  - [x] **Client Management**:
-    - [x] List all users.
-    - [x] Sort by Total Spend.
+**Goal**: Move beyond the browser to become an integrated part of the OS.
 
-## 💎 Monetization & Growth (Beta Launch)
+- **Why Native? (Superpowers)**:
+  - **Native Scanner**: Eliminate the need for manual CLI sync. The app watches file system events (`fs.watch`) to auto-update the stack in real-time.
+  - **"Always On" Vibe Coder**: Spotlight-like floating HUD (`Cmd+K`) to chat with your codebase without context switching.
+  - **Local Performance**: Zero-latency indexing and vector search running locally on the machine.
 
-- **Commercial Infrastructure (LemonSqueezy)**:
-  - [x] **Setup**: Create Store, Products (LTD/Monthly), and Webhooks.
-  - [x] **Checkout Integration**: Generate magic links or overlay checkout.
-  - [x] **Webhook Handler**: `api/webhooks/lemonsqueezy` to provision access (update DB).
-  - [x] **Billing Portal**: Link for users to manage subscription/invoices.
-- **Beta Program (500 Users)**:
-  - [ ] **Lifetime Deal (LTD) Strategy**:
-    - [ ] Define limits (Projects, Storage, AI Tokens).
-    - [ ] Create signup flow for Beta Testers.
-- **Analytics**:
-  - [ ] Google Analytics Integration.
-
-## 🔮 Future Ideas
-
-- [x] **Deep Cost Analysis**: Break down costs per project (Implemented in Admin Dash).
-- **AI Insights**: Analyze journal entries for decision patterns.
-- **Team Collaboration**: Shared projects and comments.
-
-## 🧠 Phase 4: Advanced AI Experiences (Post-Monetization)
-
-- **Video Analysis (Multimodal Phase 2)**:
-  - [ ] **Screencast Debugging**: Analyze short videos of bugs to suggest fixes.
-  - [ ] **UX Audits**: AI watches user sessions to propose UI improvements.
-
-### 🧠 New Product Concepts
-
-- **VibeOnboard (The Human Layer)**:
-  - *Concept*: A "brain" for the team, not just the code.
-  - *Problem*: New devs take weeks to understand project conventions and logic.
-  - *Solution*: Interactive onboarding courses generated from StackMemory's indexed data. "Here is layout.tsx, try making a small change...".
-  - *Hook*: "Reduce onboarding time from 2 weeks to 2 days".
-
-- **TechDiligence (B2B Audit)**:
-  - Automated "Health Score" for investors/agencies buying codebases.
-  - Detects technical debt, zombie dependencies, and code complexity instantly.
-
-- **VibeFlow (The Action Layer)**:
-  - Integration with n8n to **act** on the stack.
-  - "I see you added a database table, want me to create the Stripe webhook?"
-
-- **StackMarket**:
-  - Community marketplace for "Blueprints" (e.g., "The Perfect Next.js SaaS Starter").
-  - "Buy & Hydrate": Clones repo + Configures Env Vars + Sets up DB/Services.
-
-## 🚀 Phase 3.5: CLI & Public Launch (MVP Polish)
-
-- **CLI Package**:
-  - [x] Prepare `package.json` for NPM publication (`bin`, `files`).
-  - [x] Publish `stackmemory` to NPM Registry.
-  - [x] Verify `npm install -g stackmemory` works on clean machine.
-- [x] **CLI "Trojan Horse" v1**
-  - [x] Structure using `commander.js`.
-  - [x] `stackmem login` & `init` flow.
-  - [x] `stackmem sync` (Stack + Scripts).
-  - [x] `stackmem ask` (Chat).
-  - [x] `stackmem log` (Journal).
-  - [x] `stackmem doctor` (Health Check).
-- **CLI Evolution (The Trojan Horse)**:
-  - [x] **New Architecture**: Refactored to `commander.js`.
-  - [x] **Commands Implemented**: `login`, `init`, `ask`, `log`, `doctor`, `sync`.
-  - [x] **Journal Integration**: Developers can log entries from terminal.
-  - [x] **Q&A**: Semantic search via `stackmem ask`.
-- **Onboarding Experience**:
-  - [x] "Connect CLI" Modal with instructions.
-  - [x] "Empty State" for new users (Quick Start Guide).
-  - [x] Verify End-to-End flow (SignUp -> Install -> Sync).
-- **Compliance**:
-  - [x] Add Privacy Policy Page (Required for Google Auth).
-  - [x] Add Terms of Service Page.
-  - [x] Add Cookie Policy Page.
-  - [x] Add GDPR Rights Section and Cookie Consent Banner.
-
-## 🌉 Phase 13: Model Context Protocol (MCP) Integration
-
-- [x] **Context Bridges (Core UI)**:
-  - [x] **Data Model**: `Project` entity supports `mcps` array for server configuration.
-  - [x] **Management UI**: Dedicated section in Overview to Add/Edit/Delete MCP Bridges.
-  - [x] **Modal Config**: easy-to-use form for defining STDIO/SSE servers.
-- [x] **AI Advisor**:
-  - [x] **Smart Detection**: Analyzes project stack (e.g., Supabase) to suggest relevant MCPs (Postgres).
-  - [x] **One-Click Add**: "Recommended for your stack" section with pre-configured templates.
-
-## 🧩 Phase 4: Low-Code Operations (n8n Integration)
-
-- **Prompt Hub & Extraction**:
-  - [ ] Import n8n workflows (.json).
-  - [ ] Auto-extract System Prompts from semantic nodes (OpenAI, LangChain).
-- **Semantic Logic Parsing**:
-  - [ ] Convert visual graph (JSON) to pseudo-code representation.
-  - [ ] Enable "What does this workflow do?" search queries.
-- **Dependency & Credential Mapping**:
-  - [ ] Visualize credential usage across workflows.
-  - [ ] Map "Invisible" dependencies (Webhook A -> Workflow B).
+- **Implementation Strategy**:
+  - **Option A: Electron**:
+    - *Pros*: Fastest route. Wrap existing Next.js app. Extensive community support.
+    - *Cons*: Heavier resource usage (RAM).
+  - **Option B: Tauri 2.0 (Recommended)**:
+    - *Pros*: Extremely lightweight (Rust backend). Secure by default. "Vibecoding" trend standard.
+    - *Cons*: Steeper learning curve for Rust backend logic.

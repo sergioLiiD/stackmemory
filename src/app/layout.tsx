@@ -6,6 +6,8 @@ import { AuthProvider } from "@/components/auth/auth-context";
 import { SubscriptionProvider } from "@/components/billing/subscription-context";
 import { CookieBanner } from "@/components/cookie-banner";
 
+import { PostHogProvider } from "@/components/analytics/posthog-provider";
+
 const quicksand = Quicksand({
   variable: "--font-sans",
   subsets: ["latin"],
@@ -70,19 +72,21 @@ export default function RootLayout({
       <body
         className={`${quicksand.variable} ${geistMono.variable} antialiased`}
       >
-        <AuthProvider>
-          <SubscriptionProvider>
-            <ThemeProvider
-              attribute="class"
-              defaultTheme="system"
-              enableSystem
-              disableTransitionOnChange
-            >
-              {children}
-              <CookieBanner />
-            </ThemeProvider>
-          </SubscriptionProvider>
-        </AuthProvider>
+        <PostHogProvider>
+          <AuthProvider>
+            <SubscriptionProvider>
+              <ThemeProvider
+                attribute="class"
+                defaultTheme="system"
+                enableSystem
+                disableTransitionOnChange
+              >
+                {children}
+                <CookieBanner />
+              </ThemeProvider>
+            </SubscriptionProvider>
+          </AuthProvider>
+        </PostHogProvider>
       </body>
     </html>
   );
