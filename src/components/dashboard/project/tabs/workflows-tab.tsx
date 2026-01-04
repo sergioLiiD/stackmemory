@@ -5,7 +5,7 @@ import { Project, Workflow } from "@/data/mock";
 import { parseN8nWorkflow } from "@/lib/n8n-parser";
 import { useDashboard } from "../../dashboard-context";
 import { supabase } from "@/lib/supabase";
-import { Upload, FileJson, Check, AlertTriangle, Key, Trash2, Plus, ArrowRight, Sparkles, Search, Loader2 } from "lucide-react";
+import { Upload, FileJson, Check, AlertTriangle, Key, Trash2, Plus, ArrowRight, Sparkles, Search, Loader2, Camera, Image as ImageIcon, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function WorkflowsTab({ project }: { project: Project }) {
@@ -13,11 +13,23 @@ export function WorkflowsTab({ project }: { project: Project }) {
     const [uploading, setUploading] = useState(false);
     const [analyzingIds, setAnalyzingIds] = useState<string[]>([]);
     const [searchQuery, setSearchQuery] = useState("");
+    const [screenshots, setScreenshots] = useState<Record<string, string>>({}); // workflowId -> base64
 
     // Helpers to identify missing credentials
     const getMissingCredentials = (needed: string[]) => {
         const existingKeys = (project.secrets || []).map(s => s.key.toLowerCase());
         return needed.filter(n => !existingKeys.some(k => k.includes(n.toLowerCase()) || n.toLowerCase().includes(k)));
+    };
+
+    const handleImageSelect = (workflowId: string, files: FileList | null) => {
+        if (!files || files.length === 0) return;
+        const file = files[0];
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const base64 = e.target?.result as string;
+            setScreenshots(prev => ({ ...prev, [workflowId]: base64 }));
+        };
+        reader.readAsDataURL(file);
     };
 
     const handleFileUpload = async (files: FileList | null) => {
@@ -100,22 +112,33 @@ export function WorkflowsTab({ project }: { project: Project }) {
                 body: JSON.stringify({
                     workflow_id: workflow.id,
                     json: workflow.content,
-                    project_id: project.id
+                    project_id: project.id,
+                    image: screenshots[workflow.id] || undefined
                 })
             });
 
             const data = await res.json();
+            if (!res.ok) {
+                throw new Error(data.error || "Server Error");
+            }
+
             if (data.summary) {
                 // Update local state
                 const updated = (project.workflows || []).map(w =>
                     w.id === workflow.id ? { ...w, ai_description: data.summary } : w
                 );
                 updateProject(project.id, { workflows: updated });
+                // Clear screenshot after success
+                setScreenshots(prev => {
+                    const next = { ...prev };
+                    delete next[workflow.id];
+                    return next;
+                });
             }
 
-        } catch (error) {
+        } catch (error: any) {
             console.error(error);
-            alert("Failed to analyze workflow.");
+            alert(`Failed to analyze workflow: ${error.message}`);
         } finally {
             setAnalyzingIds(prev => prev.filter(id => id !== workflow.id));
         }
@@ -225,15 +248,47 @@ export function WorkflowsTab({ project }: { project: Project }) {
                                         </p>
                                     </div>
                                 ) : (
-                                    <div className="flex flex-col items-center justify-center h-full gap-2">
-                                        <button
-                                            onClick={() => handleExplain(workflow)}
-                                            disabled={isAnalyzing}
-                                            className="text-[10px] font-medium text-[#ff6d5a] hover:text-[#ff6d5a]/80 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#ff6d5a]/10 hover:bg-[#ff6d5a]/20 transition-colors"
-                                        >
-                                            {isAnalyzing ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
-                                            {isAnalyzing ? "Analyzing..." : "Explain this workflow"}
-                                        </button>
+                                    <div className="flex flex-col gap-2">
+                                        <div className="flex items-center justify-between">
+                                            <button
+                                                onClick={() => handleExplain(workflow)}
+                                                disabled={isAnalyzing}
+                                                className="text-[10px] font-medium text-[#ff6d5a] hover:text-[#ff6d5a]/80 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#ff6d5a]/10 hover:bg-[#ff6d5a]/20 transition-colors w-full justify-center"
+                                            >
+                                                {isAnalyzing ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
+                                                {isAnalyzing ? "Analyzing..." : "Explain this workflow"}
+                                            </button>
+
+                                            {/* Camera Trigger */}
+                                            <div className="relative ml-2">
+                                                <input
+                                                    type="file"
+                                                    accept="image/*"
+                                                    onChange={(e) => handleImageSelect(workflow.id, e.target.files)}
+                                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                                />
+                                                <button className="p-1.5 rounded-full bg-white/5 hover:bg-white/10 text-neutral-400 hover:text-white transition-colors" title="Attach screenshot">
+                                                    <Camera className="w-3.5 h-3.5" />
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        {/* Image Preview */}
+                                        {screenshots[workflow.id] && (
+                                            <div className="relative rounded-md overflow-hidden bg-black/50 border border-white/5 h-16 flex items-center justify-center group/img">
+                                                <img src={screenshots[workflow.id]} alt="Screenshot" className="h-full w-full object-cover opacity-60" />
+                                                <div className="absolute inset-0 flex items-center justify-center">
+                                                    <ImageIcon className="w-4 h-4 text-white drop-shadow-md" />
+                                                </div>
+                                                <button
+                                                    onClick={() => setScreenshots(prev => { const n = { ...prev }; delete n[workflow.id]; return n; })}
+                                                    className="absolute top-1 right-1 p-0.5 rounded-full bg-black/50 text-white hover:bg-red-500/80 transition-colors"
+                                                >
+                                                    <X className="w-3 h-3" />
+                                                </button>
+                                                <span className="absolute bottom-1 left-2 text-[9px] text-white/80 font-medium drop-shadow">Screenshot attached</span>
+                                            </div>
+                                        )}
                                     </div>
                                 )}
                             </div>
