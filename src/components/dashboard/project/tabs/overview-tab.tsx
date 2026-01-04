@@ -1,14 +1,16 @@
 "use client";
-import { useState, useEffect } from "react";
-import { Project, Service } from "@/data/mock";
+import { useState, useEffect, useMemo } from "react";
+import { Project, Service, MCPServer } from "@/data/mock";
 import { useDashboard } from "../../dashboard-context";
-import { CheckCircle2, Copy, Eye, EyeOff, ExternalLink, Github, Globe, Key, Server, Shield, Pencil, Check, X, Search, RefreshCw, FileCode, Hash, Link as LinkIcon, FileText } from "lucide-react";
+import { CheckCircle2, Copy, Eye, EyeOff, ExternalLink, Github, Globe, Key, Server, Shield, Pencil, Check, X, Search, RefreshCw, FileCode, Hash, Link as LinkIcon, FileText, Network, Terminal, Sparkles, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
 import { ServiceModal } from "./service-modal";
+import { MCPModal } from "./mcp-modal";
 import { TodoListCard } from "./todo-list-card";
 import { HealthBar } from "../health-bar";
 import { ProjectCommandsCard } from "./project-commands-card";
+import { getMCPSuggestions } from "@/lib/mcp-advisor";
 import { DesignSystemCard } from "./design-system-card";
 
 
@@ -212,6 +214,15 @@ export function OverviewTab({ project }: { project: Project }) {
     const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
     const [editingServiceIndex, setEditingServiceIndex] = useState<number | null>(null);
 
+    // MCP Modal State
+    const [isMCPModalOpen, setIsMCPModalOpen] = useState(false);
+    const [editingMCP, setEditingMCP] = useState<MCPServer | null>(null);
+
+    // Derived Suggestions
+    const suggestedMCPs = useMemo(() => {
+        return getMCPSuggestions(project.stack || [], project.mcps || []);
+    }, [project.stack, project.mcps]);
+
     // Helper to persist services
     const saveServices = async (newServices: Service[]) => {
         // Optimistic update
@@ -225,6 +236,41 @@ export function OverviewTab({ project }: { project: Project }) {
                 .eq('id', project.id);
 
             if (error) console.error("Error saving services:", error);
+        }
+    };
+
+    const saveMCPs = async (newMCPs: MCPServer[]) => {
+        updateProject(project.id, { mcps: newMCPs });
+
+        if (supabase) {
+            const { error } = await supabase.from('projects').update({ mcps: newMCPs }).eq('id', project.id);
+            if (error) console.error("Error saving MCPs:", error);
+        }
+    };
+
+    const handleAddMCP = (mcp: MCPServer) => {
+        let newMCPs = [...(project.mcps || [])];
+        const existingIndex = newMCPs.findIndex(m => m.id === mcp.id);
+
+        if (existingIndex >= 0) {
+            newMCPs[existingIndex] = mcp;
+        } else {
+            newMCPs.push(mcp);
+        }
+
+        saveMCPs(newMCPs);
+        setEditingMCP(null);
+    };
+
+    const handleEditMCP = (mcp: MCPServer) => {
+        setEditingMCP(mcp);
+        setIsMCPModalOpen(true);
+    };
+
+    const handleDeleteMCP = (id: string) => {
+        if (confirm("Remove this Context Bridge?")) {
+            const newMCPs = (project.mcps || []).filter(m => m.id !== id);
+            saveMCPs(newMCPs);
         }
     };
 
@@ -630,6 +676,107 @@ export function OverviewTab({ project }: { project: Project }) {
                     </div>
                 </div>
 
+                {/* Context Bridges (MCP) */}
+                <div className="p-6 rounded-3xl bg-neutral-900 border border-cyan-500/20 shadow-xl relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/10 rounded-full blur-[60px] pointer-events-none" />
+
+                    <div className="flex items-center justify-between mb-6 relative z-10">
+                        <div>
+                            <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                                <Network className="w-5 h-5 text-cyan-400" /> Context Bridges
+                            </h3>
+                            <p className="text-xs text-neutral-400 mt-1">
+                                Connect AI agents to your data (Model Context Protocol).
+                            </p>
+                        </div>
+                        <button
+                            onClick={() => { setEditingMCP(null); setIsMCPModalOpen(true); }}
+                            className="text-xs bg-cyan-900/50 text-cyan-200 border border-cyan-500/30 px-4 py-2 rounded-full hover:bg-cyan-900 transition-colors font-medium flex items-center gap-2"
+                        >
+                            + New Bridge
+                        </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-3 relative z-10">
+                        {project.mcps?.map((mcp, i) => (
+                            <div key={i} className="flex items-center justify-between p-4 rounded-xl bg-black/40 border border-white/5 group hover:border-cyan-500/30 transition-all">
+                                <div className="flex items-center gap-3">
+                                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${mcp.type === 'stdio' ? 'bg-neutral-800 text-neutral-400' : 'bg-purple-900/20 text-purple-400'}`}>
+                                        {mcp.type === 'stdio' ? <Terminal className="w-5 h-5" /> : <Network className="w-5 h-5" />}
+                                    </div>
+                                    <div>
+                                        <div className="flex items-center gap-2">
+                                            <h4 className="text-sm font-bold text-white">{mcp.name}</h4>
+                                            <span className={`text-[9px] px-1.5 py-0.5 rounded uppercase tracking-wider ${mcp.type === 'stdio' ? 'bg-neutral-800 text-neutral-500' : 'bg-purple-900/20 text-purple-300'}`}>
+                                                {mcp.type}
+                                            </span>
+                                        </div>
+                                        <code className="text-[10px] text-neutral-500 font-mono mt-1 block truncate max-w-[200px] md:max-w-xs">
+                                            {mcp.type === 'stdio' ? `${mcp.command} ${(mcp.args || []).join(' ')}` : mcp.url}
+                                        </code>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <button
+                                        onClick={() => handleEditMCP(mcp)}
+                                        className="p-1.5 hover:bg-white/10 rounded-full text-neutral-400 hover:text-white transition-colors"
+                                    >
+                                        <Pencil className="w-3 h-3" />
+                                    </button>
+                                    <button
+                                        onClick={() => handleDeleteMCP(mcp.id)}
+                                        className="p-1.5 hover:bg-red-500/10 rounded-full text-neutral-400 hover:text-red-400 transition-colors"
+                                    >
+                                        <X className="w-3 h-3" />
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                        {!project.mcps?.length && (
+                            <div className="text-center py-6 border border-dashed border-white/10 rounded-xl">
+                                <p className="text-xs text-neutral-500">No context bridges configured.</p>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Suggestions Section */}
+                    {suggestedMCPs.length > 0 && (
+                        <div className="mt-8 pt-6 border-t border-white/10 relative z-10">
+                            <h4 className="text-sm font-bold text-neutral-400 mb-4 flex items-center gap-2">
+                                <Sparkles className="w-4 h-4 text-purple-400" /> Recommended for your stack
+                            </h4>
+                            <div className="grid grid-cols-1 gap-3">
+                                {suggestedMCPs.map((suggestion) => (
+                                    <div key={suggestion.id} className="flex items-center justify-between p-3 rounded-xl bg-purple-900/10 border border-purple-500/20 hover:bg-purple-900/20 transition-colors">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 rounded-lg bg-purple-500/20 text-purple-400 flex items-center justify-center">
+                                                <Network className="w-4 h-4" />
+                                            </div>
+                                            <div>
+                                                <div className="flex items-center gap-2">
+                                                    <h4 className="text-sm font-bold text-white">{suggestion.name}</h4>
+                                                    <span className="text-[10px] bg-purple-500/20 text-purple-300 px-1.5 py-0.5 rounded-full">Suggested</span>
+                                                </div>
+                                                <p className="text-[10px] text-neutral-400 max-w-xs truncate">{suggestion.description}</p>
+                                            </div>
+                                        </div>
+                                        <button
+                                            onClick={() => {
+                                                // Pre-fill modal with suggestion
+                                                setEditingMCP({ ...suggestion, id: crypto.randomUUID(), status: 'active' });
+                                                setIsMCPModalOpen(true);
+                                            }}
+                                            className="px-3 py-1.5 bg-purple-500/20 text-purple-300 hover:bg-purple-500/30 rounded-lg text-xs font-bold border border-purple-500/20 transition-colors flex items-center gap-1"
+                                        >
+                                            <Plus className="w-3 h-3" /> Add Bridge
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </div>
+
                 {/* To-Do List */}
                 <TodoListCard project={project} />
 
@@ -704,6 +851,13 @@ export function OverviewTab({ project }: { project: Project }) {
                 onClose={() => { setIsServiceModalOpen(false); setEditingServiceIndex(null); }}
                 onSave={handleAddService}
                 initialData={editingServiceIndex !== null ? project.services?.[editingServiceIndex] : null}
+            />
+
+            <MCPModal
+                isOpen={isMCPModalOpen}
+                onClose={() => { setIsMCPModalOpen(false); setEditingMCP(null); }}
+                onSave={handleAddMCP}
+                initialData={editingMCP}
             />
         </div >
     );

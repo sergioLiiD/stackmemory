@@ -56,6 +56,18 @@ export interface Snippet {
     description?: string;
 }
 
+export interface MCPServer {
+    id: string;
+    name: string;
+    type: 'stdio' | 'sse';
+    command?: string; // e.g. "npx -y @modelcontextprotocol/server-postgres"
+    args?: string[];
+    url?: string; // for SSE
+    env?: Record<string, string>;
+    description?: string;
+    status: 'active' | 'inactive' | 'suggested';
+}
+
 export interface FirebaseConfig {
     apiKey: string;
     authDomain: string;
@@ -86,6 +98,7 @@ export interface Project {
     deployProvider?: string; // e.g. Vercel, Netlify, Dreamhost
     deployAccount?: string; // e.g. personal@gmail.com
     stack: StackItem[]; // Changed from string[]
+    mcps?: MCPServer[]; // Model Context Protocol Servers
     hasUpdates?: boolean;
     lastUpdated: string;
     health: number; // 0-100

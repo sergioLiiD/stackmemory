@@ -212,6 +212,16 @@
   - [x] Add Cookie Policy Page.
   - [x] Add GDPR Rights Section and Cookie Consent Banner.
 
+## 🌉 Phase 13: Model Context Protocol (MCP) Integration
+
+- [x] **Context Bridges (Core UI)**:
+  - [x] **Data Model**: `Project` entity supports `mcps` array for server configuration.
+  - [x] **Management UI**: Dedicated section in Overview to Add/Edit/Delete MCP Bridges.
+  - [x] **Modal Config**: easy-to-use form for defining STDIO/SSE servers.
+- [x] **AI Advisor**:
+  - [x] **Smart Detection**: Analyzes project stack (e.g., Supabase) to suggest relevant MCPs (Postgres).
+  - [x] **One-Click Add**: "Recommended for your stack" section with pre-configured templates.
+
 ## 🧩 Phase 4: Low-Code Operations (n8n Integration)
 
 - **Prompt Hub & Extraction**:
