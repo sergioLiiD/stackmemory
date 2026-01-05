@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
     try {
-        const { workflow_id, json, project_id, image } = await req.json();
+        const { workflow_id, json, project_id, image, messages } = await req.json();
 
         if (!json || !workflow_id) {
             return NextResponse.json({ error: "Missing json or workflow_id" }, { status: 400 });
@@ -20,21 +20,64 @@ export async function POST(req: Request) {
         // User reported 1.5 deprecated/not found, switching to 2.0
         const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
 
-        let promptParts: any[] = [];
+        // CHAT MODE
+        if (messages && Array.isArray(messages)) {
+            // We construct the history. 
+            // The JSON context is Critical. We'll add it as a System Instruction if supported, or just the first user message.
+            // Gemini 1.5/2.0 supports systemInstruction in model config, but for simplicity we can just prepend.
 
-        // Text Prompt
+            const systemPrompt = `You are an expert in n8n automation workflows. 
+            Here is the JSON definition of the workflow you are analyzing:
+            \`\`\`json
+            ${JSON.stringify(json).substring(0, 30000)}
+            \`\`\`
+            
+            Answer the user's questions about this workflow. BE CONCISE.
+            If the user sends an image, analyze it in context of this workflow (e.g. error logs, node configurations).`;
+
+            // Transform frontend messages to Gemini format
+            // Frontend: { role: 'user'|'model', parts: [{text: ...}, {inline_data: ...}] }
+            // Gemini API expects history to NOT include the current turn? 
+            // Wait, sendMessage in Gemini SDK handles the new message separately.
+            // So we take everything EXCEPT the last one as history, and the last one as the message to send.
+
+            const lastMsg = messages[messages.length - 1];
+            const history = messages.slice(0, -1).map((m: any) => ({
+                role: m.role,
+                parts: m.parts
+            }));
+
+            const chat = model.startChat({
+                history: [
+                    {
+                        role: "user",
+                        parts: [{ text: systemPrompt }]
+                    },
+                    {
+                        role: "model",
+                        parts: [{ text: "Understood. I have read the workflow JSON. How can I help?" }]
+                    },
+                    ...history
+                ]
+            });
+
+            const result = await chat.sendMessage(lastMsg.parts);
+            const response = await result.response;
+            const text = response.text();
+
+            return NextResponse.json({ reply: text });
+        }
+
+        // --- LEGACY / SUMMARY MODE (One-shot) ---
+        // (Kept for backward compatibility or initial summary generation)
+
+        let promptParts: any[] = [];
         const basePrompt = `You are an expert in n8n automation workflows. 
         Analyze the provided context.
-        
-        Task:
-        1. Summarize the workflow's purpose in 2 clear, human-readable sentences.
-        2. Mention the key triggers (e.g. Webhook, Cron) and key actions.
-        3. If an image is provided, use it to verify the node layout or identify visual notes that aren't in the JSON.
-        
+        Task: Detailed summary of this workflow.
         JSON Content:
-        ${JSON.stringify(json).substring(0, 30000)} // Truncate check for safety
+        ${JSON.stringify(json).substring(0, 30000)}
         `;
-
         promptParts.push(basePrompt);
 
         // Image Handling (Multimodal)
@@ -56,7 +99,7 @@ export async function POST(req: Request) {
         const response = await result.response;
         const text = response.text();
 
-        // Persist to Supabase
+        // Persist summary
         const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
         const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 

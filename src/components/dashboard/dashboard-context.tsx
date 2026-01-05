@@ -44,7 +44,7 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
 
                 const { data, error } = await supabase
                     .from('projects')
-                    .select('*')
+                    .select('*, workflows(*)')
                     .eq('user_id', user.id) // Scope to user
                     .order('created_at', { ascending: false });
 
@@ -80,7 +80,8 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
                         hasUpdates: p.has_updates || false,
                         hasVulnerabilities: p.has_vulnerabilities || false,
                         insight_report: p.insight_report || undefined,
-                        insight_generated_at: p.insight_generated_at || undefined
+                        insight_generated_at: p.insight_generated_at || undefined,
+                        workflows: p.workflows || []
                     }));
                     setProjects(mappedProjects);
                 }
@@ -165,7 +166,8 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
                 if (updates.insight_report) dbUpdates.insight_report = updates.insight_report;
                 if (updates.insight_generated_at) dbUpdates.insight_generated_at = updates.insight_generated_at;
                 if (updates.snippets) dbUpdates.snippets = updates.snippets;
-                if (updates.workflows) dbUpdates.workflows = updates.workflows;
+                if (updates.snippets) dbUpdates.snippets = updates.snippets;
+                // Workflows are handled in their own table, do not update projects table column
 
                 if (Object.keys(dbUpdates).length > 0) {
                     const { error } = await supabase
