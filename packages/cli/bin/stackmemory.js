@@ -209,7 +209,7 @@ program
 program
     .command('check')
     .description('Check for Env Var Drift (missing keys)')
-    .action(() => {
+    .action(async () => {
         console.log(chalk.bold('🔍 Checking Environment Variables...'));
         const cwd = process.cwd();
         const envCandidates = [
@@ -218,7 +218,8 @@ program
         ];
         const envPath = envCandidates.find(p => fs.existsSync(p));
 
-        const examplePath = [
+        // Find existing example
+        let examplePath = [
             path.join(cwd, '.env.example'),
             path.join(cwd, '.env.template'),
             path.join(cwd, 'env.example')
@@ -229,11 +230,6 @@ program
             return;
         }
 
-        if (!examplePath) {
-            console.log(chalk.yellow('⚠ No .env.example found. Create one to enable drift checks.'));
-            return;
-        }
-
         const parseKeys = (content) => {
             return content.split('\n')
                 .map(l => l.trim())
@@ -241,6 +237,30 @@ program
                 .map(l => l.split('=')[0].trim())
                 .filter(k => k);
         };
+
+        if (!examplePath) {
+            console.log(chalk.yellow('⚠ No .env.example found.'));
+
+            const answers = await inquirer.prompt([{
+                type: 'confirm',
+                name: 'create',
+                message: 'Would you like to generate .env.example from your current env file?',
+                default: true
+            }]);
+
+            if (answers.create) {
+                const envContent = fs.readFileSync(envPath, 'utf8');
+                const keys = parseKeys(envContent);
+                const exampleContent = keys.map(k => `${k}=`).join('\n');
+
+                fs.writeFileSync(path.join(cwd, '.env.example'), exampleContent);
+                console.log(chalk.green('✔ Created .env.example'));
+                examplePath = path.join(cwd, '.env.example');
+            } else {
+                console.log(chalk.dim('Skipping check. Create .env.example to enable drift detection.'));
+                return;
+            }
+        }
 
         const envKeys = parseKeys(fs.readFileSync(envPath, 'utf8'));
         const exampleKeys = parseKeys(fs.readFileSync(examplePath, 'utf8'));

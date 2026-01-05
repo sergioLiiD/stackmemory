@@ -1,6 +1,6 @@
 {
     "name": "stackmemory",
-    "version": "0.0.4",
+    "version": "0.0.5",
     "description": "The silent observer for your stack. Syncs dependencies and scripts to your StackMemory Vault.",
     "main": "bin/stackmemory.js",
     "bin": {
