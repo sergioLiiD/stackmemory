@@ -212,15 +212,20 @@ program
     .action(() => {
         console.log(chalk.bold('🔍 Checking Environment Variables...'));
         const cwd = process.cwd();
-        const envPath = path.join(cwd, '.env');
+        const envCandidates = [
+            path.join(cwd, '.env.local'),
+            path.join(cwd, '.env')
+        ];
+        const envPath = envCandidates.find(p => fs.existsSync(p));
+
         const examplePath = [
             path.join(cwd, '.env.example'),
             path.join(cwd, '.env.template'),
             path.join(cwd, 'env.example')
         ].find(p => fs.existsSync(p));
 
-        if (!fs.existsSync(envPath)) {
-            console.log(chalk.red('✘ No .env file found.'));
+        if (!envPath) {
+            console.log(chalk.red('✘ No .env or .env.local file found.'));
             return;
         }
 
