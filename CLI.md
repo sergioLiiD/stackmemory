@@ -5,7 +5,7 @@ This document outlines the capabilities of the StackMemory Command Line Interfac
 ## Status: Active Development
 
 - **Package**: `stackmemory` (NPM)
-- **Current Version**: `0.0.5`
+- **Current Version**: `0.0.6`
 - **Command**: `npx stackmemory`
 
 ---
