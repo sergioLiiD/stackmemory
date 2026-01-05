@@ -44,6 +44,47 @@ export function OverviewTab({ project }: { project: Project }) {
     const [newSecretKey, setNewSecretKey] = useState("");
     const [newSecretEnv, setNewSecretEnv] = useState<"production" | "preview" | "development">("production");
 
+    // Secret Editing State
+    const [editingSecretIndex, setEditingSecretIndex] = useState<number | null>(null);
+    const [editSecretKey, setEditSecretKey] = useState("");
+    const [editSecretEnv, setEditSecretEnv] = useState<"production" | "preview" | "development">("production");
+
+    const handleDeleteSecret = async (index: number) => {
+        if (!confirm("Delete this secret metadata?")) return;
+
+        const updatedSecrets = [...(project.secrets || [])];
+        updatedSecrets.splice(index, 1);
+
+        updateProject(project.id, { secrets: updatedSecrets });
+
+        if (supabase) {
+            await supabase.from('projects').update({ secrets: updatedSecrets }).eq('id', project.id);
+        }
+    };
+
+    const startEditingSecret = (index: number, secret: { key: string, environment: any }) => {
+        setEditingSecretIndex(index);
+        setEditSecretKey(secret.key);
+        setEditSecretEnv(secret.environment);
+    };
+
+    const saveEditedSecret = async () => {
+        if (editingSecretIndex === null || !editSecretKey.trim()) return;
+
+        const updatedSecrets = [...(project.secrets || [])];
+        updatedSecrets[editingSecretIndex] = {
+            key: editSecretKey.toUpperCase().replace(/\s+/g, '_'),
+            environment: editSecretEnv
+        };
+
+        updateProject(project.id, { secrets: updatedSecrets });
+        setEditingSecretIndex(null);
+
+        if (supabase) {
+            await supabase.from('projects').update({ secrets: updatedSecrets }).eq('id', project.id);
+        }
+    };
+
     const handleSaveSecret = async () => {
         if (!newSecretKey.trim()) return;
 
@@ -312,11 +353,57 @@ export function OverviewTab({ project }: { project: Project }) {
                     <div className="space-y-2">
                         {project.secrets?.map((secret, i) => (
                             <div key={i} className="group flex items-center justify-between p-2 rounded-lg bg-white/5 border border-white/5 hover:border-white/10 transition-colors">
-                                <div className="flex items-center gap-2 overflow-hidden">
-                                    <Key className="w-3 h-3 text-neutral-500" />
-                                    <code className="text-xs text-neutral-300 truncate">{secret.key}</code>
-                                </div>
-                                <span className="text-[10px] text-neutral-500 px-2 py-0.5 rounded-full bg-black/30 border border-white/5">{secret.environment}</span>
+                                {editingSecretIndex === i ? (
+                                    <div className="flex items-center gap-2 w-full animate-in fade-in">
+                                        <input
+                                            autoFocus
+                                            value={editSecretKey}
+                                            onChange={(e) => setEditSecretKey(e.target.value)}
+                                            className="flex-1 bg-black/30 border border-white/10 rounded px-2 py-1 text-xs text-white focus:outline-none focus:border-[#a78bfa] font-mono uppercase"
+                                            onKeyDown={(e) => e.key === 'Enter' && saveEditedSecret()}
+                                        />
+                                        <select
+                                            value={editSecretEnv}
+                                            onChange={(e) => setEditSecretEnv(e.target.value as any)}
+                                            className="bg-black/30 border border-white/10 rounded px-1 py-1 text-[10px] text-neutral-400 focus:outline-none"
+                                        >
+                                            <option value="production">PROD</option>
+                                            <option value="development">DEV</option>
+                                            <option value="preview">PREVIEW</option>
+                                        </select>
+                                        <button onClick={saveEditedSecret} className="text-green-400 hover:text-green-300 p-1">
+                                            <Check className="w-3 h-3" />
+                                        </button>
+                                        <button onClick={() => setEditingSecretIndex(null)} className="text-red-400 hover:text-red-300 p-1">
+                                            <X className="w-3 h-3" />
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <div className="flex items-center gap-2 overflow-hidden flex-1">
+                                            <Key className="w-3 h-3 text-neutral-500 flex-shrink-0" />
+                                            <code className="text-xs text-neutral-300 truncate" title={secret.key}>{secret.key}</code>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-[10px] text-neutral-500 px-2 py-0.5 rounded-full bg-black/30 border border-white/5">{secret.environment}</span>
+
+                                            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <button
+                                                    onClick={() => startEditingSecret(i, secret)}
+                                                    className="p-1 hover:bg-white/10 rounded text-neutral-500 hover:text-white transition-colors"
+                                                >
+                                                    <Pencil className="w-3 h-3" />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDeleteSecret(i)}
+                                                    className="p-1 hover:bg-red-500/10 rounded text-neutral-500 hover:text-red-400 transition-colors"
+                                                >
+                                                    <X className="w-3 h-3" />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </>
+                                )}
                             </div>
                         ))}
                         {!project.secrets?.length && (
