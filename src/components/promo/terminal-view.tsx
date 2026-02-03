@@ -35,9 +35,9 @@ export function TerminalView() {
                 currentIndex++;
             } else {
                 clearInterval(interval);
-                setTimeout(() => setShowLogs(true), 500);
+                setTimeout(() => setShowLogs(true), 100); // Faster delay
             }
-        }, 50);
+        }, 30); // Faster typing (was 50)
 
         return () => clearInterval(interval);
     }, []);
@@ -56,7 +56,7 @@ export function TerminalView() {
                 } else {
                     clearInterval(logInterval);
                 }
-            }, 300); // Speed of logs cascading
+            }, 100); // Much faster logs (was 300) to fit in 4s phase
             return () => clearInterval(logInterval);
         }
     }, [showLogs]);
