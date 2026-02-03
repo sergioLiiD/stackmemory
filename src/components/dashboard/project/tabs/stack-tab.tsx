@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Project, StackItem } from "@/data/mock";
-import { Box, Layers, Plus, Trash2, Save, X, Pencil, ShieldAlert, ArrowUpRight, RefreshCw, FileText, Terminal } from "lucide-react";
+import { Box, Layers, Plus, Trash2, Save, X, Pencil, ShieldAlert, ArrowUpRight, RefreshCw, FileText, Terminal, CheckCircle2 } from "lucide-react";
 import { useDashboard } from "../../dashboard-context";
 import { supabase } from "@/lib/supabase";
 import { StackModal } from "./stack-modal";
@@ -19,6 +19,10 @@ export function StackTab({ project }: { project: Project }) {
 
     // Sync state
     const [isSyncing, setIsSyncing] = useState(false);
+
+    // Update check state
+    const [isCheckingUpdates, setIsCheckingUpdates] = useState(false);
+    const [hasCheckedUpdates, setHasCheckedUpdates] = useState(false);
 
     const handleStackSync = async () => {
         if (!project.repoUrl) return;
@@ -73,11 +77,15 @@ export function StackTab({ project }: { project: Project }) {
     useEffect(() => {
         const checkUpdates = async () => {
             if (!project.stack.length) return;
+
             const packages = project.stack
                 .filter(item => item.version)
                 .map(item => ({ name: item.name, version: item.version }));
 
             if (packages.length === 0) return;
+
+            setIsCheckingUpdates(true);
+            setHasCheckedUpdates(false);
 
             try {
                 const res = await fetch('/api/stack/check-updates', {
@@ -117,6 +125,9 @@ export function StackTab({ project }: { project: Project }) {
                 }
             } catch (error) {
                 console.error("Failed to check updates", error);
+            } finally {
+                setIsCheckingUpdates(false);
+                setHasCheckedUpdates(true);
             }
         };
 
@@ -267,6 +278,11 @@ export function StackTab({ project }: { project: Project }) {
                             (Last check: {project.lastUpdated})
                         </span>
                     )}
+                    {isCheckingUpdates && (
+                        <span className="text-xs font-normal text-indigo-500 animate-pulse ml-2 flex items-center gap-1">
+                            <RefreshCw className="w-3 h-3 animate-spin" /> Checking updates...
+                        </span>
+                    )}
                 </h3>
                 <div className="flex gap-2">
                     <div className="flex bg-neutral-100 dark:bg-white/5 rounded-full p-1 gap-1">
@@ -333,12 +349,16 @@ export function StackTab({ project }: { project: Project }) {
                         <div className="flex items-start justify-between mb-3 pr-12">
                             <div className="w-10 h-10 rounded-2xl bg-neutral-100 dark:bg-white/5 flex items-center justify-center text-neutral-700 dark:text-white relative">
                                 <Box className="w-5 h-5" />
-                                {updates[item.name.toLowerCase()]?.latest && (
+                                {updates[item.name.toLowerCase()]?.latest ? (
                                     <div className={`absolute -top-1 -right-1 w-3 h-3 rounded-full border-2 border-white dark:border-[#121212] ${updates[item.name.toLowerCase()]?.vulnerabilities?.length
                                         ? 'bg-red-500'
                                         : 'bg-yellow-500'}`}
                                         title={`Update available: v${updates[item.name.toLowerCase()].latest}`} />
-                                )}
+                                ) : (hasCheckedUpdates && item.version && !updates[item.name.toLowerCase()] && (
+                                    <div className="absolute -top-1 -right-1 bg-emerald-500 text-white rounded-full p-[2px] border-2 border-white dark:border-[#121212]" title="Up to date">
+                                        <CheckCircle2 className="w-2.5 h-2.5" />
+                                    </div>
+                                ))}
                             </div>
                             <div className="flex items-center gap-2">
                                 {updates[item.name.toLowerCase()]?.vulnerabilities && updates[item.name.toLowerCase()]!.vulnerabilities!.length > 0 && (
@@ -351,7 +371,9 @@ export function StackTab({ project }: { project: Project }) {
                                         ? 'bg-red-500/10 text-red-500 border-red-500/20'
                                         : updates[item.name.toLowerCase()]?.latest
                                             ? 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20'
-                                            : 'bg-neutral-100 dark:bg-white/5 text-neutral-500 dark:text-neutral-400 border-neutral-200 dark:border-transparent'
+                                            : hasCheckedUpdates && !updates[item.name.toLowerCase()]
+                                                ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' // Green for clean
+                                                : 'bg-neutral-100 dark:bg-white/5 text-neutral-500 dark:text-neutral-400 border-neutral-200 dark:border-transparent'
                                         }`}>
                                         v{item.version}
                                     </span>
@@ -361,12 +383,16 @@ export function StackTab({ project }: { project: Project }) {
                         <h4 className="text-base font-bold text-neutral-900 dark:text-white mb-1 group-hover:text-indigo-600 dark:group-hover:text-[#a78bfa] transition-colors">{item.name}</h4>
                         <div className="flex items-center justify-between">
                             <span className="text-[10px] font-bold tracking-wider text-neutral-500 uppercase">{item.type}</span>
-                            {updates[item.name.toLowerCase()]?.latest && (
+                            {updates[item.name.toLowerCase()]?.latest ? (
                                 <span className={`text-[10px] font-bold animate-pulse ${updates[item.name.toLowerCase()]?.vulnerabilities?.length ? 'text-red-400' : 'text-yellow-500'
                                     }`}>
                                     Latest: v{updates[item.name.toLowerCase()].latest}
                                 </span>
-                            )}
+                            ) : (hasCheckedUpdates && item.version && !updates[item.name.toLowerCase()] && (
+                                <span className="text-[10px] font-bold text-emerald-500 flex items-center gap-1">
+                                    <CheckCircle2 className="w-3 h-3" /> Up to date
+                                </span>
+                            ))}
                         </div>
                         {item.notes && (
                             <div className="mt-3 pt-3 border-t border-neutral-100 dark:border-white/5">

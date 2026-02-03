@@ -57,8 +57,10 @@ program
         ]);
 
         if (answers.token) {
-            config.set('token', answers.token);
+            const cleanToken = answers.token.trim();
+            config.set('token', cleanToken);
             console.log(chalk.green('✔ Token saved!'));
+            console.log(chalk.dim(`Config stored at: ${config.path}`));
         }
     });
 
@@ -135,49 +137,73 @@ program
     });
 
 program
-    .command('ask <query>')
+    .command('ask [query]')
     .description('Ask your project brain a question')
     .action(async (query) => {
         const { token, projectId } = getAuth();
+
+        console.log(chalk.dim(`DEBUG: Config path: ${config.path}`));
+        console.log(chalk.dim(`DEBUG: Project ID: ${projectId}`));
+        console.log(chalk.dim(`DEBUG: Token: ${token ? (token.substring(0, 10) + '...' + token.substring(token.length - 5)) : 'None'}`));
+
         if (!token || !projectId) return console.log(chalk.red('Run "stackmemory login" and "init" first.'));
 
+        if (!query) {
+            const answers = await inquirer.prompt([
+                {
+                    type: 'input',
+                    name: 'question',
+                    message: 'What do you want to ask your codebase?'
+                }
+            ]);
+            query = answers.question;
+        }
+
+        if (!query) return;
+
         const s = spinner('Thinking...').start();
+
         const client = getApiClient(token);
 
         try {
-            // Streaming response is hard with Axios + formatting, let's use fetch for stream or simplified POST
-            // The /api/chat returns a stream. For CLI, simpler to wait or handle stream.
-            // Let's try simple POST and buffering for now (MVP).
-
-            // Actually, fetch API is available in Node 18+.
-            const response = await fetch(`${DEFAULT_API_URL}/chat`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ query, projectId })
+            // Using axios for consistency with other commands and test script
+            const response = await client.post('/chat', {
+                query,
+                projectId
+            }, {
+                responseType: 'stream'
             });
 
-            if (!response.ok) throw new Error(response.statusText);
-
             s.stop();
-
-            // Stream reader
-            const reader = response.body.getReader();
-            const decoder = new TextDecoder();
-
             process.stdout.write(chalk.cyan('AI: '));
 
-            while (true) {
-                const { done, value } = await reader.read();
-                if (done) break;
-                process.stdout.write(decoder.decode(value));
-            }
-            process.stdout.write('\n');
+            const stream = response.data;
+
+            stream.on('data', (chunk) => {
+                process.stdout.write(chunk.toString());
+            });
+
+            stream.on('end', () => {
+                process.stdout.write('\n');
+            });
+
+            stream.on('error', (e) => {
+                console.error(chalk.red('Stream Error:'), e.message);
+            });
+
+            // Wait for stream to finish
+            await new Promise((resolve, reject) => {
+                stream.on('end', resolve);
+                stream.on('error', reject);
+            });
 
         } catch (e) {
-            s.fail(`Error: ${e.message}`);
+            s.stop(); // Ensure spinner stops on error
+            if (e.response?.status === 401) {
+                console.log(chalk.red('✖ Error: Unauthorized. Please run "stackmemory login" again to refresh your token.'));
+            } else {
+                s.fail(`Error: ${e.response?.data?.error || e.message}`);
+            }
         }
     });
 

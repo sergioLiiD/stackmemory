@@ -140,5 +140,5 @@ npm run build 2>&1 | stackmem push --analyze
   - [x] Must support sending `scripts` as Snippets/Command Zone items.
   - [x] **Real-time**: Frontend updates instantly upon sync.
 - [x] **`stackmem doctor`**: Diagnoses connection, token status, and linked project.
-- [x] **`stackmem ask <query>`**: Direct interface to the Project Brain (RAG).
+- [x] **`stackmem ask [query]`**: Direct interface to the Project Brain (RAG). Interactive if no query provided.
 - [x] **`stackmem log <content>`**: Quick journal entry with optional tags.
