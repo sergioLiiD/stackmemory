@@ -13,7 +13,7 @@ export default function PromoPage() {
     const [phase, setPhase] = useState<AnimationPhase>("INTRO");
 
     // Sequential State Machine Logic
-    // Each phase triggers the next one after a set duration
+    // Adjusted for 30s Voiceover Script
     useEffect(() => {
         let timeout: NodeJS.Timeout;
 
@@ -21,31 +21,33 @@ export default function PromoPage() {
 
         switch (phase) {
             case "TERMINAL":
-                // Run terminal for 5s, then go to Chaos
-                timeout = setTimeout(() => setPhase("CHAOS"), 5000);
+                // "We build. We deploy... and then we forget." (~4s)
+                timeout = setTimeout(() => setPhase("CHAOS"), 4000);
                 break;
             case "CHAOS":
-                // Chaos settles for 3s, then start connecting Vectors
+                // "Context disappears... Documentation gets lost." (~3s)
                 timeout = setTimeout(() => setPhase("VECTORS"), 3000);
                 break;
             case "VECTORS":
-                // Vectors draw for 4s, then form Order
-                timeout = setTimeout(() => setPhase("ORDER"), 4000);
+                // Drawing connections... (~2s)
+                timeout = setTimeout(() => setPhase("ORDER"), 2000);
                 break;
             case "ORDER":
-                // Hold grid for 5s, then start Search Demo
+                // "But what if your code could remember itself?" (~4s)
+                // Grid holds steady.
                 timeout = setTimeout(() => setPhase("SEARCH_DEMO"), 4000);
                 break;
             case "SEARCH_DEMO":
-                // Run demo for 8s, then show Features
-                timeout = setTimeout(() => setPhase("FEATURES"), 8000);
+                // "Meet StackMemory... connects every file..." (~7s)
+                // Typing animation happens here.
+                timeout = setTimeout(() => setPhase("FINISHED"), 7000);
                 break;
             case "FEATURES":
-                // Show features for 8s, then finish
-                timeout = setTimeout(() => setPhase("FINISHED"), 8000);
+                // SKIP FEATURES -> Go straight to logo for the "Let me show you" transition
+                timeout = setTimeout(() => setPhase("FINISHED"), 100);
                 break;
             case "FINISHED":
-                // End state
+                // "...and gives you a permanent Second Brain."
                 break;
         }
 
