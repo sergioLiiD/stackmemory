@@ -67,16 +67,33 @@ export async function POST(req: Request) {
         let contextText = "";
 
         if (query && query.length > 5) { // Only RAG if meaningful text
+            console.log("CHAT DEBUG: Searching for documents...", { projectId, query });
             documents = await searchSimilarDocuments(projectId, query);
+            console.log("CHAT DEBUG: Found documents:", documents.map((d: any) => d.file_path));
+
             contextText = documents.map((doc: any) =>
                 `--- FILE: ${doc.file_path} ---\n${doc.content}\n------`
             ).join('\n\n');
         }
 
-        const systemPrompt = `You are Vibe Coder, an expert senior software engineer assisting the user with their project.
-You have access to valid code snippets from the project's codebase below.
+        // 1.5 Fetch Project Stack (Dependencies)
+        const { data: projectData } = await supabase
+            .from('projects')
+            .select('stack')
+            .eq('id', projectId)
+            .single();
 
-CONTEXT CODEBASE:
+        const stackContext = projectData?.stack && Array.isArray(projectData.stack)
+            ? projectData.stack.map((s: any) => `- ${s.name}: ${s.version || 'unknown'}`).join('\n')
+            : "No stack information available.";
+
+        const systemPrompt = `You are Vibe Coder, an expert senior software engineer assisting the user with their project.
+You have access to valid code snippets from the project's codebase and the project's tech stack below.
+
+PROJECT TECH STACK (from package.json):
+${stackContext}
+
+CONTEXT CODEBASE (RAG Results):
 ${contextText}
 
 INSTRUCTIONS:
