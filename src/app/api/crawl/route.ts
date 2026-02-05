@@ -30,7 +30,7 @@ export async function POST(req: Request) {
         // 2. Start Crawling
         // Note: In a production app, this should be offloaded to a queue (Inngest, BullMQ, etc.)
         // For V1/MVP, we'll do it synchronously but limit the file count to avoid Vercel timeout (10s/60s).
-        const processedFiles = await processRepository(repoUrl, token, 20); // Start small
+        const processedFiles = await processRepository(repoUrl, token, 100); // Increased limit for better context
 
         // 3. Store Embeddings
         const { storeEmbeddings } = await import('@/lib/vector-store');

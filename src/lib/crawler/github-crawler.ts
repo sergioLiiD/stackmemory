@@ -126,21 +126,31 @@ export async function processRepository(repoUrl: string, token: string, maxFiles
     // 3. Filter
     const eligibleFiles = filterFiles(tree);
 
-    // Sort to prioritize documentation and context files
+    // 4. Sort to prioritize documentation AND high-value logic
+    // We want a mix. Let's use a scoring system that doesn't completely starve code.
     eligibleFiles.sort((a, b) => {
         const score = (node: FileNode) => {
             const lower = node.path.toLowerCase();
-            if (lower.endsWith('readme.md')) return 3;
-            if (lower.endsWith('package.json')) return 2;
-            if (lower.endsWith('.md')) return 1;
+            const ext = lower.split('.').pop();
+
+            // Critical identity/context files
+            if (lower.endsWith('readme.md')) return 10;
+            if (lower.endsWith('package.json')) return 9;
+            if (lower.endsWith('dev_memory.md')) return 10;
+
+            // Documentation files
+            if (lower.endsWith('.md')) return 5;
+
+            // High-value logic files (TS, JS, Python, etc.)
+            const highValueExtensions = ['ts', 'tsx', 'js', 'jsx', 'py', 'sql', 'rs', 'go'];
+            if (ext && highValueExtensions.includes(ext)) return 4;
+
             return 0;
         };
-        return score(b) - score(a); // Descending score
+        return score(b) - score(a);
     });
 
-    console.log(`Filtered down to ${eligibleFiles.length} eligible source files.`);
-
-    // 4. Chunk/Select (Limit to avoiding hitting rate limits or timeouts blindly)
+    // 5. Chunk/Select (Limit to avoiding hitting rate limits or timeouts blindly)
     const filesToProcess = eligibleFiles.slice(0, maxFiles);
 
     // 5. Fetch Content (in parallel with concurrency limit ideally, but Promise.all for simple V1)
@@ -153,11 +163,24 @@ export async function processRepository(repoUrl: string, token: string, maxFiles
             // Using the API generic fetch with 'application/vnd.github.v3.raw' works on the blob URL.
 
             const content = await fetchFileContent(node.url, token);
+            const extension = node.path.split('.').pop()?.toLowerCase();
+            const languageMap: Record<string, string> = {
+                'ts': 'typescript',
+                'tsx': 'typescript',
+                'js': 'javascript',
+                'jsx': 'javascript',
+                'py': 'python',
+                'md': 'markdown',
+                'sql': 'sql',
+                'rs': 'rust',
+                'go': 'go'
+            };
+
             return {
                 path: node.path,
                 content,
                 size: node.size || content.length,
-                language: node.path.split('.').pop() // simple extension check
+                language: extension ? (languageMap[extension] || extension) : 'text'
             };
         } catch (e) {
             console.error(`Error fetching ${node.path}`, e);
