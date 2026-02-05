@@ -106,12 +106,6 @@ INSTRUCTIONS:
 - Use Markdown for code blocks.
 `;
 
-        // 2. Generate Stream with Gemini
-        const model = genAI.getGenerativeModel({
-            model: "gemini-2.0-flash",
-            systemInstruction: systemPrompt
-        });
-
         // 2. Prepare Content (Text + Media)
         let promptParts: any[] = [];
         let fileUri: string | null = null;
@@ -185,7 +179,12 @@ INSTRUCTIONS:
             return NextResponse.json({ error: 'No content provided' }, { status: 400 });
         }
 
-        const result = await model.generateContentStream(promptParts);
+        const { safeGenerateContentStream } = await import('@/lib/gemini');
+
+        const { result, modelUsed } = await safeGenerateContentStream({
+            systemInstruction: systemPrompt,
+            contents: promptParts
+        });
 
         // 3. Return Readable Stream
         const readableStream = new ReadableStream({
@@ -209,7 +208,7 @@ INSTRUCTIONS:
 
                 try {
                     const { logUsage } = await import('@/lib/usage-logger');
-                    await logUsage(projectId, 'chat', 'gemini-2.0-flash', estimatedInputTokens, estimatedOutputTokens);
+                    await logUsage(projectId, 'chat', modelUsed, estimatedInputTokens, estimatedOutputTokens);
                 } catch (e) {
                     console.error("Failed to log chat usage", e);
                 }

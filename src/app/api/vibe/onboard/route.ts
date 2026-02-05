@@ -98,15 +98,15 @@ ${contextContent}
 Generate the Onboarding Guide.
 `;
 
-        const model = genAI.getGenerativeModel({
-            model: "gemini-2.0-flash",
-            systemInstruction: systemPrompt
-        });
+        const { safeGenerateContent } = await import('@/lib/gemini');
 
-        const result = await model.generateContent([
-            "OUTPUT RULES: Return RAW Markdown. DO NOT wrap in ```markdown code blocks.",
-            userMessage
-        ]);
+        const { result, modelUsed } = await safeGenerateContent({
+            systemInstruction: systemPrompt,
+            contents: [
+                "OUTPUT RULES: Return RAW Markdown. DO NOT wrap in ```markdown code blocks.",
+                userMessage
+            ]
+        });
 
         let report = result.response.text();
         report = report.replace(/```markdown/g, '').replace(/```/g, '');
@@ -115,7 +115,7 @@ Generate the Onboarding Guide.
         const inputTokens = Math.ceil((userMessage.length + systemPrompt.length) / 4);
         const outputTokens = Math.ceil(report.length / 4);
         const { logUsage } = await import('@/lib/usage-logger');
-        await logUsage(projectId, 'insight', 'gemini-2.0-flash', inputTokens, outputTokens);
+        await logUsage(projectId, 'insight', modelUsed, inputTokens, outputTokens);
 
         // 5. Save to Database
         const { error: updateError } = await supabase
