@@ -83,18 +83,20 @@ export async function storeEmbeddings(projectId: string, files: ProcessedFile[])
     return totalChunks;
 }
 
-export async function searchSimilarDocuments(projectId: string, query: string, matchThreshold: number = 0.65, matchCount: number = 20) {
+export async function searchSimilarDocuments(projectId: string, query: string, matchThreshold: number = 0.4, matchCount: number = 20) {
     const cookieStore = await cookies();
     const supabase = createClient(cookieStore);
 
     // 1. Vectorize Query
     const queryEmbedding = await generateEmbedding(query);
 
+    console.log(`SEARCH DEBUG: Threshold=${matchThreshold}, Count=${matchCount}, Project=${projectId}`);
+
     // 2. Search via RPC
     const { data: documents, error } = await supabase.rpc('match_documents', {
         query_embedding: queryEmbedding,
         match_threshold: matchThreshold,
-        match_count: matchCount, // Use the passed matchCount (default 20)
+        match_count: matchCount,
         filter_project_id: projectId
     });
 
@@ -103,9 +105,11 @@ export async function searchSimilarDocuments(projectId: string, query: string, m
         throw error;
     }
 
-    console.log(`Search for "${query}": Found ${documents?.length || 0} matches.`);
-    if (!documents || documents.length === 0) {
-        console.warn("No documents found. Check project_id match:", projectId);
+    console.log(`SEARCH DEBUG result for "${query}": Found ${documents?.length || 0} matches.`);
+    if (documents && documents.length > 0) {
+        console.log("SEARCH DEBUG top matches:", documents.slice(0, 3).map((d: any) => ({ path: d.file_path, similarity: d.similarity })));
+    } else {
+        console.warn("SEARCH DEBUG: No documents found at this threshold.");
     }
 
     return documents;
