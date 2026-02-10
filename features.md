@@ -33,7 +33,7 @@ The central hub for all user activity.
 - **Vector Search**: Semantic search capability to find relevant code snippets and context.
 - **Context/Assistant**: AI Chat interface with context-awareness of the project codebase.
 - **Multimodal Analysis**:
-  - Integration with **Google Gemini 2.0 Flash** for advanced reasoning.
+  - Integration with **Google Gemini 3.0 Flash** for advanced reasoning.
   - **Video & Image Analysis**: Upload screenshots or screen recordings of bugs/UI for the AI to analyze and debug.
   - Full context awareness of both code and visual inputs.
 - **Automatic Semantic Tagging**: AI-driven analysis of journal entries to suggest relevant tags and categorize content.

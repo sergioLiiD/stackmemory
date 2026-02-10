@@ -9,7 +9,7 @@ const PRICING = {
     'gpt-4o': { input: 5.00, output: 15.00 },
     // Google Gemini Pricing (approx per 1M tokens) is erratic during preview, assuming Tier 1 payloads
     'gemini-1.5-flash': { input: 0.075, output: 0.30 },
-    'gemini-2.0-flash': { input: 0.10, output: 0.40 } // Placeholder slightly higher
+    'gemini-3.0-flash': { input: 0.10, output: 0.40 } // Professional tier costs
 };
 
 type ModelName = keyof typeof PRICING;

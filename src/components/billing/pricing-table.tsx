@@ -86,7 +86,7 @@ export function PricingTable({
                         <Check className="w-4 h-4 text-purple-500" /> <strong>Unlimited Chats & Insights</strong>
                     </li>
                     <li className="flex items-center gap-3 text-sm text-neutral-700 dark:text-neutral-300">
-                        <Check className="w-4 h-4 text-purple-500" /> <strong>Gemini 1.5 Pro & 2.0 Flash</strong>
+                        <Check className="w-4 h-4 text-purple-500" /> <strong>Gemini 3.0 Pro & Flash</strong>
                     </li>
                     <li className="flex items-center gap-3 text-sm text-neutral-700 dark:text-neutral-300">
                         <Check className="w-4 h-4 text-purple-500" /> Multimodal Inputs (Images/Video)

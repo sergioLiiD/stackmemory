@@ -48,7 +48,7 @@ export function Hero() {
                 transition={{ delay: 0.3 }}
                 className="text-lg md:text-xl text-neutral-400 max-w-2xl mb-10 leading-relaxed"
             >
-                Powered by <span className="text-white font-medium">Google Gemini 2.0</span>.
+                Powered by <span className="text-white font-medium">Google Gemini 3.0</span>.
                 Vibe Coder reads your <strong>entire repo</strong> (docs, config, code) to give you instant answers,
                 architectural insights, and deep debugging. Stop explaining your stack repeatedly.
             </motion.p>

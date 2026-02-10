@@ -16,7 +16,7 @@ export function ComparisonMatrix() {
         {
             category: "Intelligence",
             items: [
-                { name: "AI Model", free: "Gemini 2.0 Flash", pro: "Gemini 1.5 Pro + 2.0 Flash" },
+                { name: "AI Model", free: "Gemini 3.0 Flash", pro: "Gemini 3.0 Pro + Flash" },
                 { name: "Context Window", free: "Standard", pro: "1 Million Tokens" },
                 { name: "Project Insight (Deep Dive)", free: "3 / month", pro: "Unlimited" },
                 { name: "Vibe Onboard (Guides)", free: "Included (shares limit)", pro: "Unlimited" },

@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 
 const SLIDES = [
     "95% of projects rot because context is lost.",
-    "StackMemory + Gemini 2.0 restores that context.",
+    "StackMemory + Gemini 3.0 restores that context.",
     "Welcome to the era of Vibe Coding."
 ];
 

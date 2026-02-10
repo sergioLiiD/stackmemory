@@ -50,7 +50,7 @@
 | **1:40** | **CLI & Ingestion** <br> Split screen: Terminal `stackmem sync`. | "It starts at the terminal. With our **CLI**, one command silently syncs your local environment to the cloud. No manual data entry." |
 | **1:55** | **Stack Analyzer** <br> Show 'Stack' tab with detected tech. | "The **Stack Analyzer** scans your `package.json`, maps your dependencies, and auto-generates your stack documentation." |
 | **2:10** | **Semantic Search** <br> Search query: *"Where is the auth logic?"* | "But here's the magic: **Semantic Search**. Find logic you wrote months ago in milliseconds." |
-| **2:25** | **Vibe Coder (AI)** <br> Chat interface. <br> "Powered by **Gemini 2.0**". | "And meet **Vibe Coder**. Powered by **Gemini 2.0 Flash**, it allows you to *chat* with your codebase. It understands your unique context." |
+| **2:25** | **Vibe Coder (AI)** <br> Chat interface. <br> "Powered by **Gemini 3.0**". | "And meet **Vibe Coder**. Powered by **Gemini 3.0 Flash**, it allows you to *chat* with your codebase. It understands your unique context." |
 | **2:45** | **Context Weaver** <br> Drag & Drop files into chat. | "With **Context Weaver**, you can stitch together frontend and backend files to solve complex bugs across your stack." |
 | **3:00** | **GitHub Integration** <br> Show GitHub sync status. | "We seamlessly integrate with **GitHub**, keeping your memory in sync with every commit." |
 | **3:15** | **MCP Bridge** <br> Show MCP settings. | "And with the **Model Context Protocol (MCP)** Bridge, we connect cloud AI directly to your local database and tools." |

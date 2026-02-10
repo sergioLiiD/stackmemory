@@ -56,7 +56,7 @@ ${f.content}
 `).join('\n');
         }
 
-        // 3. Prompt Gemini 2.0 Flash (The "Architect")
+        // 3. Prompt Gemini 3.0 Flash (The "Architect")
         const systemPrompt = `You are a Senior Principal Software Architect and UI Designer.
 Your goal is to write a "Project Insight Report" (The Bible) for a new CTO or Investor.
 
@@ -92,7 +92,7 @@ Please generate the Project Insight Report.
 `;
 
         const model = genAI.getGenerativeModel({
-            model: "gemini-2.0-flash",
+            model: "gemini-3.0-flash",
             systemInstruction: systemPrompt
         });
 
@@ -111,7 +111,7 @@ Please generate the Project Insight Report.
         const inputTokens = Math.ceil((userMessage.length + systemPrompt.length) / 4);
         const outputTokens = Math.ceil(report.length / 4);
         const { logUsage } = await import('@/lib/usage-logger');
-        await logUsage(projectId, 'insight', 'gemini-2.0-flash', inputTokens, outputTokens);
+        await logUsage(projectId, 'insight', 'gemini-3.0-flash', inputTokens, outputTokens);
 
         // 4. Save to Database
         const { error: updateError } = await supabase

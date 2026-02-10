@@ -14,7 +14,7 @@ StackMemory is an intelligent, AI-powered dashboard that acts as a **Second Brai
 
 * **Automatic Ingestion**: A CLI tool (`stackmem sync`) that silently scans your local projects and syncs their metadata, dependencies, and structure to the cloud.
 * **GitHub Integration**: Seamlessly connects to your repositories to fetch, index, and understand your code structure automatically.
-* **Vibe Coder (AI Assistant)**: A multimodal chat interface powered by **Google Gemini 2.0 Flash** that allows you to "talk" to your codebase. It uses RAG (Retrieval-Augmented Generation) to answer complex architectural questions.
+* **Vibe Coder (AI Assistant)**: A multimodal chat interface powered by **Google Gemini 3.0 Flash** that allows you to "talk" to your codebase. It uses RAG (Retrieval-Augmented Generation) to answer complex architectural questions.
 * **Stack Intelligence**: Automatically outlines your tech stack, detects security vulnerabilities, and suggests upgrades.
 * **MCP Bridge**: Implements the **Model Context Protocol** to connect cloud AI with your local environment (Postgres, Filesystem) securely.
 * **Service Locker**: A unified vault for all your critical project links (AWS, Vercel, designs).
@@ -25,7 +25,7 @@ We built StackMemory using a modern, edge-ready stack:
 
 * **Frontend**: Built with **Next.js 16** (App Router) and **React 19** for high performance and Server Actions. We used **TailwindCSS v4** and **Framer Motion** for a premium, clean UI.
 * **Backend & Data**: **Supabase** handles our PostgreSQL database, Authentication, and Vector Storage (`pgvector`) for our semantic search engine.
-* **AI Engine**: We leverage **Google Gemini 2.0 Flash** via the Vercel AI SDK for its massive context window and speed, essential for processing large codebases in real-time.
+* **AI Engine**: We leverage **Google Gemini 3.0 Flash** via the Vercel AI SDK for its massive context window and speed, essential for processing large codebases in real-time.
 * **Infrastructure**: The app is deployed on Vercel, utilizing Edge Functions for low-latency responses.
 
 ### 🚧 Challenges we ran into
@@ -52,7 +52,7 @@ We built StackMemory using a modern, edge-ready stack:
 * [next.js](https://nextjs.org) - The React Framework for the Web
 * [react](https://react.dev) - UI Library (v19)
 * [supabase](https://supabase.com) - Database, Auth, and Vector Store
-* [google-gemini](https://deepmind.google/technologies/gemini/) - AI Model (Gemini 2.0 Flash)
+* [google-gemini](https://deepmind.google/technologies/gemini/) - AI Model (Gemini 3.0 Flash)
 * [tailwindcss](https://tailwindcss.com) - Styling (v4)
 * [framer-motion](https://www.framer.com/motion/) - Animations
 * [postcss](https://postcss.org) - CSS Tooling

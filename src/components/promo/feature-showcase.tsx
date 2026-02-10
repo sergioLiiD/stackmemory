@@ -7,7 +7,7 @@ const FEATURES = [
     { icon: Map, title: "Vibe Onboard", desc: "Auto-generated Guides." },
     { icon: Video, title: "Video Debugging", desc: "Fix bugs from screencasts." },
     { icon: Zap, title: "Project Insight", desc: "Deep architectural analysis." },
-    { icon: MessageSquare, title: "Vibe Coder", desc: "Powered by Gemini 2.0." },
+    { icon: MessageSquare, title: "Vibe Coder", desc: "Powered by Gemini 3.0." },
 ];
 
 export function FeatureShowcase() {

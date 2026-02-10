@@ -66,7 +66,7 @@ ${f.content}
 `).join('\n');
         }
 
-        // 4. Prompt Gemini 2.0 Flash (The "DevRel")
+        // 4. Prompt Gemini 3.0 Flash (The "DevRel")
         const systemPrompt = `You are a Senior Developer Relations Engineer and Onboarding Specialist.
 Your goal is to write a "GETTING_STARTED.md" guide for a new developer joining this specific team.
 

@@ -32,7 +32,7 @@ export default function GuidePage() {
             id: "multimodal-agent",
             title: "Vibe Coder AI",
             description: "Your intelligent coding partner with Vision. Explain bugs with screenshots or videos.",
-            longDescription: "Vibe Coder isn't just a text bot. It's a Multimodal AI agent powered by Gemini 2.0 Flash. It can see what you see. Upload screenshots of broken layouts or screen recordings of buggy behaviors, and it will analyze the visual context alongside your code to provide pinpoint solutions.",
+            longDescription: "Vibe Coder isn't just a text bot. It's a Multimodal AI agent powered by Gemini 3.0 Flash. It can see what you see. Upload screenshots of broken layouts or screen recordings of buggy behaviors, and it will analyze the visual context alongside your code to provide pinpoint solutions.",
             icon: Bot,
             badge: "NEW",
             color: "text-fuchsia-500",
@@ -319,7 +319,7 @@ export default function GuidePage() {
         {
             id: "project-insight",
             title: "Project Insight",
-            description: "Generate a comprehensive 'Deep Dive' report (The Bible) for your project using Gemini 2.0.",
+            description: "Generate a comprehensive 'Deep Dive' report (The Bible) for your project using Gemini 3.0.",
             longDescription: "Project Insight is the ultimate documentation tool. It reads your entire file tree and critical documents to write a Senior Architect-level report including Executive Summary, Architecture Map, and Improvement Opportunities.",
             icon: Sparkles,
             badge: "PRO",

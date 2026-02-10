@@ -17,14 +17,14 @@ export async function POST(req: Request) {
         }
 
         const genAI = new GoogleGenerativeAI(apiKey);
-        // User reported 1.5 deprecated/not found, switching to 2.0
-        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
+        // User reported 1.5 deprecated/not found, switching to 3.0
+        const model = genAI.getGenerativeModel({ model: "gemini-3.0-flash" });
 
         // CHAT MODE
         if (messages && Array.isArray(messages)) {
             // We construct the history. 
             // The JSON context is Critical. We'll add it as a System Instruction if supported, or just the first user message.
-            // Gemini 1.5/2.0 supports systemInstruction in model config, but for simplicity we can just prepend.
+            // Gemini 3.0 supports systemInstruction in model config, but for simplicity we can just prepend.
 
             const systemPrompt = `You are an expert in n8n automation workflows. 
             Here is the JSON definition of the workflow you are analyzing:

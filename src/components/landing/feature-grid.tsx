@@ -45,7 +45,7 @@ export function FeatureGrid() {
                             <Sparkles className="w-8 h-8 text-indigo-400 mb-4" />
                             <BentoHeader title="Project Insight" subtitle="The 'Architect's Bible' for your repo." />
                             <p className="text-sm text-neutral-400 mt-4 leading-relaxed">
-                                Gemini 2.0 reads every file in your project to generate a comprehensive <strong>"Deep Dive Report"</strong>:
+                                Gemini 3.0 reads every file in your project to generate a comprehensive <strong>"Deep Dive Report"</strong>:
                                 Executive Summary, Tech Stack Analysis, and Architecture Map.
                             </p>
                         </div>

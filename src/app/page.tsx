@@ -79,7 +79,7 @@ function LandingContent() {
             },
             "description": "The intelligent coding assistant dashboard for developers. Manage projects, track tech stacks, and use Multimodal AI for debugging.",
             "featureList": [
-              "Vibe Coder AI (Multimodal Debugging)",
+              "Vibe Coder AI (Gemini 3.0 Flash)",
               "Model Context Protocol (MCP) Bridge Management",
               "Automatic Tech Stack Detection",
               "Vulnerability Scanning",

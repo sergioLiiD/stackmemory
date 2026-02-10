@@ -37,6 +37,7 @@ Panel de control para el dueño de la plataforma.
   * `pgvector` (Supabase) para almacenamiento vectorial.
   * `text-embedding-ada-002` para embeddings.
   * `gpt-4o-mini` para generación de chat (RAG).
+  * `Gemini 3.0 Flash` para análisis multimodal y onboarding.
 
 ## 📦 Instalación
 

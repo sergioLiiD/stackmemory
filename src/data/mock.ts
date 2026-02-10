@@ -165,7 +165,7 @@ export const mockProjects: Project[] = [
             {
                 id: "p1",
                 title: "Tech Stack Generator",
-                model: "Gemini 1.5 Pro",
+                model: "Gemini 3.0 Pro",
                 prompt: "Analyze this package.json and extract the tech stack into a JSON format with categories...",
                 tags: ["setup", "analysis"]
             },
@@ -305,7 +305,7 @@ export const mockGlobalPrompts: TopPrompt[] = [
     {
         id: "gp2",
         title: "Tailwind Converter",
-        model: "Gemini 1.5 Pro",
+        model: "Gemini 3.0 Pro",
         prompt: "Convert the following custom CSS into Utility-first Tailwind CSS classes...",
         tags: ["css", "frontend", "tailwind"]
     },

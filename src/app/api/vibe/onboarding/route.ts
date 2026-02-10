@@ -82,7 +82,7 @@ ${readmeContent}
 Generate the onboarding tour.
 `;
 
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash", generationConfig: { responseMimeType: "application/json" } });
+    const model = genAI.getGenerativeModel({ model: "gemini-3.0-flash", generationConfig: { responseMimeType: "application/json" } });
     const result = await model.generateContent([systemPrompt, userMessage]);
     const responseText = result.response.text();
 
