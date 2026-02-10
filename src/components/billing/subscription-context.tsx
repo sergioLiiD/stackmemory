@@ -10,8 +10,12 @@ interface SubscriptionContextType {
     tier: Tier;
     isLoading: boolean;
     isPro: boolean;
-    checkAccess: (feature: 'projects' | 'services' | 'search') => boolean;
+    checkAccess: (feature: 'projects' | 'services' | 'search' | 'chat' | 'insight') => boolean;
     remainingProjects: number | 'unlimited';
+    usage: {
+        chat: { current: number, limit: number },
+        insight: { current: number, limit: number }
+    };
     trialEndsAt: string | null;
 }
 
@@ -24,6 +28,10 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     const [trialEndsAt, setTrialEndsAt] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [projectCount, setProjectCount] = useState(0);
+    const [usage, setUsage] = useState({
+        chat: { current: 0, limit: 20 },
+        insight: { current: 0, limit: 1 }
+    });
 
     useEffect(() => {
         async function fetchSubscription() {
@@ -37,7 +45,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
                 // Fetch Profile
                 const { data: profile } = await supabase
                     .from('profiles')
-                    .select('tier, custom_project_limit, pro_trial_ends_at')
+                    .select('tier, custom_project_limit, pro_trial_ends_at, usage_count_chat, usage_limit_chat, usage_count_insight, usage_limit_insight')
                     .eq('id', user.id)
                     .single();
 
@@ -45,6 +53,18 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
                     setTier(profile.tier as Tier);
                     setCustomLimit(profile.custom_project_limit);
                     setTrialEndsAt(profile.pro_trial_ends_at);
+
+                    const isPaid = profile.tier === 'pro' || profile.tier === 'founder';
+                    setUsage({
+                        chat: {
+                            current: profile.usage_count_chat || 0,
+                            limit: profile.usage_limit_chat || (isPaid ? 500 : 20)
+                        },
+                        insight: {
+                            current: profile.usage_count_insight || 0,
+                            limit: profile.usage_limit_insight || (isPaid ? 50 : 1)
+                        }
+                    });
                 }
 
                 // Fetch Usage (e.g., project count)
@@ -70,18 +90,21 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
 
     const isPro = isAdmin || isTrialActive || tier === 'pro' || tier === 'founder';
 
-    const checkAccess = (feature: 'projects' | 'services' | 'search') => {
+    const checkAccess = (feature: 'projects' | 'services' | 'search' | 'chat' | 'insight') => {
         if (isAdmin) return true;
         switch (feature) {
             case 'projects':
                 if (customLimit !== null) return projectCount < customLimit;
-                if (tier === 'founder') return projectCount < 100;
-                if (tier === 'pro' || isTrialActive) return projectCount < 50;
-                return projectCount < 5; // Free limit increased to 5
+                if (tier === 'founder' || tier === 'pro' || isTrialActive) return true; // Unlimited for paid plans
+                return projectCount < 1; // Free limit set to 1
             case 'services':
                 return true;
             case 'search':
                 return isPro; // Only Pro/Founder has global/semantic search
+            case 'chat':
+                return usage.chat.current < usage.chat.limit;
+            case 'insight':
+                return usage.insight.current < usage.insight.limit;
             default:
                 return false;
         }
@@ -90,9 +113,8 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     const getMaxProjects = () => {
         if (isAdmin) return 9999;
         if (customLimit !== null) return customLimit;
-        if (tier === 'founder') return 100;
-        if (tier === 'pro') return 50;
-        return 5;
+        if (tier === 'founder' || tier === 'pro') return 9999;
+        return 1;
     };
 
     const remainingProjects = isAdmin ? 'unlimited' : Math.max(0, getMaxProjects() - projectCount);
@@ -104,6 +126,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
             isPro,
             checkAccess,
             remainingProjects,
+            usage,
             trialEndsAt
         }}>
             {children}

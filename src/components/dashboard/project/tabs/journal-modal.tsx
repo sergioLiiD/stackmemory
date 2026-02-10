@@ -5,6 +5,7 @@ import { JournalEntry } from "@/data/mock";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Book, Calendar, Sparkles } from "lucide-react";
 import { useDashboard } from "../../dashboard-context";
+import { useSubscription } from "@/components/billing/subscription-context";
 
 interface JournalModalProps {
     isOpen: boolean;
@@ -18,6 +19,7 @@ export function JournalModal({ isOpen, onClose, onSave, projectId }: JournalModa
     const [content, setContent] = useState("");
     const [tags, setTags] = useState("");
     const [isAutoTagging, setIsAutoTagging] = useState(false);
+    const { isPro } = useSubscription();
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -42,6 +44,10 @@ export function JournalModal({ isOpen, onClose, onSave, projectId }: JournalModa
     };
 
     const handleAutoTag = async () => {
+        if (!isPro) {
+            alert("✨ Premium Feature: Upgrade to Pro to use AI Auto-Tagging!");
+            return;
+        }
         if (!content || content.length < 10) {
             alert("Please write a bit more content first!");
             return;

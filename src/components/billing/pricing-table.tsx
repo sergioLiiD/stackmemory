@@ -56,7 +56,7 @@ export function PricingTable({
                         <Check className="w-4 h-4 text-green-500" /> <strong>20 Chats / Month</strong>
                     </li>
                     <li className="flex items-center gap-3 text-sm text-neutral-600 dark:text-neutral-400">
-                        <Check className="w-4 h-4 text-green-500" /> <strong>3 Project Insights / Month</strong>
+                        <Check className="w-4 h-4 text-green-500" /> <strong>1 Project Insight / Month</strong>
                     </li>
                     <li className="flex items-center gap-3 text-sm text-neutral-600 dark:text-neutral-400">
                         <Check className="w-4 h-4 text-green-500" /> Community Support
@@ -76,14 +76,14 @@ export function PricingTable({
                 <h3 className="text-lg font-bold text-purple-900 dark:text-purple-300 mb-2 flex items-center gap-2">
                     <Zap className="w-5 h-5" /> Pro
                 </h3>
-                <div className="text-3xl font-bold mb-6 text-purple-900 dark:text-white">€8.99<span className="text-sm font-normal text-neutral-500">/mo</span></div>
+                <div className="text-3xl font-bold mb-6 text-purple-900 dark:text-white">€34,99<span className="text-sm font-normal text-neutral-500">/mo</span></div>
 
                 <ul className="space-y-4 mb-8 flex-1">
                     <li className="flex items-center gap-3 text-sm text-neutral-700 dark:text-neutral-300">
                         <Check className="w-4 h-4 text-purple-500" /> Unlimited Projects
                     </li>
                     <li className="flex items-center gap-3 text-sm text-neutral-700 dark:text-neutral-300">
-                        <Check className="w-4 h-4 text-purple-500" /> <strong>Unlimited Chats & Insights</strong>
+                        <Check className="w-4 h-4 text-purple-500" /> <strong>500 Chats / Month</strong>
                     </li>
                     <li className="flex items-center gap-3 text-sm text-neutral-700 dark:text-neutral-300">
                         <Check className="w-4 h-4 text-purple-500" /> <strong>Gemini 3.0 Pro & Flash</strong>
@@ -114,13 +114,13 @@ export function PricingTable({
                     Limited Time
                 </div>
                 <h3 className="text-lg font-bold text-orange-900 dark:text-orange-300 mb-2 flex items-center gap-2">
-                    <Sparkles className="w-5 h-5" /> Lifetime (5 Years)
+                    <Sparkles className="w-5 h-5" /> Annual Access
                 </h3>
-                <div className="text-3xl font-bold mb-6 text-orange-900 dark:text-white">€49.99<span className="text-sm font-normal text-neutral-500">/once</span></div>
+                <div className="text-3xl font-bold mb-6 text-orange-900 dark:text-white">€99<span className="text-sm font-normal text-neutral-500">/once</span></div>
 
                 <ul className="space-y-4 mb-8 flex-1">
                     <li className="flex items-center gap-3 text-sm text-neutral-700 dark:text-neutral-300">
-                        <Check className="w-4 h-4 text-orange-500" /> <strong>Everything in Pro, for 5 years.</strong>
+                        <Check className="w-4 h-4 text-orange-500" /> <strong>Everything in Pro, for 1 year.</strong>
                     </li>
                     <li className="flex items-center gap-3 text-sm text-neutral-700 dark:text-neutral-300">
                         <Check className="w-4 h-4 text-orange-500" /> No monthly fees.
@@ -140,7 +140,7 @@ export function PricingTable({
                         disabled={loading !== null || isPro || !ltdVariantId}
                         className="w-full py-3 rounded-xl bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white font-bold shadow-lg shadow-orange-500/20 transition-all hover:scale-[1.02] disabled:opacity-50 disabled:hover:scale-100"
                     >
-                        {loading === 'ltd' ? 'Redirecting...' : 'Get Lifetime Access'}
+                        {loading === 'ltd' ? 'Redirecting...' : 'Get Annual Access'}
                     </button>
                 )}
             </div>

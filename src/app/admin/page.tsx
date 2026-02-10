@@ -91,7 +91,7 @@ export default async function AdminPage() {
                 {/* KPI Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <StatCard title="Total Users" value={totalUsers} subtext="Registered accounts" />
-                    <StatCard title="Pro Legends" value={proUsers} subtext="€8.99/mo (MRR Impact)" />
+                    <StatCard title="Pro Legends" value={proUsers} subtext="€34.99/mo (MRR Impact)" />
                     <StatCard title="AI Costs (Est.)" value={`$${totalCost.toFixed(4)}`} subtext="Gemini API Spend (Last 100)" />
                     <StatCard title="Total Projects" value={totalProjects || 0} subtext={`${totalEmbeddings || 0} AI Vectors stored`} />
                 </div>

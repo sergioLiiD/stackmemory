@@ -48,24 +48,25 @@ Para el programa de **500 Beta Testers**, el objetivo es financiar el desarrollo
 Si el costo operativo de un usuario es **~$0.60 / mes** ($7.20 / año).
 
 * **Costo a 3 años**: ~$21.60 USD
-* **Costo a 5 años**: ~$36.00 USD
+* **Costo a 1 año**: ~$11.60 USD (Incluyendo base)
 
 ### Propuesta de Precio LTD
 
 Para ser rentable y atractivo:
 
-* **Precio LTD Sugerido**: **$49 - $69 USD** (Pago único).
-  * *Ingresos (500 usuarios @ $49)*: **$24,500 USD**.
-  * *Runway (Costos operativos @ $295/mes)*: **~83 Meses (casi 7 años)** de operación cubierta solo con el LTD.
+* **Plan Pro**: **34,99€ / mes** (Suscripción).
+* **Plan Anual**: **99€ / pago único** (1 año de acceso).
+  * *Ingresos (500 usuarios @ 99€)*: **~50,000€**.
+  * *Runway*: Con los nuevos precios, la rentabilidad es significativamente mayor.
 
-### Límites Sugeridos para el LTD
+### Límites Sugeridos para Sostenibilidad
 
-Para evitar abusos ("Whales") que disparen los costos de AI:
+Para evitar abusos y garantizar márgenes de beneficio:
 
-1. **Proyectos**: Ilimitados (El almacenamiento es barato).
+1. **Proyectos**: Ilimitados (Bajo costo de almacenamiento).
 2. **Sincronizaciones**: 50 / mes (Evita resyncs compulsivos).
-3. **Chat (Fair Use)**: 2,000 mensajes / mes (~$1.50 de costo en el peor caso).
-    * *Si exceden*: Ofrecer paquete de "créditos AI" o pedir su propia API Key.
+3. **Chat (Fair Use)**: **500 mensajes / mes** (Costo estimado de IA < $1.00).
+    * *Si exceden*: Ofertar paquete de "créditos AI" o esperar al siguiente mes.
 
 ---
 

@@ -9,7 +9,7 @@ export function ComparisonMatrix() {
             category: "Core Features",
             items: [
                 { name: "Active Projects", free: "1 Project", pro: "Unlimited" },
-                { name: "Vibe Coder (Chat)", free: "20 / month", pro: "Unlimited" },
+                { name: "Vibe Coder (Chat)", free: "20 / month", pro: "500 / month" },
                 { name: "Chat History", free: "7 days", pro: "Unlimited" },
             ]
         },
@@ -18,7 +18,7 @@ export function ComparisonMatrix() {
             items: [
                 { name: "AI Model", free: "Gemini 3.0 Flash", pro: "Gemini 3.0 Pro + Flash" },
                 { name: "Context Window", free: "Standard", pro: "1 Million Tokens" },
-                { name: "Project Insight (Deep Dive)", free: "3 / month", pro: "Unlimited" },
+                { name: "Project Insight (Deep Dive)", free: "1 / month", pro: "50 / month" },
                 { name: "Vibe Onboard (Guides)", free: "Included (shares limit)", pro: "Unlimited" },
             ]
         },

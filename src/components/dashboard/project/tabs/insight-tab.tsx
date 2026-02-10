@@ -5,6 +5,8 @@ import { Sparkles, FileText, RefreshCw, BookOpen, Layers, Lightbulb } from "luci
 import { createClient } from "@/lib/supabase/client";
 import ReactMarkdown from "react-markdown";
 import { useDashboard } from "../../dashboard-context";
+import { useSubscription } from "@/components/billing/subscription-context";
+import Link from "next/link";
 
 interface InsightTabProps {
     project: any;
@@ -15,9 +17,14 @@ export function InsightTab({ project }: InsightTabProps) {
     const [loading, setLoading] = useState(false);
     const [lastGenerated, setLastGenerated] = useState<string | null>(project.insight_generated_at);
     const { updateProject } = useDashboard();
+    const { checkAccess, usage } = useSubscription();
     const supabase = createClient();
 
     const generateInsight = async () => {
+        if (!checkAccess('insight')) {
+            alert(`✨ Limit Reached: You've used ${usage.insight.current}/${usage.insight.limit} insights. Please upgrade for more!`);
+            return;
+        }
         setLoading(true);
         try {
             const response = await fetch("/api/vibe/insight", {
@@ -117,13 +124,18 @@ export function InsightTab({ project }: InsightTabProps) {
                         )}
                     </div>
                 </div>
-                <button
-                    onClick={generateInsight}
-                    className="group flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-neutral-400 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all text-sm font-medium"
-                >
-                    <RefreshCw className="w-4 h-4 group-hover:rotate-180 transition-transform duration-500" />
-                    Regenerate
-                </button>
+                <div className="flex items-center gap-4">
+                    <button
+                        onClick={generateInsight}
+                        className="group flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-neutral-400 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all text-sm font-medium"
+                    >
+                        <RefreshCw className="w-4 h-4 group-hover:rotate-180 transition-transform duration-500" />
+                        Regenerate
+                    </button>
+                    <div className="text-[10px] text-neutral-500 uppercase font-bold tracking-widest px-3 py-1 bg-white/5 rounded-full border border-white/5">
+                        Usage: {usage.insight.current}/{usage.insight.limit}
+                    </div>
+                </div>
             </div>
 
             {/* The Report */}

@@ -4,6 +4,8 @@ import { useState, useRef, useEffect } from "react";
 import { Workflow } from "@/data/mock";
 import { Send, Image as ImageIcon, Loader2, Bot, X, FileJson, User } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useSubscription } from "@/components/billing/subscription-context";
+import Link from "next/link";
 
 interface Message {
     role: "user" | "model";
@@ -21,6 +23,7 @@ export function WorkflowChat({ workflow, projectId }: WorkflowChatProps) {
     const [input, setInput] = useState("");
     const [image, setImage] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
+    const { checkAccess, usage } = useSubscription();
     const scrollRef = useRef<HTMLDivElement>(null);
 
     // Initial greeting or existing summary
@@ -55,6 +58,14 @@ export function WorkflowChat({ workflow, projectId }: WorkflowChatProps) {
 
     const sendMessage = async () => {
         if ((!input.trim() && !image) || isLoading) return;
+
+        if (!checkAccess('chat')) {
+            setMessages(prev => [...prev, {
+                role: "model",
+                content: `⚠️ **Usage Limit Reached:** You've used ${usage.chat.current}/${usage.chat.limit} chats this month. [Upgrade to Pro](/pricing) for 500 chats/month and unlimited insights.`
+            }]);
+            return;
+        }
 
         const userMsg: Message = { role: "user", content: input, image: image || undefined };
         setMessages(prev => [...prev, userMsg]);
