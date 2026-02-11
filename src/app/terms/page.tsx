@@ -4,7 +4,7 @@ export default function TermsPage() {
             <div className="max-w-3xl mx-auto space-y-8">
                 <div>
                     <h1 className="text-4xl font-bold mb-4">Terms of Service</h1>
-                    <p className="text-neutral-400">Last updated: December 21, 2025</p>
+                    <p className="text-neutral-400">Last updated: February 11, 2026</p>
                 </div>
 
                 <section className="space-y-4">
@@ -44,7 +44,22 @@ export default function TermsPage() {
                 </section>
 
                 <section className="space-y-4">
-                    <h2 className="text-2xl font-bold">6. Contact Us</h2>
+                    <h2 className="text-2xl font-bold">6. Usage Limits and Plans</h2>
+                    <p className="text-neutral-300 leading-relaxed">
+                        Your use of the Service is subject to the usage limits and quotas associated with your selected plan (e.g., Free, Pro). These limits include, but are not limited to, the number of active projects, AI chat messages, and project insights generation per billing cycle.
+                    </p>
+                    <ul className="list-disc pl-5 space-y-2 text-neutral-300">
+                        <li><strong>Free Plan:</strong> Limited access to AI features (e.g., 20 messages/month).</li>
+                        <li><strong>Pro Plan:</strong> Higher limits and access to advanced models (e.g., Gemini 3.0 Pro).</li>
+                        <li><strong>Annual Plan (Founder):</strong> Same benefits as Pro Plan, billed annually (Special Offer).</li>
+                    </ul>
+                    <p className="text-neutral-300 leading-relaxed">
+                        We reserve the right to enforce these limits and may restrict access to certain features if you exceed your plan's quota.
+                    </p>
+                </section>
+
+                <section className="space-y-4">
+                    <h2 className="text-2xl font-bold">7. Contact Us</h2>
                     <p className="text-neutral-300 leading-relaxed">
                         In order to resolve a complaint regarding the Site or to receive further information regarding use of the Site, please contact us at <a href="mailto:hello@stackmemory.app" className="text-blue-400 hover:underline">hello@stackmemory.app</a>.
                     </p>

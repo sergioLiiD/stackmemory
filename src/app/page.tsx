@@ -73,9 +73,34 @@ function LandingContent() {
             "applicationCategory": "DeveloperApplication",
             "operatingSystem": "Web, macOS (CLI)",
             "offers": {
-              "@type": "Offer",
-              "price": "0",
-              "priceCurrency": "USD"
+              "@type": "AggregateOffer",
+              "priceCurrency": "EUR",
+              "lowPrice": "0",
+              "highPrice": "99",
+              "offerCount": "3",
+              "offers": [
+                {
+                  "@type": "Offer",
+                  "name": "Free Plan (Hacker)",
+                  "price": "0",
+                  "priceCurrency": "EUR",
+                  "description": "For individual developers."
+                },
+                {
+                  "@type": "Offer",
+                  "name": "Pro Plan",
+                  "price": "34.99",
+                  "priceCurrency": "EUR",
+                  "description": "For professionals needing continuous analysis."
+                },
+                {
+                  "@type": "Offer",
+                  "name": "Founder/Annual Plan",
+                  "price": "99",
+                  "priceCurrency": "EUR",
+                  "description": "1 year of Pro access (Limited Offer)."
+                }
+              ]
             },
             "description": "The intelligent coding assistant dashboard for developers. Manage projects, track tech stacks, and use Multimodal AI for debugging.",
             "featureList": [

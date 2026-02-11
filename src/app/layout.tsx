@@ -39,7 +39,9 @@ export const metadata: Metadata = {
     "cli developer tool",
     "env var drift",
     "software architecture",
-    "documentation generator"
+    "documentation generator",
+    "coding assistant pricing",
+    "free developer tools"
   ],
   authors: [{ name: "StackMemory Team" }],
   openGraph: {

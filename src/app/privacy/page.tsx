@@ -4,7 +4,7 @@ export default function PrivacyPage() {
             <div className="max-w-3xl mx-auto space-y-8">
                 <div>
                     <h1 className="text-4xl font-bold mb-4">Privacy Policy</h1>
-                    <p className="text-neutral-400">Last updated: December 21, 2025</p>
+                    <p className="text-neutral-400">Last updated: February 11, 2026</p>
                 </div>
 
                 <section className="space-y-4">
@@ -24,6 +24,7 @@ export default function PrivacyPage() {
                         <li>User Account Information (Email, Name)</li>
                         <li>Project Metadata (Repository URLs, Tech Stack)</li>
                         <li>Usage Data (Interaction with features)</li>
+                        <li>AI Interaction Data (Prompts, Code Context sent to LLMs)</li>
                     </ul>
                 </section>
 
