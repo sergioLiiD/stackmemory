@@ -31,7 +31,7 @@ export function InsightTab({ project }: InsightTabProps) {
         setReport(""); // Reset for new generation
 
         try {
-            const response = await fetch("/api/vibe/insight/stream", {
+            const response = await fetch("/api/vibe/insight", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ projectId: project.id }),

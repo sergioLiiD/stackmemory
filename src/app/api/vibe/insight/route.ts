@@ -1,9 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { cookies } from 'next/headers';
-import { GoogleGenerativeAI } from '@google/generative-ai';
-
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || '');
+import { safeGenerateContentStream } from '@/lib/gemini';
 
 export async function POST(req: Request) {
     try {
@@ -20,14 +18,13 @@ export async function POST(req: Request) {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-        // A. Check Limits
+        // 2. Check Limits
         const { allowed, error: limitError } = await import('@/lib/limits').then(m => m.checkAndIncrementLimit(user.id, 'insight'));
         if (!allowed) {
             return NextResponse.json({ error: limitError }, { status: 403 });
         }
 
-        // 2. Fetch Massive Context
-        // A. File Tree (All paths)
+        // 3. Fetch Context
         const { data: allFiles } = await supabase
             .from('embeddings')
             .select('file_path')
@@ -35,13 +32,9 @@ export async function POST(req: Request) {
 
         const fileTree = allFiles?.map(f => f.file_path).sort().join('\n') || "No files found";
 
-        // B. Fetch Critical Files & Documentation
-        // We want: all .md files, package.json, config files, and maybe schema files.
         const criticalPatterns = ['%.md', '%package.json%', '%config%', '%schema%', '%layout.tsx%', '%page.tsx%'];
         let contextContent = "";
 
-        // Depending on DB size, we might need multiple queries or a smarter filter.
-        // For now, let's grab top 50 files that match key patterns.
         const { data: contentFiles } = await supabase
             .from('embeddings')
             .select('file_path, content')
@@ -56,7 +49,6 @@ ${f.content}
 `).join('\n');
         }
 
-        // 3. Prompt Gemini 3.0 Flash (The "Architect")
         const systemPrompt = `You are a Senior Principal Software Architect and UI Designer.
 Your goal is to write a "Project Insight Report" (The Bible) for a new CTO or Investor.
 
@@ -91,43 +83,58 @@ ${contextContent}
 Please generate the Project Insight Report.
 `;
 
-        const model = genAI.getGenerativeModel({
+        const { result, modelUsed } = await safeGenerateContentStream({
             model: "gemini-3.1-pro-preview",
-            systemInstruction: systemPrompt
+            systemInstruction: systemPrompt,
+            contents: [
+                { text: "OUTPUT RULES: Return RAW Markdown. DO NOT wrap in ```markdown code blocks." },
+                { text: userMessage }
+            ]
         });
 
-        const result = await model.generateContent([
-            "OUTPUT RULES: Return RAW Markdown. DO NOT wrap in ```markdown code blocks.",
-            userMessage
-        ]);
+        const encoder = new TextEncoder();
+        const stream = new ReadableStream({
+            async start(controller) {
+                let fullReport = "";
+                try {
+                    for await (const chunk of result.stream) {
+                        const chunkText = chunk.text();
+                        fullReport += chunkText;
+                        controller.enqueue(encoder.encode(chunkText));
+                    }
 
-        let report = result.response.text();
+                    // Save to DB & Log Usage after stream completes
+                    const finalizedReport = fullReport.replace(/```markdown/g, '').replace(/```/g, '');
 
-        // CLEANUP: Remove markdown code blocks if Gemini ignores instructions
-        report = report.replace(/```markdown/g, '').replace(/```/g, '');
+                    const inputTokens = Math.ceil((userMessage.length + systemPrompt.length) / 4);
+                    const outputTokens = Math.ceil(finalizedReport.length / 4);
 
-        // LOG USAGE
-        // Calculate rough tokens
-        const inputTokens = Math.ceil((userMessage.length + systemPrompt.length) / 4);
-        const outputTokens = Math.ceil(report.length / 4);
-        const { logUsage } = await import('@/lib/usage-logger');
-        await logUsage(projectId, 'insight', 'gemini-3.1-pro-preview', inputTokens, outputTokens);
+                    const { logUsage } = await import('@/lib/usage-logger');
+                    await logUsage(projectId, 'insight', modelUsed, inputTokens, outputTokens);
 
-        // 4. Save to Database
-        const { error: updateError } = await supabase
-            .from('projects')
-            .update({
-                insight_report: report,
-                insight_generated_at: new Date().toISOString()
-            })
-            .eq('id', projectId);
+                    await supabase
+                        .from('projects')
+                        .update({
+                            insight_report: finalizedReport,
+                            insight_generated_at: new Date().toISOString()
+                        })
+                        .eq('id', projectId);
 
-        if (updateError) {
-            console.error("Failed to save report:", updateError);
-            // We still return the report even if save failed
-        }
+                } catch (err) {
+                    console.error("Streaming error:", err);
+                    controller.error(err);
+                } finally {
+                    controller.close();
+                }
+            }
+        });
 
-        return NextResponse.json({ report });
+        return new Response(stream, {
+            headers: {
+                'Content-Type': 'text/plain; charset=utf-8',
+                'Transfer-Encoding': 'chunked',
+            },
+        });
 
     } catch (e: any) {
         console.error("Project Insight Error:", e);
