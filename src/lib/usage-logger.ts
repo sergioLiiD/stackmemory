@@ -9,6 +9,8 @@ const PRICING = {
     'gpt-4o': { input: 5.00, output: 15.00 },
     // Google Gemini Pricing (approx per 1M tokens) is erratic during preview, assuming Tier 1 payloads
     'gemini-2.0-flash': { input: 0.10, output: 0.40 },
+    'gemini-2.5-flash': { input: 0.10, output: 0.40 },
+    'gemini-2.5-pro': { input: 1.25, output: 3.75 },
     'gemini-3-flash-preview': { input: 0.12, output: 0.45 },
     'gemini-3.1-pro-preview': { input: 1.25, output: 3.75 }
 };

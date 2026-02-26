@@ -3,25 +3,38 @@ import { GoogleGenerativeAI, GenerativeModel, GenerateContentRequest, GenerateCo
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || '');
 
-export const PRIMARY_MODEL = "gemini-3.1-pro-preview";
-export const SECONDARY_MODEL = "gemini-3-flash-preview";
+// HACKATHON MODELS (Latest Series 3)
+export const PRIMARY_MODEL_PRO = "gemini-3.1-pro-preview";
+export const PRIMARY_MODEL_FLASH = "gemini-3-flash-preview";
+
+// STABLE MODELS (Reliable Series 2.5)
+export const STABLE_MODEL_PRO = "gemini-2.5-pro";
+export const STABLE_MODEL_FLASH = "gemini-2.5-flash";
+
+// LEGACY FALLBACK
 export const FALLBACK_MODEL = "gemini-2.0-flash";
 
+/**
+ * Standard content generation with multiple fallback layers.
+ */
 export async function safeGenerateContent(
     options: {
+        model?: string,
         systemInstruction?: string,
-        contents: any[], // Simple contents for generateContent
+        contents: any[],
         generationConfig?: any
     }
 ): Promise<{ result: GenerateContentResult; modelUsed: string }> {
+    const primaryModel = options.model || PRIMARY_MODEL_PRO;
+
     try {
-        console.log(`GEMINI: Attempting with ${PRIMARY_MODEL}`);
+        console.log(`GEMINI: Attempting with ${primaryModel}`);
         const model = genAI.getGenerativeModel({
-            model: PRIMARY_MODEL,
+            model: primaryModel,
             systemInstruction: options.systemInstruction
         });
         const result = await model.generateContent(options.contents);
-        return { result, modelUsed: PRIMARY_MODEL };
+        return { result, modelUsed: primaryModel };
     } catch (error: any) {
         const isRetryable =
             error.message?.includes('429') ||
@@ -30,18 +43,22 @@ export async function safeGenerateContent(
             error.message?.includes('Service Unavailable');
 
         if (isRetryable) {
-            console.warn(`GEMINI: ${PRIMARY_MODEL} failed. Falling back to ${SECONDARY_MODEL}`);
+            const fallbackModelName = primaryModel.includes('pro') ? STABLE_MODEL_PRO : STABLE_MODEL_FLASH;
+            console.warn(`GEMINI: ${primaryModel} failed (${error.message}). Falling back to ${fallbackModelName}`);
             const fallbackModel = genAI.getGenerativeModel({
-                model: SECONDARY_MODEL,
+                model: fallbackModelName,
                 systemInstruction: options.systemInstruction
             });
             const result = await fallbackModel.generateContent(options.contents);
-            return { result, modelUsed: SECONDARY_MODEL };
+            return { result, modelUsed: fallbackModelName };
         }
         throw error;
     }
 }
 
+/**
+ * Streaming content generation with multiple fallback layers.
+ */
 export async function safeGenerateContentStream(
     options: {
         model?: string,
@@ -50,7 +67,8 @@ export async function safeGenerateContentStream(
         generationConfig?: any
     }
 ): Promise<{ result: GenerateContentStreamResult; modelUsed: string }> {
-    const primaryModel = options.model || PRIMARY_MODEL;
+    const primaryModel = options.model || PRIMARY_MODEL_PRO;
+
     try {
         console.log(`GEMINI STREAM: Attempting with ${primaryModel}`);
         const model = genAI.getGenerativeModel({
@@ -67,7 +85,12 @@ export async function safeGenerateContentStream(
             error.message?.includes('Service Unavailable');
 
         if (isRetryable) {
-            const nextModel = primaryModel === PRIMARY_MODEL ? SECONDARY_MODEL : FALLBACK_MODEL;
+            // Determine fallback: Pro -> Stable Pro -> Fallback
+            let nextModel = STABLE_MODEL_PRO;
+            if (primaryModel === STABLE_MODEL_PRO) nextModel = STABLE_MODEL_FLASH;
+            else if (primaryModel === STABLE_MODEL_FLASH) nextModel = FALLBACK_MODEL;
+            else if (primaryModel.includes('flash')) nextModel = STABLE_MODEL_FLASH;
+
             console.warn(`GEMINI STREAM: ${primaryModel} failed (${error.message}). Falling back to ${nextModel}`);
             const fallbackModel = genAI.getGenerativeModel({
                 model: nextModel,
