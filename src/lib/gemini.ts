@@ -3,7 +3,8 @@ import { GoogleGenerativeAI, GenerativeModel, GenerateContentRequest, GenerateCo
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || '');
 
-export const PRIMARY_MODEL = "gemini-3-flash-preview";
+export const PRIMARY_MODEL = "gemini-3.1-pro-preview";
+export const SECONDARY_MODEL = "gemini-3-flash-preview";
 export const FALLBACK_MODEL = "gemini-2.0-flash";
 
 export async function safeGenerateContent(
@@ -22,14 +23,20 @@ export async function safeGenerateContent(
         const result = await model.generateContent(options.contents);
         return { result, modelUsed: PRIMARY_MODEL };
     } catch (error: any) {
-        if (error.message?.includes('429') || error.message?.includes('Resource exhausted')) {
-            console.warn(`GEMINI: ${PRIMARY_MODEL} rate limited. Falling back to ${FALLBACK_MODEL}`);
+        const isRetryable =
+            error.message?.includes('429') ||
+            error.message?.includes('Resource exhausted') ||
+            error.message?.includes('503') ||
+            error.message?.includes('Service Unavailable');
+
+        if (isRetryable) {
+            console.warn(`GEMINI: ${PRIMARY_MODEL} failed. Falling back to ${SECONDARY_MODEL}`);
             const fallbackModel = genAI.getGenerativeModel({
-                model: FALLBACK_MODEL,
+                model: SECONDARY_MODEL,
                 systemInstruction: options.systemInstruction
             });
             const result = await fallbackModel.generateContent(options.contents);
-            return { result, modelUsed: FALLBACK_MODEL };
+            return { result, modelUsed: SECONDARY_MODEL };
         }
         throw error;
     }
@@ -53,14 +60,21 @@ export async function safeGenerateContentStream(
         const result = await model.generateContentStream(options.contents);
         return { result, modelUsed: primaryModel };
     } catch (error: any) {
-        if (error.message?.includes('429') || error.message?.includes('Resource exhausted')) {
-            console.warn(`GEMINI STREAM: ${primaryModel} rate limited. Falling back to ${FALLBACK_MODEL}`);
+        const isRetryable =
+            error.message?.includes('429') ||
+            error.message?.includes('Resource exhausted') ||
+            error.message?.includes('503') ||
+            error.message?.includes('Service Unavailable');
+
+        if (isRetryable) {
+            const nextModel = primaryModel === PRIMARY_MODEL ? SECONDARY_MODEL : FALLBACK_MODEL;
+            console.warn(`GEMINI STREAM: ${primaryModel} failed (${error.message}). Falling back to ${nextModel}`);
             const fallbackModel = genAI.getGenerativeModel({
-                model: FALLBACK_MODEL,
+                model: nextModel,
                 systemInstruction: options.systemInstruction
             });
             const result = await fallbackModel.generateContentStream(options.contents);
-            return { result, modelUsed: FALLBACK_MODEL };
+            return { result, modelUsed: nextModel };
         }
         throw error;
     }
