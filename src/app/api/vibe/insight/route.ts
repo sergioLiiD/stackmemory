@@ -92,7 +92,7 @@ Please generate the Project Insight Report.
 `;
 
         const model = genAI.getGenerativeModel({
-            model: "gemini-3.0-flash",
+            model: "gemini-3.1-pro",
             systemInstruction: systemPrompt
         });
 
@@ -111,7 +111,7 @@ Please generate the Project Insight Report.
         const inputTokens = Math.ceil((userMessage.length + systemPrompt.length) / 4);
         const outputTokens = Math.ceil(report.length / 4);
         const { logUsage } = await import('@/lib/usage-logger');
-        await logUsage(projectId, 'insight', 'gemini-3.0-flash', inputTokens, outputTokens);
+        await logUsage(projectId, 'insight', 'gemini-3.1-pro', inputTokens, outputTokens);
 
         // 4. Save to Database
         const { error: updateError } = await supabase

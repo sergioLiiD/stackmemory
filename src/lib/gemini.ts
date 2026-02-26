@@ -3,7 +3,7 @@ import { GoogleGenerativeAI, GenerativeModel, GenerateContentRequest, GenerateCo
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || '');
 
-export const PRIMARY_MODEL = "gemini-3.0-flash";
+export const PRIMARY_MODEL = "gemini-3-flash";
 export const FALLBACK_MODEL = "gemini-2.0-flash";
 
 export async function safeGenerateContent(
