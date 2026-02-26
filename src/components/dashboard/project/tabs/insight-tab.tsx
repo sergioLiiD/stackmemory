@@ -25,9 +25,13 @@ export function InsightTab({ project }: InsightTabProps) {
             alert(`✨ Limit Reached: You've used ${usage.insight.current}/${usage.insight.limit} insights. Please upgrade for more!`);
             return;
         }
+
         setLoading(true);
+        const previousReport = report;
+        setReport(""); // Reset for new generation
+
         try {
-            const response = await fetch("/api/vibe/insight", {
+            const response = await fetch("/api/vibe/insight/stream", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ projectId: project.id }),
@@ -38,22 +42,44 @@ export function InsightTab({ project }: InsightTabProps) {
                 throw new Error(errData.error || "Failed to generate insight");
             }
 
-            const data = await response.json();
+            const reader = response.body?.getReader();
+            const decoder = new TextDecoder();
+            let accumulatedReport = "";
 
-            // Update Context
+            if (!reader) throw new Error("No reader available");
+
+            // We hide the initial 'Scanning' state once chunks start arriving
+            let isFirstChunk = true;
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+
+                if (isFirstChunk) {
+                    setLoading(false); // Switch from full-page loading to real-time display
+                    isFirstChunk = false;
+                }
+
+                const chunk = decoder.decode(value, { stream: true });
+                accumulatedReport += chunk;
+                setReport(accumulatedReport);
+            }
+
+            // Cleanup & Persist
+            const finalizedReport = accumulatedReport.replace(/```markdown/g, '').replace(/```/g, '');
+            setReport(finalizedReport);
+
+            const now = new Date().toISOString();
+            setLastGenerated(now);
             updateProject(project.id, {
-                insight_report: data.report,
-                insight_generated_at: new Date().toISOString()
+                insight_report: finalizedReport,
+                insight_generated_at: now
             });
 
-            setReport(data.report);
-            setLastGenerated(new Date().toISOString());
-            setReport(data.report);
-            setLastGenerated(new Date().toISOString());
         } catch (error: any) {
             console.error("Error generating insight:", error);
+            setReport(previousReport); // Restore if failed
             if (error.message.includes('Upgrade to Pro')) {
-                // We could set a specific state here to show a paywall, but for now alert is fine or a toast
                 alert("✨ Premium Feature: Upgrade to Pro (StackMemory+) to generate Deep Dive Insights!");
             } else {
                 alert("Failed to generate insight. Please try again.");
@@ -63,19 +89,36 @@ export function InsightTab({ project }: InsightTabProps) {
         }
     };
 
-    if (loading) {
+    if (loading && !report) {
         return (
-            <div className="flex flex-col items-center justify-center py-20 text-center space-y-6 animate-in fade-in zoom-in duration-500">
+            <div className="flex flex-col items-center justify-center py-24 text-center space-y-8 animate-in fade-in zoom-in duration-700">
                 <div className="relative">
-                    <div className="absolute inset-0 bg-blue-500/20 blur-3xl rounded-full" />
-                    <Sparkles className="w-16 h-16 text-blue-400 animate-pulse relative z-10" />
+                    {/* Pulsing Aura */}
+                    <div className="absolute inset-0 bg-blue-500/20 blur-[100px] rounded-full animate-pulse" />
+                    <div className="relative p-8 rounded-3xl bg-neutral-900/50 border border-white/10 backdrop-blur-2xl">
+                        <Sparkles className="w-16 h-16 text-blue-400 animate-[spin_4s_linear_infinite]" />
+                        {/* Scanning Line Effect */}
+                        <div className="absolute left-0 right-0 h-0.5 bg-blue-400/50 shadow-[0_0_15px_rgba(96,165,250,0.5)] animate-[scan_2s_ease-in-out_infinite] top-0" />
+                    </div>
                 </div>
-                <div className="space-y-2 max-w-md">
-                    <h3 className="text-xl font-medium text-white">Analyzing Project D.N.A...</h3>
-                    <p className="text-neutral-400">
-                        Vibe Coder is reading your documentation, understanding your architecture, and writing the "Project Bible". This takes a moment.
+                <div className="space-y-3 max-w-md">
+                    <h3 className="text-2xl font-semibold text-white tracking-tight">Vibe Architect is Thinking...</h3>
+                    <p className="text-neutral-400 text-sm leading-relaxed">
+                        Synthesizing file structure, analyzing technical documentation, and drafting your architectural bible using **Gemini 3.1 Pro**.
                     </p>
+                    <div className="flex items-center justify-center gap-2 pt-4">
+                        <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-[bounce_1s_infinite_0ms]" />
+                        <div className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-[bounce_1s_infinite_200ms]" />
+                        <div className="w-1.5 h-1.5 rounded-full bg-blue-300 animate-[bounce_1s_infinite_400ms]" />
+                    </div>
                 </div>
+
+                <style jsx>{`
+                    @keyframes scan {
+                        0% { top: 0% }
+                        100% { top: 100% }
+                    }
+                `}</style>
             </div>
         );
     }

@@ -37,22 +37,24 @@ export async function safeGenerateContent(
 
 export async function safeGenerateContentStream(
     options: {
+        model?: string,
         systemInstruction?: string,
         contents: any[],
         generationConfig?: any
     }
 ): Promise<{ result: GenerateContentStreamResult; modelUsed: string }> {
+    const primaryModel = options.model || PRIMARY_MODEL;
     try {
-        console.log(`GEMINI STREAM: Attempting with ${PRIMARY_MODEL}`);
+        console.log(`GEMINI STREAM: Attempting with ${primaryModel}`);
         const model = genAI.getGenerativeModel({
-            model: PRIMARY_MODEL,
+            model: primaryModel,
             systemInstruction: options.systemInstruction
         });
         const result = await model.generateContentStream(options.contents);
-        return { result, modelUsed: PRIMARY_MODEL };
+        return { result, modelUsed: primaryModel };
     } catch (error: any) {
         if (error.message?.includes('429') || error.message?.includes('Resource exhausted')) {
-            console.warn(`GEMINI STREAM: ${PRIMARY_MODEL} rate limited. Falling back to ${FALLBACK_MODEL}`);
+            console.warn(`GEMINI STREAM: ${primaryModel} rate limited. Falling back to ${FALLBACK_MODEL}`);
             const fallbackModel = genAI.getGenerativeModel({
                 model: FALLBACK_MODEL,
                 systemInstruction: options.systemInstruction
