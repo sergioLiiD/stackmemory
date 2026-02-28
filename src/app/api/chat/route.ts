@@ -231,7 +231,11 @@ INSTRUCTIONS:
     } catch (error: any) {
         console.error("Chat API Error:", error);
         return NextResponse.json(
-            { error: error.message || 'Chat failed' },
+            {
+                error: error.message || 'Chat failed',
+                message: error.message,
+                stack: error.stack?.split('\n').slice(0, 3).join('\n')
+            },
             { status: 500 }
         );
     }
