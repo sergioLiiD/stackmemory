@@ -48,7 +48,7 @@ export async function storeEmbeddings(projectId: string, files: ProcessedFile[])
             try {
                 const embedding = await generateEmbedding(chunk);
 
-                const { error } = await supabase.from('embeddings').insert({
+                const { error, count: debugCount } = await supabase.from('embeddings').insert({
                     project_id: projectId,
                     content: chunk,
                     file_path: file.path,
@@ -62,7 +62,7 @@ export async function storeEmbeddings(projectId: string, files: ProcessedFile[])
                 });
 
                 if (error) {
-                    console.error(`Supabase INSERT ERROR for ${file.path}:`, error);
+                    console.error(`Supabase INSERT ERROR for ${file.path}: [${error.code}] ${error.message}`);
                 } else {
                     totalChunks++;
                     // Log Usage (Approx: 1 token = 4 chars)

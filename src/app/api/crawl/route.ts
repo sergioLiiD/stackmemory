@@ -28,13 +28,14 @@ export async function POST(req: Request) {
         }
 
         // 2. Start Crawling
-        // Note: In a production app, this should be offloaded to a queue (Inngest, BullMQ, etc.)
-        // For V1/MVP, we'll do it synchronously but limit the file count to avoid Vercel timeout (10s/60s).
-        const processedFiles = await processRepository(repoUrl, token, 100); // Increased limit for better context
+        console.log(`CRAWL DEBUG: Starting crawl for Project=${projectId} URL=${repoUrl}`);
+        const processedFiles = await processRepository(repoUrl, token, 100);
+        console.log(`CRAWL DEBUG: Processed ${processedFiles.length} files.`);
 
         // 3. Store Embeddings
         const { storeEmbeddings } = await import('@/lib/vector-store');
         const totalChunks = await storeEmbeddings(projectId, processedFiles);
+        console.log(`CRAWL DEBUG: Stored ${totalChunks} chunks for Project=${projectId}`);
 
         // 3.5 Check for package.json to update Stack
         let stackUpdateStatus = { found: false, count: 0, updated: false, error: null as string | null };
