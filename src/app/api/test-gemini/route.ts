@@ -10,17 +10,35 @@ export async function GET() {
         dbTest: null as any
     };
 
-    // 1. Test Gemini
+    // 1. Test Gemini Models
     try {
         const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || '');
-        const model = genAI.getGenerativeModel({ model: "text-embedding-004" });
-        const result = await model.embedContent("Hello World");
-        const vector = result.embedding.values;
+
+        // List models
+        const modelList = await genAI.listModels();
         results.geminiTest = {
-            success: true,
-            dimensions: vector.length,
-            sample: vector.slice(0, 5)
+            availableModels: modelList.models.map(m => m.name),
+            attempts: []
         };
+
+        // Attempt 1: text-embedding-004 (Default)
+        try {
+            const m1 = genAI.getGenerativeModel({ model: "text-embedding-004" });
+            const r1 = await m1.embedContent("test");
+            results.geminiTest.attempts.push({ model: "text-embedding-004", success: true, dims: r1.embedding.values.length });
+        } catch (e: any) {
+            results.geminiTest.attempts.push({ model: "text-embedding-004", success: false, error: e.message });
+        }
+
+        // Attempt 2: embedding-001 (Legacy Fallback)
+        try {
+            const m2 = genAI.getGenerativeModel({ model: "embedding-001" });
+            const r2 = await m2.embedContent("test");
+            results.geminiTest.attempts.push({ model: "embedding-001", success: true, dims: r2.embedding.values.length });
+        } catch (e: any) {
+            results.geminiTest.attempts.push({ model: "embedding-001", success: false, error: e.message });
+        }
+
     } catch (e: any) {
         results.geminiTest = { success: false, error: e.message };
     }
