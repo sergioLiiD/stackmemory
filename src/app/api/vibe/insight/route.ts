@@ -5,7 +5,7 @@ import { safeGenerateContentStream } from '@/lib/gemini';
 
 export async function POST(req: Request) {
     try {
-        const { projectId } = await req.json();
+        const { projectId, projectName } = await req.json();
 
         if (!projectId) {
             return NextResponse.json({ error: 'Project ID is required' }, { status: 400 });
@@ -74,17 +74,18 @@ Make it comprehensive but structured.
 `;
 
         const userMessage = `
+PROJECT NAME: ${projectName || 'Unknown Project'}
 PROJECT FILE TREE:
 ${fileTree}
 
 CRITICAL FILE CONTENTS (Documentation & Configs):
 ${contextContent}
 
-Please generate the Project Insight Report.
+Please generate the Project Insight Report for ${projectName || 'this project'}.
 `;
 
         const { result, modelUsed } = await safeGenerateContentStream({
-            model: "gemini-2.5-pro",
+            model: "gemini-1.5-pro",
             systemInstruction: systemPrompt,
             contents: [
                 { text: "OUTPUT RULES: Return RAW Markdown. DO NOT wrap in ```markdown code blocks." },
