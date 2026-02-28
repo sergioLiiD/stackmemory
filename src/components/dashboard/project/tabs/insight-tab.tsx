@@ -107,7 +107,7 @@ export function InsightTab({ project }: InsightTabProps) {
                 <div className="space-y-3 max-w-md">
                     <h3 className="text-2xl font-semibold text-white tracking-tight">Vibe Architect is Thinking...</h3>
                     <p className="text-neutral-400 text-sm leading-relaxed">
-                        Synthesizing file structure, analyzing technical documentation, and drafting your architectural bible using **Gemini 3.1 Pro**.
+                        Synthesizing file structure, analyzing technical documentation, and drafting your architectural bible using **Gemini 2.5 Pro**.
                     </p>
                     <div className="flex items-center justify-center gap-2 pt-4">
                         <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-[bounce_1s_infinite_0ms]" />

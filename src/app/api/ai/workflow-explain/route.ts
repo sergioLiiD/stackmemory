@@ -17,8 +17,8 @@ export async function POST(req: Request) {
         }
 
         const genAI = new GoogleGenerativeAI(apiKey);
-        // Using latest Gemini 3.1 Pro
-        const model = genAI.getGenerativeModel({ model: "gemini-3.1-pro" });
+        // Using stable Gemini 2.5 Pro
+        const model = genAI.getGenerativeModel({ model: "gemini-2.5-pro" });
 
         // CHAT MODE
         if (messages && Array.isArray(messages)) {

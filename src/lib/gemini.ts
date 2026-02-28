@@ -3,13 +3,13 @@ import { GoogleGenerativeAI, GenerativeModel, GenerateContentRequest, GenerateCo
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || '');
 
-// HACKATHON MODELS (Latest Series 3.1)
-export const PRIMARY_MODEL_PRO = "gemini-3.1-pro";
-export const PRIMARY_MODEL_FLASH = "gemini-3-flash";
+// FLAGSHIP MODELS (Stable Series 2.5)
+export const PRIMARY_MODEL_PRO = "gemini-2.5-pro";
+export const PRIMARY_MODEL_FLASH = "gemini-2.5-flash";
 
-// STABLE MODELS (Reliable Series 2.5)
-export const STABLE_MODEL_PRO = "gemini-2.5-pro";
-export const STABLE_MODEL_FLASH = "gemini-2.5-flash";
+// EXPERIMENTAL MODELS (Series 3.1)
+export const STABLE_MODEL_PRO = "gemini-3.1-pro-preview";
+export const STABLE_MODEL_FLASH = "gemini-3-flash-preview";
 
 // LEGACY FALLBACK
 export const FALLBACK_MODEL = "gemini-2.0-flash";
