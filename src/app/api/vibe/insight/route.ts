@@ -139,10 +139,6 @@ If there are no code snippets, clearly state that the analysis is limited to the
         const stream = new ReadableStream({
             async start(controller) {
                 let fullReport = "";
-                // BRUTAL DEBUG: Prepend the status to the stream
-                const debugHeader = `> [DEBUG] ProjectID: ${projectId} | Files in DB: ${allFiles?.length || 0} | Context Chunks: ${contentFiles?.length || 0}\n\n`;
-                controller.enqueue(encoder.encode(debugHeader));
-                fullReport += debugHeader;
 
                 try {
                     for await (const chunk of result.stream) {
