@@ -85,7 +85,7 @@ Please generate the Project Insight Report for ${projectName || 'this project'}.
 `;
 
         const { result, modelUsed } = await safeGenerateContentStream({
-            model: "gemini-1.5-pro",
+            model: "gemini-3.1-pro",
             systemInstruction: systemPrompt,
             contents: [
                 { text: "OUTPUT RULES: Return RAW Markdown. DO NOT wrap in ```markdown code blocks." },

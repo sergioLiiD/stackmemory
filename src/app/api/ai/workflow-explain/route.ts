@@ -17,8 +17,8 @@ export async function POST(req: Request) {
         }
 
         const genAI = new GoogleGenerativeAI(apiKey);
-        // User reported 1.5 deprecated/not found, switching to stable 1.5 Pro
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
+        // Using latest Gemini 3.1 Pro
+        const model = genAI.getGenerativeModel({ model: "gemini-3.1-pro" });
 
         // CHAT MODE
         if (messages && Array.isArray(messages)) {
