@@ -1,64 +1,47 @@
 import { NextResponse } from 'next/server';
-import { GoogleGenerativeAI } from '@google/generative-ai';
 import { createClient } from '@/lib/supabase/server';
 import { cookies } from 'next/headers';
 
 export async function GET() {
+    const apiKey = process.env.GOOGLE_API_KEY || '';
     const results: any = {
-        envVarPresent: !!process.env.GOOGLE_API_KEY,
-        geminiTest: { attempts: [] },
+        envVarPresent: !!apiKey,
+        apiKeyPrefix: apiKey ? apiKey.substring(0, 5) + '...' : 'NONE',
+        apiDiscovery: {
+            v1beta: null,
+            v1: null
+        },
         dbTest: null
     };
 
+    // 1. Raw API Discovery (List Models)
     try {
-        const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || '');
-
-        // Attempt 1: text-embedding-004 with v1
-        try {
-            // @ts-ignore - Forcing v1 API
-            const m1 = genAI.getGenerativeModel({ model: "text-embedding-004" }, { apiVersion: 'v1' });
-            const r1 = await m1.embedContent("test");
-            results.geminiTest.attempts.push({
-                model: "text-embedding-004 (v1)",
-                success: true,
-                dims: r1.embedding.values.length
-            });
-        } catch (e: any) {
-            results.geminiTest.attempts.push({ model: "text-embedding-004 (v1)", success: false, error: e.message });
-        }
-
-        // Attempt 2: embedding-001 with v1
-        try {
-            // @ts-ignore - Forcing v1 API
-            const m2 = genAI.getGenerativeModel({ model: "embedding-001" }, { apiVersion: 'v1' });
-            const r2 = await m2.embedContent("test");
-            results.geminiTest.attempts.push({
-                model: "embedding-001 (v1)",
-                success: true,
-                dims: r2.embedding.values.length
-            });
-        } catch (e: any) {
-            results.geminiTest.attempts.push({ model: "embedding-001 (v1)", success: false, error: e.message });
-        }
-
-        // Attempt 3: models/text-embedding-004 (full prefix)
-        try {
-            const m3 = genAI.getGenerativeModel({ model: "models/text-embedding-004" });
-            const r3 = await m3.embedContent("test");
-            results.geminiTest.attempts.push({
-                model: "models/text-embedding-004",
-                success: true,
-                dims: r3.embedding.values.length
-            });
-        } catch (e: any) {
-            results.geminiTest.attempts.push({ model: "models/text-embedding-004", success: false, error: e.message });
-        }
-
+        const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+        const data = await resp.json();
+        results.apiDiscovery.v1beta = {
+            status: resp.status,
+            modelCount: data.models?.length || 0,
+            embeddingModels: data.models?.filter((m: any) => m.supportedGenerationMethods?.includes('embedContent')).map((m: any) => m.name),
+            error: data.error
+        };
     } catch (e: any) {
-        results.geminiTest.error = e.message;
+        results.apiDiscovery.v1beta = { error: e.message };
     }
 
-    // Database check
+    try {
+        const resp = await fetch(`https://generativelanguage.googleapis.com/v1/models?key=${apiKey}`);
+        const data = await resp.json();
+        results.apiDiscovery.v1 = {
+            status: resp.status,
+            modelCount: data.models?.length || 0,
+            embeddingModels: data.models?.filter((m: any) => m.supportedGenerationMethods?.includes('embedContent')).map((m: any) => m.name),
+            error: data.error
+        };
+    } catch (e: any) {
+        results.apiDiscovery.v1 = { error: e.message };
+    }
+
+    // 2. Database Check
     try {
         const cookieStore = await cookies();
         const supabase = createClient(cookieStore);
