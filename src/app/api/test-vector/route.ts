@@ -1,13 +1,22 @@
 import { NextResponse } from 'next/server';
 import { searchSimilarDocuments } from '@/lib/vector-store';
 
-export async function POST(req: Request) {
-    try {
-        const { projectId, query } = await req.json();
+export async function GET(req: Request) {
+    const { searchParams } = new URL(req.url);
+    const projectId = searchParams.get('projectId');
+    const query = searchParams.get('query') || 'test';
 
-        if (!projectId || !query) {
-            return NextResponse.json({ error: 'projectId and query required' }, { status: 400 });
-        }
+    return handleTest(projectId, query);
+}
+
+export async function POST(req: Request) {
+    const { projectId, query } = await req.json();
+    return handleTest(projectId, query);
+}
+
+async function handleTest(projectId: string | null, query: string) {
+    try {
+        if (!projectId) return NextResponse.json({ error: 'projectId required' }, { status: 400 });
 
         console.log(`DIAGNOSTIC: Testing vector search for ${projectId}...`);
         const results = await searchSimilarDocuments(projectId, query);
