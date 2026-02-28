@@ -82,7 +82,8 @@ export async function POST(req: Request) {
                         .from('projects')
                         .update({
                             stack: stackItems,
-                            updated_at: new Date().toISOString()
+                            updated_at: new Date().toISOString(),
+                            last_indexed_at: new Date().toISOString()
                         })
                         .eq('id', projectId);
 

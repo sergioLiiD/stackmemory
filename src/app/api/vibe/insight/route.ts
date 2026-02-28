@@ -32,14 +32,29 @@ export async function POST(req: Request) {
 
         const fileTree = allFiles?.map(f => f.file_path).sort().join('\n') || "No files found";
 
-        const criticalPatterns = ['%.md', '%package.json%', '%config%', '%schema%', '%layout.tsx%', '%page.tsx%'];
+        const criticalPatterns = [
+            '%.md', '%package.json%', '%config%', '%schema%', '%layout.tsx%', '%page.tsx%',
+            '%.py', '%.go', '%.rs', '%.php', '%.js', '%.ts', '%.tsx', '%.jsx',
+            '%Dockerfile%', '%Makefile%', '%composer.json%', '%requirements.txt%', '%gemfile%', '%cargo.toml%'
+        ];
         let contextContent = "";
 
-        const { data: contentFiles } = await supabase
+        let { data: contentFiles } = await supabase
             .from('embeddings')
             .select('file_path, content')
             .eq('project_id', projectId)
             .or(criticalPatterns.map(p => `file_path.ilike.${p}`).join(','));
+
+        // Fallback: If no "critical" files found, just take the first 20 files to provide SOME context
+        if (!contentFiles || contentFiles.length === 0) {
+            console.log("No critical files found, falling back to top 20 files for context.");
+            const { data: topFiles } = await supabase
+                .from('embeddings')
+                .select('file_path, content')
+                .eq('project_id', projectId)
+                .limit(20);
+            contentFiles = topFiles;
+        }
 
         if (contentFiles) {
             contextContent = contentFiles.map(f => `
@@ -50,7 +65,13 @@ ${f.content}
         }
 
         const systemPrompt = `You are a Senior Principal Software Architect and UI Designer.
-Your goal is to write a "Project Insight Report" (The Bible) for a new CTO or Investor.
+Your goal is to write a "Project Insight Report" (The Bible) based EXCLUSIVELY on the provided source code and file tree.
+
+CRITICAL INSTRUCTIONS:
+- **NO HALLUCINATIONS**: If the "CRITICAL FILE CONTENTS" is empty or does not contain enough information, YOU MUST SAY SO. 
+- **DO NOT INVENT**: Do not assume a project is a "Portfolio", "CRM", or "Landing Page" unless you see the specific code for it.
+- **GROUNDING**: Every claim you make about the Tech Stack or Features MUST be traceable to the provided file contents.
+- **IDENTIFY LACK OF DATA**: If you see a file tree but no file contents, report that the "Codebase is indexed but contents are not yet accessible for deep analysis."
 
 OUTPUT FORMAT:
 - **Markdown ONLY**.
@@ -63,25 +84,29 @@ OUTPUT FORMAT:
 
 STRUCTURE:
 1. **# [Project Name]** (Hero Title)
-2. **> Impact Summary** (One sentence summary in a blockquote)
-3. **## Executive Summary**
-4. **## Key Features** (Bulleted list)
-5. **## Tech Stack Analysis** (Why use this?)
-6. **## Architectural Map** (Data flow)
-7. **## Improvement Opportunities** (Refactoring)
+2. **> Impact Summary** (One sentence summary based on REAL CODE)
+3. **## Executive Summary** (Briefly describe what the code actually does)
+4. **## Key Features** (List only features found in the code/file tree)
+5. **## Tech Stack Analysis** (Identify frameworks from package.json/imports)
+6. **## Architectural Map** (Describe the folder structure and data flow)
+7. **## Improvement Opportunities** (Real technical debt found in the code)
 
-Make it comprehensive but structured.
+If no code is provided, your report should be a 1-paragraph status update stating that the codebase needs to be synchronized to provide a detailed analysis.
 `;
 
         const userMessage = `
+--- SOURCE OF TRUTH START ---
 PROJECT NAME: ${projectName || 'Unknown Project'}
+
 PROJECT FILE TREE:
 ${fileTree}
 
-CRITICAL FILE CONTENTS (Documentation & Configs):
-${contextContent}
+CRITICAL FILE CONTENTS (Actual Code Snippets):
+${contextContent || "NO CODE SNIPPETS PROVIDED. DO NOT INVENT FEATURES."}
+--- SOURCE OF TRUTH END ---
 
-Please generate the Project Insight Report for ${projectName || 'this project'}.
+TASK: Based ONLY on the "SOURCE OF TRUTH" above, generate the Project Insight Report for ${projectName || 'this project'}. 
+If there are no code snippets, clearly state that the analysis is limited to the file tree.
 `;
 
         const { result, modelUsed } = await safeGenerateContentStream({

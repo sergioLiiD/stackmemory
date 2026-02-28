@@ -122,6 +122,7 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
                 if (!user) throw new Error("No user found");
 
                 const { error } = await supabase.from('projects').insert({
+                    id: newProject.id, // Ensure consistent ID
                     user_id: user.id, // Assign ownership
                     name: project.name,
                     description: project.description,

@@ -14,23 +14,21 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "Project ID is required" }, { status: 400 });
         }
 
-        // Query the most recent embedding creation time for this project
+        // Read the persistent last_indexed_at from the projects table
         const { data, error } = await supabase
-            .from('embeddings')
-            .select('created_at')
-            .eq('project_id', projectId)
-            .order('created_at', { ascending: false })
-            .limit(1)
+            .from('projects')
+            .select('last_indexed_at')
+            .eq('id', projectId)
             .single();
 
-        if (error && error.code !== 'PGRST116') { // PGRST116 is "Row not found" which is fine (never synced)
+        if (error && error.code !== 'PGRST116') {
             console.error("Error fetching sync status:", error);
             return NextResponse.json({ error: error.message }, { status: 500 });
         }
 
         return NextResponse.json({
             success: true,
-            lastSynced: data?.created_at || null
+            lastSynced: data?.last_indexed_at || null
         });
 
     } catch (error) {
