@@ -7,7 +7,7 @@ const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || '');
 
 export async function generateEmbedding(text: string): Promise<number[]> {
     try {
-        const model = genAI.getGenerativeModel({ model: "text-embedding-004" }, { apiVersion: 'v1' });
+        const model = genAI.getGenerativeModel({ model: "gemini-embedding-001" });
         const result = await model.embedContent(text);
         return result.embedding.values;
     } catch (e: any) {
@@ -67,7 +67,7 @@ export async function storeEmbeddings(projectId: string, files: ProcessedFile[],
                     // Log Usage (Approx: 1 token = 4 chars)
                     const estimatedTokens = Math.ceil(chunk.length / 4);
                     const { logUsage } = await import('./usage-logger');
-                    await logUsage(projectId, 'embedding', 'text-embedding-004', estimatedTokens, 0);
+                    await logUsage(projectId, 'embedding', 'gemini-embedding-001', estimatedTokens, 0);
                 }
             } catch (e: any) {
                 console.error(`Failed to generate embedding for ${file.path}`, e);
