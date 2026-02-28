@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import { createClient } from '@/lib/supabase/server';
 import { cookies } from 'next/headers';
 
@@ -6,42 +7,35 @@ export async function GET() {
     const apiKey = process.env.GOOGLE_API_KEY || '';
     const results: any = {
         envVarPresent: !!apiKey,
-        apiKeyPrefix: apiKey ? apiKey.substring(0, 5) + '...' : 'NONE',
-        apiDiscovery: {
-            v1beta: null,
-            v1: null
-        },
+        geminiTest: { attempts: [] },
         dbTest: null
     };
 
-    // 1. Raw API Discovery (List Models)
     try {
-        const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
-        const data = await resp.json();
-        results.apiDiscovery.v1beta = {
-            status: resp.status,
-            modelCount: data.models?.length || 0,
-            embeddingModels: data.models?.filter((m: any) => m.supportedGenerationMethods?.includes('embedContent')).map((m: any) => m.name),
-            error: data.error
-        };
+        const genAI = new GoogleGenerativeAI(apiKey);
+
+        // Targeted test for the model we just switched to
+        try {
+            const model = genAI.getGenerativeModel({ model: "gemini-embedding-001" });
+            const r = await model.embedContent("Checking connectivity and dimensions.");
+            results.geminiTest.attempts.push({
+                model: "gemini-embedding-001",
+                success: true,
+                dims: r.embedding.values.length,
+                sample: r.embedding.values.slice(0, 3)
+            });
+        } catch (e: any) {
+            results.geminiTest.attempts.push({
+                model: "gemini-embedding-001",
+                success: false,
+                error: e.message
+            });
+        }
+
     } catch (e: any) {
-        results.apiDiscovery.v1beta = { error: e.message };
+        results.geminiTest.error = e.message;
     }
 
-    try {
-        const resp = await fetch(`https://generativelanguage.googleapis.com/v1/models?key=${apiKey}`);
-        const data = await resp.json();
-        results.apiDiscovery.v1 = {
-            status: resp.status,
-            modelCount: data.models?.length || 0,
-            embeddingModels: data.models?.filter((m: any) => m.supportedGenerationMethods?.includes('embedContent')).map((m: any) => m.name),
-            error: data.error
-        };
-    } catch (e: any) {
-        results.apiDiscovery.v1 = { error: e.message };
-    }
-
-    // 2. Database Check
     try {
         const cookieStore = await cookies();
         const supabase = createClient(cookieStore);
