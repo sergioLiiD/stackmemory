@@ -13,18 +13,17 @@ export async function POST(req: Request) {
         }
 
         // 1. Get Session & Token
-        // Priority: Manual Token > Session Token
-        let token = githubToken;
+        const cookieStore = await cookies();
+        const supabase = createClient(cookieStore);
 
+        let token = githubToken;
         if (!token) {
-            const cookieStore = await cookies();
-            const supabase = createClient(cookieStore);
             const { data: { session } } = await supabase.auth.getSession();
             token = session?.provider_token;
         }
 
         if (!token) {
-            return NextResponse.json({ error: 'Unauthorized: Missing GitHub Provider Token. Please re-login with GitHub or provide a manual token.' }, { status: 401 });
+            return NextResponse.json({ error: 'Unauthorized: Missing GitHub Provider Token.' }, { status: 401 });
         }
 
         // 2. Start Crawling
@@ -34,8 +33,8 @@ export async function POST(req: Request) {
 
         // 3. Store Embeddings
         const { storeEmbeddings } = await import('@/lib/vector-store');
-        const totalChunks = await storeEmbeddings(projectId, processedFiles);
-        console.log(`CRAWL DEBUG: Stored ${totalChunks} chunks for Project=${projectId}`);
+        const { totalChunks, errors: indexingErrors } = await storeEmbeddings(projectId, processedFiles, supabase);
+        console.log(`CRAWL DEBUG: Stored ${totalChunks} chunks for Project=${projectId}. Errors: ${indexingErrors.length}`);
 
         // 3.5 Check for package.json to update Stack
         let stackUpdateStatus = { found: false, count: 0, updated: false, error: null as string | null };
@@ -106,8 +105,9 @@ export async function POST(req: Request) {
             success: true,
             filesFound: processedFiles.length,
             chunksStored: totalChunks,
-            stackUpdate: stackUpdateStatus, // Return debug info
-            files: processedFiles.map(f => ({ path: f.path, size: f.size, language: f.language })) // Metadata only
+            indexingErrors, // Return specific errors if any
+            stackUpdate: stackUpdateStatus,
+            files: processedFiles.map(f => ({ path: f.path, size: f.size, language: f.language }))
         });
 
     } catch (error: any) {

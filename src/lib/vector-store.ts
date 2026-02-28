@@ -16,11 +16,9 @@ export async function generateEmbedding(text: string): Promise<number[]> {
     }
 }
 
-export async function storeEmbeddings(projectId: string, files: ProcessedFile[]) {
-    const cookieStore = await cookies();
-    const supabase = createClient(cookieStore);
-
+export async function storeEmbeddings(projectId: string, files: ProcessedFile[], supabase: any) {
     let totalChunks = 0;
+    const errors: any[] = [];
 
     for (const file of files) {
         // Simple chunking strategy for now:
@@ -63,24 +61,22 @@ export async function storeEmbeddings(projectId: string, files: ProcessedFile[])
 
                 if (error) {
                     console.error(`Supabase INSERT ERROR for ${file.path}: [${error.code}] ${error.message}`);
+                    errors.push({ file: file.path, step: 'insert', error });
                 } else {
                     totalChunks++;
                     // Log Usage (Approx: 1 token = 4 chars)
                     const estimatedTokens = Math.ceil(chunk.length / 4);
-                    // We run this async without awaiting to not slow down the loop too much, 
-                    // or await it if strict tracking is needed. 
-                    // To be safe in Server Components/Actions, preferably await or use `waitUntil`.
-                    // Here we await to ensure it fires.
                     const { logUsage } = await import('./usage-logger');
                     await logUsage(projectId, 'embedding', 'text-embedding-004', estimatedTokens, 0);
                 }
-            } catch (e) {
+            } catch (e: any) {
                 console.error(`Failed to generate embedding for ${file.path}`, e);
+                errors.push({ file: file.path, step: 'generate-embedding', error: e.message });
             }
         }
     }
 
-    return totalChunks;
+    return { totalChunks, errors };
 }
 
 export async function searchSimilarDocuments(projectId: string, query: string, matchThreshold: number = 0.4, matchCount: number = 20) {
