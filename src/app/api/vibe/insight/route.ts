@@ -39,29 +39,46 @@ export async function POST(req: Request) {
         ];
         let contextContent = "";
 
-        let { data: contentFiles } = await supabase
+        let { data: contentFiles, error: contentError } = await supabase
             .from('embeddings')
             .select('file_path, content')
             .eq('project_id', projectId)
             .or(criticalPatterns.map(p => `file_path.ilike.${p}`).join(','));
 
-        // Fallback: If no "critical" files found, just take the first 20 files to provide SOME context
+        if (contentError) console.error("Content fetch error:", contentError);
+
+        // Fallback 1: If no "critical" files found, try to just get ANY files for this project
         if (!contentFiles || contentFiles.length === 0) {
-            console.log("No critical files found, falling back to top 20 files for context.");
-            const { data: topFiles } = await supabase
+            console.log("No critical files found, fetching first 20 available files for project:", projectId);
+            const { data: topFiles, error: topError } = await supabase
                 .from('embeddings')
                 .select('file_path, content')
                 .eq('project_id', projectId)
                 .limit(20);
+
+            if (topError) console.error("Top files fetch error:", topError);
             contentFiles = topFiles;
         }
 
-        if (contentFiles) {
+        if (contentFiles && contentFiles.length > 0) {
             contextContent = contentFiles.map(f => `
 --- FILE: ${f.file_path} ---
 ${f.content}
 ---------------------------
 `).join('\n');
+        } else {
+            // DEBUG: Check if ANY embeddings exist for this project at all
+            const { count } = await supabase
+                .from('embeddings')
+                .select('*', { count: 'exact', head: true })
+                .eq('project_id', projectId);
+
+            console.log(`DEBUG: Embeddings count for ${projectId}: ${count || 0}`);
+            if ((count || 0) === 0) {
+                contextContent = "NO EMBEDDINGS FOUND IN DATABASE. Please 'Sync Repository' first.";
+            } else {
+                contextContent = "EMBEDDINGS EXIST BUT RETRIEVAL FAILED. Check RLS or Project ID mismatch.";
+            }
         }
 
         const systemPrompt = `You are a Senior Principal Software Architect and UI Designer.
