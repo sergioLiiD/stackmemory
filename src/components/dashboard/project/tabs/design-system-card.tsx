@@ -16,6 +16,8 @@ export function DesignSystemCard({ project }: { project: Project }) {
     const [newFont, setNewFont] = useState<{ name: string, type: 'sans' | 'serif' | 'mono' | 'display' }>({ name: "", type: "sans" });
 
     const design = project.design || { colors: [], fonts: [] };
+    const colors = design.colors || [];
+    const fonts = design.fonts || [];
 
     const saveDesign = async (newDesign: DesignSystem) => {
         updateProject(project.id, { design: newDesign });
@@ -146,9 +148,9 @@ export function DesignSystemCard({ project }: { project: Project }) {
             {/* Content List */}
             <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1 custom-scrollbar">
                 {activeTab === 'colors' ? (
-                    design.colors.length > 0 ? (
+                    colors.length > 0 ? (
                         <div className="grid grid-cols-2 gap-2">
-                            {design.colors.map((color, i) => (
+                            {colors.map((color, i) => (
                                 <div key={i} className="group relative p-2 rounded-xl border border-neutral-200 dark:border-white/5 flex items-center gap-3 hover:border-pink-500/30 transition-colors">
                                     <div
                                         className="w-8 h-8 rounded-full shadow-sm border border-neutral-100 dark:border-white/10 shrink-0"
@@ -167,9 +169,9 @@ export function DesignSystemCard({ project }: { project: Project }) {
                         </div>
                     ) : !isAdding && <div className="text-center py-6 text-neutral-500 text-xs italic">No colors added</div>
                 ) : (
-                    design.fonts.length > 0 ? (
+                    fonts.length > 0 ? (
                         <div className="space-y-2">
-                            {design.fonts.map((font, i) => (
+                            {fonts.map((font, i) => (
                                 <div key={i} className="group flex items-center justify-between p-3 rounded-xl bg-neutral-50 dark:bg-white/5 border border-neutral-200 dark:border-white/5 hover:border-pink-500/30 transition-colors">
                                     <div className="flex items-center gap-3">
                                         <div className="w-8 h-8 rounded-lg bg-white dark:bg-white/10 flex items-center justify-center text-neutral-400 font-serif text-sm border border-neutral-200 dark:border-white/5">
@@ -189,6 +191,6 @@ export function DesignSystemCard({ project }: { project: Project }) {
                     ) : !isAdding && <div className="text-center py-6 text-neutral-500 text-xs italic">No fonts added</div>
                 )}
             </div>
-        </div>
+        </div >
     );
 }
