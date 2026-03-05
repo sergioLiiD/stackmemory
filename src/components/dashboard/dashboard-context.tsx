@@ -81,6 +81,7 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
                         hasVulnerabilities: p.has_vulnerabilities || false,
                         insight_report: p.insight_report || undefined,
                         insight_generated_at: p.insight_generated_at || undefined,
+                        design: p.design_system || { colors: [], fonts: [] },
                         workflows: p.workflows || []
                     }));
                     setProjects(mappedProjects);
@@ -167,7 +168,7 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
                 if (updates.insight_report) dbUpdates.insight_report = updates.insight_report;
                 if (updates.insight_generated_at) dbUpdates.insight_generated_at = updates.insight_generated_at;
                 if (updates.snippets) dbUpdates.snippets = updates.snippets;
-                if (updates.snippets) dbUpdates.snippets = updates.snippets;
+                if (updates.design) dbUpdates.design_system = updates.design;
                 // Workflows are handled in their own table, do not update projects table column
 
                 if (Object.keys(dbUpdates).length > 0) {

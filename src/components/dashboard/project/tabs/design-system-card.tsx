@@ -19,9 +19,6 @@ export function DesignSystemCard({ project }: { project: Project }) {
 
     const saveDesign = async (newDesign: DesignSystem) => {
         updateProject(project.id, { design: newDesign });
-        if (supabase) {
-            await supabase.from('projects').update({ design_system: newDesign }).eq('id', project.id);
-        }
     };
 
     const handleAddColor = () => {
